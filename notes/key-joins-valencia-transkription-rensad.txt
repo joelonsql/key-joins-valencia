@@ -1,0 +1,1254 @@
+KEY JOINS VALENCIA
+Bearbetad transkription ordnad efter presentationen
+
+Samtal mellan Joel Jacobson och Andreas Karlsson. Inspelningens längd: 1:42:44.
+
+Texten är en bearbetad rekonstruktion av den tidigare transkriptionen.
+Svårtolkade ord, luckor och talarbyten har tolkats utifrån sammanhanget och
+bakgrundsanteckningarna. Dessa tolkningar har inte verifierats mot ljudet.
+Stamningar och omtagningar har jämnats ut; resonemang, sidospår, planering
+och talarnas egna reservationer finns kvar.
+
+Rubrikerna följer key-joins-valencia-balanced.tex. Repliker om samma bild
+har samlats under dess rubrik, även när de sades vid olika tillfällen.
+Tidsangivelserna är ungefärliga och gör det möjligt att hitta tillbaka
+till inspelningen.
+
+
+1. Designing a new SQL language feature
+=======================================
+
+Joel (00:00:01):
+Okej, nu ska vi gå igenom vår presentation om Key Joins. Andreas kommer att läsa upp rubriken på varje slide, och sedan berättar vi vad vi ska prata om på den bilden. Jag som pratar nu är Joel Jacobson.
+
+
+2. Who are we?
+==============
+
+Andreas (00:00:19):
+Jag är Andreas. Den första sliden har rubriken ”Who are we?”. Där kommer vi att säga våra namn, var vi jobbar och att vi är med i SQL-kommittén. Det vi vill betona är att vi båda har lång erfarenhet som applikationsutvecklare, med mycket stored procedures och SQL.
+
+Joel (00:00:49):
+Mycket SQL med krångliga queries och många joins. Vi har lagt en enormt stor del av våra liv på att resonera kring varje join i en stor query.
+
+Andreas (00:01:05):
+Och på att reviewa. När man får en pull request med jättestora queries, hur ska vi se att kollegan inte har skrivit fel?
+
+Joel (00:01:14):
+Ja, framför allt när en query kan vara på tusen rader, med massvis av CTE:er i flera lager, och vyer.
+
+
+3. What will this talk be about?
+================================
+
+Andreas (00:01:27):
+Det är väl det vi ska säga där. Ska vi prata om nästa slide? Den har rubriken ”What will this talk be about?”. Målet är att publiken ska förstå upplägget på talket: att det handlar om en SQL-feature som vi föreslog, resan dit och problemen vi upptäckte på vägen.
+
+Joel (00:02:05):
+Och sidospåren. Idéer som var korkade och dumma, men som ibland ledde till något bra, fast först senare. Vi borde också säga varför vi tyckte att featuren var så viktig att vi ägnade så mycket tid och så många år av våra liv åt att genomföra den.
+
+Andreas (00:02:30):
+Jag hade tänkt att det skulle vara på nästa slide, alltså att vi delar upp det på två bilder. Men vi får se. Det var det jag tänkte att nästa slide skulle handla om. Kanske får det plats på en bild, men min tanke var att dela upp det på två.
+
+Den första skulle handla mer om upplägget på metanivå. Sedan kommer ”What are key joins?”. Där ska vi berätta varför vi är så passionerade för det.
+
+
+4. What are key joins?
+======================
+
+Joel (00:03:11):
+Key joins är något som alla som använder SQL har skrivit i flera årtionden. Vi vet inte hur stor del av alla joins som är key joins, men vi tror att det är någonstans i storleksordningen 20 till 40 procent. En key join är helt enkelt en join som följer en foreign key till en primary key eller en unique-nyckel.
+
+Andreas (00:03:47):
+Jag tycker att vi kan nämna hur många buggar den här featuren hittade i några korpusar.
+
+Joel (00:03:57):
+I Michael Stonebrakers BEAVER benchmark finns det fyra produktionsdatabaser där man har loggat queries i produktion. Vi tittade på de frågorna och upptäckte att ungefär 10 procent av alla joins var buggiga på något sätt.
+
+Andreas (00:04:24):
+Här ska vi själva fylla i de riktiga siffrorna.
+
+Joel (00:04:30):
+Vi har ju inte handgranskat alla dem.
+
+Andreas (00:04:32):
+Nej, men vi kan ge ungefärliga siffror. Vi kan berätta att en snabb körning verkar visa runt 10 procent. Det är signifikant, även om vi har fel och det egentligen är 5 procent.
+
+Joel (00:04:45):
+Ja, verkligen.
+
+Andreas (00:04:45):
+Det är mycket.
+
+Joel (00:04:52):
+Under de här fem åren har vi kommit fram till en matematisk definition av vilka villkor som beskriver en key join. Frågar man SQL-utvecklare vad en key join är får man många olika svar som är ungefär desamma. Det är det vi har konkretiserat och även standardiserat.
+
+Är det nu vi ska nämna att det också har blivit accepterat?
+
+Andreas (00:05:36):
+Det borde vi egentligen ha gjort på den förra bilden. Men på någon av de här två bilderna ska vi nämna det.
+
+Joel (00:05:43):
+Då kanske vi ska nämna det på den förra sliden. Ja, det ska vi göra. Jag tror att det är bättre.
+
+Andreas (00:05:47):
+Vi får titta på de här två bilderna. Jag kan ha fel disposition på dem; det är möjligt att de behöver göras om lite.
+
+Joel (00:05:56):
+Syftet med att nämna att featuren nu är accepterad av ISO, IEC, JTC 1, SC 32, WG 3 är att göra åhörarna mer intresserade. Om man vet att man lyssnar på något som faktiskt blev accepterat blir det mer intressant. Det ska nämnas tidigt.
+
+
+5. Joel’s first idea
+====================
+
+Andreas (00:06:17):
+Okej, på nästa slide, ”Joel’s first idea”, börjar historien. Där berättar vi att det är här historien börjar.
+
+Joel (00:06:34):
+Ja.
+
+Andreas (00:06:34):
+Då går vi tillbaka i tiden till 2021.
+
+Joel (00:06:39):
+Då har jag hört om Neo4j och deras språk Cypher. I Neo4j:s dokumentation finns en exempelfråga som jämför en SQL-query med fyra joins med en Cypher-query som använder en sorts ASCII-pilsyntax. Jag blir direkt fascinerad och tänker att det är ett jättesmidigt sätt att joina på. Jag tar för givet att pilen följer foreign keys i Cyphers databas.
+
+Jag börjar fundera på om man skulle kunna ha ett smidigare sätt att joina även i SQL. Då kommer vi på en punktbaserad syntax, ungefär som i JavaScript, där man kedjar ett objekt med punkter.
+
+Andreas (00:07:50):
+Här bör Joel påminna publiken om att inget av det här löser fanout. Publiken behöver påminnas om att det här i första hand är en convenience-grej.
+
+Joel (00:08:06):
+Det var framför allt en convenience-feature, inte en ren sådan. Jag såg också att man skulle kunna följa en foreign key: man tar en kolumn, en punkt, följer den till den refererade tabellen och fortsätter med en kolumn där, och så vidare. Finns det ingen foreign key får man ett fel.
+
+Jag postade idén till Hackers och var tydlig med att inspirationen kom från Cypher och Neo4j. Det drog igång en diskussion.
+
+
+6. Feedback from mailinglist
+============================
+
+Andreas (00:08:57):
+Då kommer vi till nästa slide, ”Feedback from mailinglist”. Här ska vi ha en lista med några saker på bilden om den feedback vi fick.
+
+Joel (00:09:10):
+Det vi minns som extra viktigt var bland annat kritiken att det här bara fungerar för referential constraints, alltså foreign keys, om man har en kolumn. Det fungerar inte för kompositnycklar.
+
+Andreas (00:09:31):
+Och det fungerar inte för LEFT, RIGHT och OUTER joins. Vissa ogillade det implicita. Andra frågade vad som händer om samma tabell joinas flera gånger.
+
+Joel (00:09:48):
+Många kände också igen det från ORM-världen och gillade inte att man gömmer joinsen.
+
+Andreas (00:09:57):
+Precis. Det är implicit av naturen, och det är oklart vad som händer när man gör samma sak flera gånger. Det är något som stör folk.
+
+Joel (00:10:03):
+Vad händer om det finns flera foreign keys på samma kolumn? En synpunkt från Tom Lane var att det inte får ha sönder befintliga queries att lägga till en foreign key eller ett databasobjekt. Då får man samma problem som med USING eller NATURAL JOIN.
+
+Här gick jag i försvar för USING och sa att det här inte är värre än USING, så det måste väl vara okej. Det är en åsikt som jag inte håller med om i dag.
+
+
+7. Proposal from Vik
+====================
+
+Andreas (00:10:42):
+En sak som vi kommer att nämna här är att Vik svarade. Nästa slide, ”Proposal from Vik”, handlar om en djupdykning i hans svar. Han är en person som vi behöver introducera här.
+
+Joel (00:10:57):
+Det är alltså Vik Fearing.
+
+Andreas (00:10:58):
+Vik Fearing är en person som kommer att bli väldigt viktig som en del av vårt team, som sedan gör klart featuren. Hans feedback i den här tråden var viktig. Han kommer med ett syntaxförslag där man joinar med namnet på en foreign key. På sliden ska vi ha ett exempel på det.
+
+Joel (00:11:27):
+För att vara mer formell: namnet på constrainten, alltså referential constrainten.
+
+Andreas (00:11:31):
+Exakt, namnet på referential constrainten. På den här sliden kan vi kanske också få in att hans svar är lite ”dra dit pepparn växer”. Eller egentligen att det här ska lösas i standardkommittén, inte i Postgres.
+
+Joel (00:11:48):
+Ja, han säger att det är en ”terrible idea”, men han kommer också med ett syntaxförslag som bygger på en JOIN där han skriver WITH och sedan constraintnamnet.
+
+Andreas (00:12:01):
+Det här kan vara ett bra ställe där Andreas berättar att han börjar bli intresserad när han ser Viks förslag. Det är egentligen här vår resa börjar på riktigt, när jag kliver på och vi får idén att ta det till standarden.
+
+Joel (00:12:20):
+Du får säga att det är du som är Andreas.
+
+Andreas (00:12:21):
+Ja, jag är Andreas. Det är här jag hoppar på den här resan. Hans mejl i den här tråden triggar ganska många senare händelser.
+
+Joel (00:12:36):
+Precis. Vik avslutar diskussionen med ”Let’s do it the standard way”.
+
+Andreas (00:12:45):
+Ja, det är precis det som är poängen.
+
+Joel (00:12:47):
+”Let’s do it the standard way or not at all.” Det får mig att känna att det här helt enkelt måste tas till SQL-standarden.
+
+
+8. Syntax bikeshedding
+======================
+
+Andreas (00:13:02):
+Joel var redan typ halvt inne i ISO-spåret på grund av en annan feature. Det är en annan historia, men det gäller LET-featuren, närmare bestämt LET-keywordet. Han hade redan funderat på att gå med i ISO.
+
+Ska vi gå till nästa slide? Den heter ”Syntax bikeshedding”. Den handlar om hur vi kom in i en fas med diskussioner dels på mejllistan, dels mellan oss två och vår tredje kompanjon, Anders Granlund. Han är en viktig person för det här projektet. Det här är nog en bra slide att introducera honom på.
+
+Joel (00:13:54):
+Vi hade också en del diskussioner på Hacker News.
+
+Andreas (00:14:00):
+Ja, Hacker News ska vi också nämna. Det kan jag ta upp. Det här är diverse bikeshedding om syntaxen, med många olika förslag på keywords. Mycket bikeshedding. Nu kommer vi till en del av vad den fasen ledde till.
+
+Joel (00:14:30):
+Det var under den här bikesheddingen som vi försökte använda constraintnamnen.
+
+
+9. Why does constraint names not work?
+======================================
+
+Andreas (00:14:36):
+Då kommer vi till nästa slide, ”Why does constraint names not work?”. Bikesheddingen ledde oss till insikten att constraintnamn inte fungerar. Vi bör dubbelkolla om någon på Hackers också nämnde det; jag kommer inte ihåg. Men vi upptäckte det i alla fall i den här fasen.
+
+Joel (00:15:02):
+De fungerar inte genom vyer och named subqueries, alltså common table expressions.
+
+Andreas (00:15:11):
+Det kan vara lite klurigt att introducera det så här tidigt, men vi måste förklara det på något sätt. Det finns också en annan anledning: ISO-standardens constraintnamn är globalt unika, så de blir väldigt långa. Men den första anledningen är viktigare. Jag vet inte riktigt hur vi ska förklara den, men vi måste få in den på något sätt. Vi får se hur det blir på sliden.
+
+Vi hoppar vidare till ”Alternative column lists”. Alternativet är att ta inspiration från något annat. Jag fick i alla fall idén, men jag minns inte riktigt hur det gick till.
+
+
+10. Alternative: column lists
+=============================
+
+Andreas (00:15:55):
+Jag tror att vi fick idén från INSERT ON CONFLICT i Postgres, alltså upsert. Där kan man adressera ett constraint, i det fallet ett unique constraint, antingen med dess kolumnlista eller med dess namn. Då kom vi på att foreign keys också går att adressera med kolumnlistor.
+
+Det är väl ungefär den sliden. Är det något mer du vill ha med?
+
+Joel (00:16:25):
+Nej, det är bra.
+
+
+11. Learning the standards process
+==================================
+
+Andreas (00:16:28):
+Då går vi till nästa slide, ”ISO slowness”. Vi upplever nu att vi har bikesheddat klart. Nu skickar vi det här med kolumnlistor till ISO. Kommer du ihåg?
+
+Joel (00:16:43):
+Ja, då skickar jag och Anders Granlund förslaget.
+
+Andreas (00:16:51):
+Joel och Anders Granlund skickar det.
+
+Joel (00:16:52):
+Vi skickar in det till den svenska standardkommittén, SIS, Swedish Institute of Standards, till en arbetsgrupp där Tobias Lindaaker från Neo4j också sitter med. Sedan lämnar Tobias den svenska standardgruppen. Vi får inte ett enda svar på förslaget.
+
+Då föreslår SIS att vi ska ta kontakt med den internationella standardorganisationen ISO. Vi får kontakt med Keith Hare och skickar förslaget till honom. Keith presenterar det inför WG3, ISO:s standardgrupp för SQL. Men vi fick ingen respons där heller. Det presenterades, men ingenting hände.
+
+Ett halvår senare får jag möjlighet att presentera förslaget på Casablanca-mötet tillsammans med Anders. Då får vi kontakt med Vik Fearing. Resten av kommittén frågar om han skulle kunna vara intresserad, och han erbjuder sig frivilligt att hjälpa oss och hålla ett öga på det här.
+
+Det finns också intresse från två andra i gruppen som tycker att det låter lovande: Karl och Jörn.
+
+Andreas (00:18:58):
+Anledningen till att de tycker att det är intressant är att de säger att det skulle kunna lösa jobbiga exempel på queries som de har sett i verkligheten.
+
+Joel (00:19:11):
+Ja.
+
+
+12. Sidetrack: the MATCH predicate
+==================================
+
+Andreas (00:19:15):
+Då är det väl nästa slide? Den handlar om ett sidospår, ”Sidetrack: the MATCH predicate”. Här hamnar vi lite på villovägar.
+
+Joel (00:19:34):
+Här kommer vi in på en idé i diskussionerna: att på något sätt använda SQL-standardens MATCH predicate. Det är en feature som vi inte känner till någon implementation av. Den är relaterad till att referential constraints har en MATCH type, men det är inte samma sak.
+
+Andreas (00:20:12):
+Tanken är att förenkla och minska storleken på change proposalet.
+
+Joel (00:20:20):
+Ja.
+
+Andreas (00:20:21):
+Genom att bygga vårt change proposal ovanpå MATCH predicate skulle vi kunna definiera det i termer av den och därmed få ett väldigt litet change proposal.
+
+Joel (00:20:35):
+Precis. Vi är oroliga för hur MATCH type påverkar vår feature. Vad händer med alla NULL? Vad händer om man har NULL i kolumnerna?
+
+Andreas (00:20:48):
+Vi har inte tänkt på NULL vid det här stadiet.
+
+Joel (00:20:51):
+Nej, vi har inte tänkt på det.
+
+Andreas (00:20:53):
+Vi har egentligen inte tänkt på NULL. Det kändes som att det här kanske skulle lösa problemet, men vi lyckas aldrig få ihop det.
+
+Joel (00:21:03):
+Hade det gått? Jag tror inte det.
+
+Andreas (00:21:05):
+Jag tror inte det heller. Vi lyckades i alla fall inte.
+
+Joel (00:21:08):
+Det var en återvändsgränd.
+
+Andreas (00:21:09):
+Ja, en återvändsgränd. Vi kom ingenstans med det här. Vi lyckades inte.
+
+Joel (00:21:14):
+Till slut inser vi tack och lov att en key join transformeras till en ON-join, en equi-join med AND:ade villkor.
+
+Andreas (00:21:38):
+Ja, det är enklare.
+
+Joel (00:21:39):
+NULL kan ändå inte matcha i en sådan join. Även om man på något sätt skulle kunna få ihop något med den andra varianten blir det för komplicerat. Ingen skulle förstå vad det skulle innebära.
+
+Andreas (00:21:52):
+Vi lyckas inte. Vi lyckas helt enkelt inte.
+
+Joel (00:21:54):
+Vi inser också att det måste vara begripligt vad den här featuren betyder.
+
+
+13. Pitching it to the PostgreSQL community
+===========================================
+
+Andreas (00:22:01):
+Efter det här sidospåret kommer nästa slide, ”Pitching it to the Postgres community”. Den handlar om hur vi försöker komma tillbaka på spåret. ISO har varit långsamma. Vi har fått viss ny hjälp av Vik, men vi har också hamnat på sidospår och är lite osäkra på vad vi ska göra.
+
+Då testar vi vad folk i Postgres-communityt tycker om förslaget och om det finns stöd där. Om ISO verkar halvintresserade måste vi åtminstone ta reda på om communityt är intresserat. Joel får idén att försöka pitcha det på PGConf Europe i Aten.
+
+Joel (00:23:03):
+Då börjar vi jobba på patchen, Joel och Andreas, alltså jag och Andreas.
+
+Andreas (00:23:15):
+Målet är en enkel patch som inte implementerar allt, bara base tables. Men vi måste definiera derived tables för folk någonstans. Vi behöver ha en slide som förklarar begreppet. Det här är andra gången vi refererar till det utan att definiera termen.
+
+Joel (00:23:37):
+Vi kan säga att derived tables är vyer, common table expressions och named subqueries, och även join expressions.
+
+Andreas (00:23:52):
+Och unnamed subqueries. Begreppet omfattar egentligen mer än vad vi då trodde. Vi hade glömt att ett join expression i jointrädet också är en derived table. Det hade vi inte fattat då; det förstår vi först senare. Det kan vi garva lite åt senare i talket, men det ska vi inte ta nu.
+
+Vi behöver stoppa in en slide någonstans som förklarar det här lättare. Annars slänger vi oss med terminologi. Men bra, vidare. Vi har kommit fram till att vi ska pitcha det för communityt och börjar koda på patchen.
+
+
+14. New arrow syntax
+====================
+
+Andreas (00:24:37):
+Nästa slide är ”New arrow syntax”. När vi arbetar på patchen inser vi en sak, men vi minns faktiskt inte riktigt hur idén uppstod. Det är inte säkert att vi ens kan lista ut det i våra arkiv. Det kan ha varit Marco, vem som helst, eller någon utomstående.
+
+Vi får i alla fall idén att man kan ha en pilsyntax, en ASCII-pil, i stället för FROM och TO. FROM och TO ser hemskt ut, framför allt FROM.
+
+Joel (00:25:12):
+Flera reagerade på att det stod FROM. De förstod inte varför det står FROM där när det redan finns en FROM-clause. Vi märkte att FROM störde väldigt mycket när vi visade syntaxen.
+
+Andreas (00:25:28):
+Folk ogillade syntaxen när de såg FROM där.
+
+Joel (00:25:31):
+När vi började experimentera med arrow-syntax märkte vi att det fungerar i lexern. Vi hade varit rädda för att det inte skulle fungera.
+
+Andreas (00:25:43):
+Men vi listade ut att Postgres lexer kan stödja pilar. Senare ser vi också att de behövs för PGQ. Då är det förstås självklart att det stöds, men det visste vi inte först.
+
+Joel (00:26:04):
+En idé är att nämna att vi gjorde det lite svårt för oss med stödet för pilsyntaxen, just för att vi hade nyckelordet KEY. Men vi behöver inte spoila vad lösningen var nu.
+
+
+15. Reactions from the community
+================================
+
+Andreas (00:26:27):
+Vi kanske nämner det eller inte; vi får se. Nästa slide är ”Reactions from the community”. Här berättar vi lite roligt om när Joel går omkring som en galen dammsugarförsäljare och frågar: ”Do you use joins when you write queries?”, eller vad det var du sa.
+
+Joel (00:26:52):
+Det här var på PGConf i Aten 2024. Jag gick omkring i korridorerna med min laptop och visade vårt key join-förslag för alla möjliga, alla som såg ut att gå att prata med. Jag frågade om de använde joins och visade vad det var.
+
+Den viktigaste feedbacken vi fick under konferensen kom från Peter Geoghegan. Han tyckte att det var väldigt viktigt att stödet för derived tables fungerade likadant mellan alla implementationer.
+
+Andreas (00:27:46):
+Ja, det tyckte han var viktigt.
+
+Joel (00:27:47):
+Om man ska standardisera det här måste man lösa hur det fungerar generellt, för alla querystrukturer och inte bara för vissa.
+
+Andreas (00:28:04):
+Före den här händelsen hade Andreas haft helt motsatt åsikt mot Peter Geoghegan: att vi skulle lämna derived tables som implementation-defined i standardförslaget. Det skulle vara upp till implementatörerna hur de gjorde de där deriveringarna. Men efter samtalet med Geoghegan ger sig Andreas och inser att han nog hade fel.
+
+Joel (00:28:35):
+Här förstod vi att vi skulle behöva reda ut i detalj hur det ska fungera.
+
+Andreas (00:28:52):
+En annan reaktion är säkert något som några i publiken också har. Vi kan fråga publiken; antagligen är det några där som tycker att syntaxen i många fall inte är koncisare än en ON-join. Det var feedback vi fick.
+
+Men redan här tyckte vi att korrektheten och läsbarheten ökade, även om man inte sparade några tecken att skriva. Att den inte är kortare var den vanligaste negativa feedbacken. Vad mer fick vi för reaktioner som är värda att prata om? Vi fick mycket positiva reaktioner.
+
+
+16. Trying to get derived tables right
+======================================
+
+Andreas (00:30:27):
+Det var väl den sliden. Nästa har arbetsrubriken ”Trying to get derived tables right”. Rubriken behöver nog ändras, men det är en arbetsrubrik.
+
+Här berättar vi att Peter Geoghegans ord fick oss att tänka om. Vi satte oss direkt ner, redan i Aten, och började koda på patchens derived table-del. Vi började hacka med en gång, eftersom vi nu var helt övertygade om att Peter Geoghegan hade rätt och framför allt att Andreas hade fel. Det ledde till ganska många kvällar och dagar av kodande.
+
+Joel (00:31:23):
+Var det här vi försökte skapa en algoritm för det? Vi hade whiteboards med jointräd.
+
+Andreas (00:31:38):
+Här behöver vi ha en slide bara för att visa fotona.
+
+Joel (00:31:44):
+Ja, whiteboarden med jointräden, färgtuschpennorna och pilar kors och tvärs. Och bilden på Anders.
+
+Andreas (00:31:58):
+Här skulle jag gärna vilja ha ett kodexempel på varför det är användbart, med någon subquery eller CTE eller något sådant.
+
+Joel (00:32:10):
+Just det.
+
+Andreas (00:32:10):
+Vi behöver ha en slide med det, annars blir det för abstrakt. Det ska inte bara vara en bild med punkter, utan en kodslide där vi visar ett exempel på en CTE eller subquery.
+
+Joel (00:32:28):
+Det är här vi börjar resonera formellt och generellt kring query trees. Här hade vi faktiskt att vi propagerade information uppåt i queryträdet. Men vi hade en tankevurpa, som vi kommer till senare. Vi höll i alla fall på med propagering.
+
+Andreas (00:33:07):
+Här kan vi visa att det är mycket formalism.
+
+Joel (00:33:13):
+Ja, mycket formalism.
+
+Andreas (00:33:14):
+Det är en viktig del: vi arbetar mycket med formalismen för att reda ut det här. Anledningen till att vi ville implementera det i Postgres är att ett av de bästa sätten att utreda sådant är att arbeta parallellt med kod och med att skriva papers.
+
+Det här med att skriva papers tar oss vidare till nästa slide, ”Restarting work with ISO”. Med Vik ombord, som hade hoppat på ett år tidigare, kände vi att det var dags.
+
+
+17. Two many sides multiply
+===========================
+
+(Den här bilden tillkom när presentationen utformades. Något separat samtalsavsnitt finns inte i inspelningen.)
+
+
+18. GROUP BY can create the key we need
+=======================================
+
+Joel (00:34:01):
+Vi hade dessutom kommit på att GROUP BY kan skapa uniqueness. Har man GROUP BY i en derived table kan man få tillbaka uniqueness.
+
+Andreas (00:34:18):
+Just det, det ska vi nämna. Det kanske ska vara på den förra sliden; jag vet inte.
+
+Joel (00:34:21):
+Det kan vara på den förra sliden.
+
+Andreas (00:34:24):
+På någon av de två bilderna ska det vara med.
+
+
+19. Restarting work with ISO
+============================
+
+Andreas (00:33:53):
+Nu när vi börjat förstå derived tables och tagit till oss Peter Geoghegans feedback är det dags.
+
+Joel (00:34:26):
+Nu är vi på sliden Restarting work with ISO. Jag kände att det är väldigt bra att träffas när man jobbar tillsammans, och Vik hade bara varit med på distans. Så jag tänkte att jag måste åka ner och träffa honom. Jag ringer Vik och föreslår att vi ses hos honom i Frankrike. Det här är runt julen 2024. Jag åker ner, och vi sitter och jobbar med förslaget till WG3. Vi gör väldigt bra framsteg.
+
+Joel (00:35:15):
+Vi gör ett nedbantat förslag. Vi kommer fram till det här upplägget, framför allt jag och Andreas, även om vi inte riktigt kommer ihåg varför vi valde det: vi skickar in förslaget i två delar. Den ena specificerar bara syntaxen och bastabeller, som ett change proposal. Sedan har vi ett discussion paper som beskriver våra algoritmer för uniqueness och containment för härledda tabeller. Vi tänker att det är ett bra upplägg, eftersom arbetet med härledda tabeller inte är helt klart. Det är fortfarande ett pågående arbete.
+
+Andreas (00:36:02):
+Men vi vill vara tydliga med att vi tänker oss en komplett feature. Först kommer ett change proposal som lägger till grunden. Sedan ska det här discussion paperet bli ett nytt change proposal som vi bygger ovanpå.
+
+Joel (00:36:19):
+Precis. Så i det förslaget till ISO, till WG3, var det bara en Key Joins-feature som fungerade mellan bastabeller. Det var det nedbantade förslaget vi hade då.
+
+Andreas (00:36:31):
+Men vi var också tydliga mot kommittén med att vi tänkte oss något större.
+
+Joel (00:36:35):
+Ja, precis.
+
+Andreas (00:36:35):
+Och är det inte i den här vevan som Jim Melton kommer in?
+
+Joel (00:36:39):
+Jo, då tipsar Vik om Jim Melton, och vi hör av oss till honom. Vi träffar honom nere i Paris. Där kan vi också ha en bild från mötet med Jim. Jag sitter med Vik och Jim i ett konferensrum i Paris, och Jim hjälper till med att skriva change proposalet för det här nedbantade förslaget som bara stödjer bastabeller.
+
+Då tänker vi: nu kommer det här att gå igenom, för nu har Jim Melton varit med och tagit fram förslaget. Vi är väldigt hoppfulla om att det ska gå vägen: att få in ett förslag för bastabeller, så att vi sedan kan jobba vidare med ett fullständigt change proposal.
+
+
+20. KEY is not a keyword!
+=========================
+
+Andreas (00:37:51):
+Ja, då skickar vi in det. Nästa slide: KEY is not a keyword! Vi skickar förslaget till Barcelona. Det är det första förslaget som vi verkligen tror på nu, och en av invändningarna vi får gäller just KEY.
+
+Vi har haft lite huvudvärk med Postgres parser. Vi har behövt göra ganska hemska saker i tokenizern för att hantera det här. KEY är inte ett reserverat nyckelord i Postgres. I SQL-standarden är det inte ens ett nyckelord.
+
+Joel (00:38:45):
+Det skapar ett problem som Peter Eisentraut påpekar: om du har en fråga där key används som ett correlation name, alltså ett tabellalias, så får du en tvetydighet. Då skulle man behöva lookahead, alltså titta framåt för att kunna se var man är. Det vill man inte; det är ingen bra lösning.
+
+Så vi kommer fram till att vi måste hitta ett reserverat nyckelord, ett befintligt reserverat nyckelord.
+
+Andreas (00:39:39):
+Och det är FOR.
+
+Joel (00:39:41):
+F-O-R. FOR är ett reserverat nyckelord i alla SQL-implementationer som är listade i Wikipedias jämförelse av vilka nyckelord som är reserverade, och även i SQL-standarden.
+
+Andreas (00:39:58):
+Borde vi inte ha ett exempel på varför det är reserverat? Jag kommer inte på det på rak arm just nu.
+
+Joel (00:40:05):
+Jo, det finns ju FOR UPDATE.
+
+Andreas (00:40:08):
+Ja, FOR UPDATE, tack. Det är för FOR UPDATE. Bra.
+
+Men vid samma möte finns också en annan invändning. Det är inte nyckelordsproblemet som är huvudinvändningen. Bland annat Peter Eisentraut, men även andra på mötet, gillar inte vårt upplägg med att dela förslaget i två delar. Kommittén vill ha ett komplett förslag i en del. Det tar oss tillbaka till vad Peter Geoghegan sa till oss. Vi tog inte det på tillräckligt stort allvar. Kommittén har samma åsikt: de vill ha ett komplett förslag.
+
+Andreas (00:40:53):
+De vill inte ha ett nedbantat förslag och ett till som kommer, kanske kommer eller kanske inte kommer. Och de har rätt. Jag håller med dem.
+
+
+21. Riga: meeting Arne Roland
+=============================
+
+Andreas (00:40:53):
+Ja, nästa slide. Jag kallar den just nu bara Riga som arbetsnamn. Den handlar om PGConf.EU i Riga 2025, men jag vet inte riktigt hur mycket vi ska prata om det. Den här sliden kanske ska tas bort. Anledningen till att ha den är att berätta att Arne kommer in, men det kanske vi kan berätta på en senare slide.
+
+Joel (00:41:30):
+Ja, Arne Roland blir en väldigt viktig person i det här projektet. Jag ser att Andreas står och pratar med en person i Postgres-communityt som jag inte har pratat med tidigare, en person med lite skägg. Det är Arne Roland. Jag börjar prata med honom och märker att vi har ett väldigt stort överlapp i vårt intresse för att använda mycket SQL i applikationsutveckling, och en tro på att deklarativa språk kan hjälpa oss att undvika buggar.
+
+Jag berättar om vårt arbete med Key Joins, och han tycker att det låter jätteintressant. Men det som vi går igång på och börjar prata om vid det här laget är automatiska teorembevisare, automated theorem provers, för att resonera om huruvida två SQL-frågor är ekvivalenta. Det är det som han och jag börjar samarbeta kring och som han jobbar med.
+
+Ska vi också nämna vad som händer inte alltför långt därefter?
+
+Andreas (00:43:01):
+Ja, det kommer på en senare slide. Det han kommer att bli viktig för är att hjälpa oss både med discussion papers och med kodandet.
+
+Joel (00:43:11):
+Ja, precis.
+
+Andreas (00:43:18):
+Om vi ser Arne på konferensen och det passar stämningen kan vi be publiken att säga hej och tacka honom. Om han sitter i publiken kan vi peka ut honom. Han kan möjligtvis vara där.
+
+Joel (00:43:37):
+Nej, han kommer inte att vara där. Han ska på bröllop.
+
+Andreas (00:43:40):
+Då skippar vi det. Jag hade glömt att han ska på bröllop. Tråkigt.
+
+
+22. FILTER (WHERE …)
+====================
+
+Andreas (00:43:40):
+Nästa punkt, nästa slide, är FILTER WHERE. På nästa ISO-möte på nätet skickar vi in en uppdaterad version. Men har vi fortfarande inte fixat så att vi har ett komplett förslag med alla härledningsregler? Hur var det? Det måste vi faktiskt reda ut.
+
+I alla fall får vi återkoppling från ISO om FILTER WHERE. Jag tror tyvärr att vi kanske måste hoppa över den här sliden på grund av tidsbrist. Men Karl, som sitter i Working Group 3, föreslår att vi ska kunna lägga till extra villkor för att göra featuren mer komplett.
+
+Joel (00:44:46):
+Additional conditions. Då har Vik Fearing en idé om att återanvända syntaxen FILTER WHERE och lägga den som ett suffix efter vår syntax.
+
+Andreas (00:45:02):
+Här skulle vi kunna visa ett exempel. Vi skulle också kunna prata om bikeshedding, för på senare möten blir det ganska mycket diskussion om vad den ska heta.
+
+Joel (00:45:12):
+Ja, vid just det här tillfället är FILTER WHERE arbetsbegreppet.
+
+Andreas (00:45:15):
+Exakt. Vi skulle också kunna återkomma till bikeshedding på en senare slide. Men det här är en slide som har stor risk att få bli en bonusslide. Den känns lågprioriterad.
+
+Joel (00:45:30):
+Det som jag tycker är intressant med den här sliden är att den visar lite av interaktionen med WG3-gruppen.
+
+Andreas (00:45:38):
+Exakt. Därför vill jag ha med den, men det är en sak vi kan behöva stryka av tidsskäl.
+
+
+23. Strong objections
+=====================
+
+Andreas (00:45:38):
+En annan sak händer på samma möte. Nästa slide har arbetsnamnet Big vendor tries to sabotage. Det här kommer plötsligt. Tidigare har vi mest gnällt på att processen går långsamt. Men standardisering är också något allvarligt och seriöst, så det är klart att det tar tid. Här händer däremot något som blir en chock för oss.
+
+Joel (00:46:13):
+Ja, den här stora kommersiella databasen har representanter i standardarbetet. Som argument mot vårt förslag använder de, som jag uppfattar det, att användarna är inkompetenta om de inte vet hur man lägger till testfall och skriver korrekta frågor.
+
+Andreas (00:46:44):
+Sedan kommer en massa vad jag tycker är meningslös bikeshedding, som de inte ens verkar ha korrekturläst.
+
+Joel (00:46:56):
+Jag uppfattar det som att han tycker att behovet av featuren bara kommer ur professionell inkompetens: att den endast finns för att kompensera för en testare som är ovillig att göra sitt jobb.
+
+Andreas (00:47:16):
+Och notera att det här kommer in som två olika response papers. Det är inte något som bara sägs muntligen. Ingen av de två personerna har sagt detta, vare sig skriftligen eller muntligen, på tidigare möten där samma feature presenterats. För oss kommer det från ingenstans.
+
+Joel (00:47:34):
+Exakt.
+
+Andreas (00:47:36):
+Det är den stora chocken, inte att de ogillar vår feature. Det får folk göra. Det är att det plötsligt kommer från ingenstans, som två response papers.
+
+Joel (00:47:45):
+Här kommer en liten cliffhanger. Vi ska senare få se vad som gör oss övertygade om att det här kan ha varit ett sabotageförsök, eller i alla fall ett väldigt märkligt förfarande: att man ändrar sin uppfattning helt på bara några månader.
+
+
+24. Completing the patch
+========================
+
+Andreas (00:48:04):
+Då fortsätter vi in i 2026 med nästa slide, Completing the patch. Det är nu i början av 2026 som Arne går in på allvar i kodandet. Vi bestämmer oss för att ha en komplett, färdig patch för Postgres före ISO-mötet i juni, som ska hållas i Stockholm och där SIS och Joel är värdar.
+
+Jag tror nästan att vi måste berätta på den här sliden varför vi plötsligt känner att vi har bråttom. Vi vill ha patchen klar före det mötet.
+
+Joel (00:48:57):
+I Stockholm.
+
+Andreas (00:48:59):
+Och på ISO-språk kallas det BMA.
+
+Joel (00:49:05):
+BMA står för Bromma Airport. Alla möten har en flygplatskod, och Stockholmsmötet är BMA.
+
+Här kan vi också nämna att jag portar patchen till PGlite, som är en fork av PostgreSQL med stöd för kompilering till WebAssembly. Vi lanserar keyjoin.org, en sajt där man kan köra frågor interaktivt direkt i webbläsaren.
+
+Joel (00:49:49):
+Vi bestämmer oss också för att få bort så många buggar som möjligt ur patchen innan den skickas till pgsql-hackers. Här visar det sig att den allra starkaste modellen i Codex är användbar.
+
+Andreas (00:50:17):
+Nu har Codex blivit tillräckligt bra.
+
+Joel (00:50:19):
+Codex kan användas för att hitta mycket buggar i kod.
+
+Andreas (00:50:24):
+Som alla vet nu, men då var det nytt.
+
+Joel (00:50:27):
+Då var det nytt. Om man identifierade sig med sitt pass kunde man få tillgång till att leta buggar i kod med den bästa modellen.
+
+Andreas (00:50:40):
+Vi kan nog hålla det här ganska kort, för jag tror att alla vet det idag. Men då var det verkligen bleeding edge.
+
+Joel (00:50:45):
+Exakt. Vi itererar i en loop. Jag intresserar mig för en metodik som SQLite använder, MC/DC, Multi Condition Decision Coverage. Än idag försöker vi i en loop lägga till testfall för att komma närmare hundra procents MC/DC, eller konstatera att ett visst fall inte går att nå och att det istället är en invariant som kan uttryckas med en assert.
+
+I det här arbetet hittar vi jättemycket buggar som har att göra med dependencies, vyer och en massa specialfall. Överallt där man kan ha en join måste man kunna resonera om den. Alla features i SQL måste på något sätt hanteras.
+
+Andreas (00:51:49):
+Här kan man nämna att språkmodellerna var väldigt bra på att hitta buggar i dependencies, men inte så bra på att fixa dem. Om vi har tid kan vi säga att de var väldigt bra på att hitta buggarna och skapa testfall. Däremot var de inte bra på att fixa concurrency-buggar. De var inte bra på att koda i concurrency-systemet.
+
+Joel (00:52:11):
+Precis. Vi hittade också två buggar i Postgres. Den ena gällde NO INHERIT, en bugg som du tog vidare upstream och fixade, Andreas. Den andra har vi rapporterat och den har med en funktion att göra.
+
+Andreas (00:52:33):
+Ja, den är inte fixad.
+
+Joel (00:52:36):
+Den har vi en fix för i vår patch.
+
+Andreas (00:52:39):
+Den är inte fixad.
+
+Joel (00:52:41):
+Det var väldigt mycket tid vi lade här på att få patchen klar.
+
+Andreas (00:52:45):
+Ja, och det som räddade oss var klassisk handkodning för att lösa concurrency-buggarna. Där var Arne till enorm hjälp.
+
+Joel (00:52:56):
+Ja, Arne tog ju en stor del av det.
+
+Andreas (00:52:57):
+Arne tog en stor del av concurrency-fixarna.
+
+Joel (00:53:03):
+Precis. Här leder Arne arbetet med patchen och jobbar extremt fokuserat på det.
+
+
+25. The breakthrough
+====================
+
+Andreas (00:53:18):
+Men mitt under den här intensiva slutspurten händer något stort. Det är vad nästa slide ska handla om: The breakthrough. Det kommer troligen att behöva delas upp på flera slides, för det är för mycket innehåll för en enda. Jag är osäker på indelningen.
+
+Joel (00:53:37):
+Ja, det börjar med att Vik Fearing skickar ett meddelande till mig.
+
+Andreas (00:53:44):
+Mitt när vi sitter och jobbar för fullt.
+
+Joel (00:53:48):
+Vik skickar ett meddelande om att det har postats en så kallad CD ballot comment. Den säger att SQL borde ha en ny join-typ som kan uppnå något som kallas cardinality preserved table. Som vi läser det utlovas en join-typ som kan bevara antalet rader i en tabell i resultatet av joinen.
+
+Det får mig att fundera: vad är det vi kan göra? Vad kan vi säga om cardinality preservation med vår Key Joins-feature? Det går upp för mig att det är resultatet av joinen som vi måste kunna resonera om. Vi vill ju bevara en tabells rader.
+
+Ta det enkla fallet med två bastabeller. Om man följer en foreign key till en primary key och foreign key-kolumnen är NOT NULL, då kommer resultatet av joinen att ha lika många rader som tabellen med foreign keyn. Det är den tabellen som bevaras. Det är ett sätt att förklara vad vi menar med cardinality preserved.
+
+Här känner vi en blandning av skräck och förtjusning.
+
+Joel (00:55:58):
+För här är det ju den här stora kommersiella databasen igen.
+
+Andreas (00:56:03):
+Exakt, det är de som har skickat den här CD ballot-kommentaren.
+
+Joel (00:56:06):
+De har alltså, kan man säga, annonserat att de har något på gång inom det här området: en join-typ som ska kunna uppnå det här.
+
+Andreas (00:56:21):
+Trots att de har skrivit i ett response paper att det, som jag läser det, bara är idioter som behöver en sådan.
+
+Joel (00:56:27):
+Ja, och det är det här som gör att vi har bestämt oss för att hävda att det kan ha varit någon form av försök till sabotage. Varför skulle de annars själva vilja föreslå en feature som hjälper de användare som de, som vi uppfattade det, tyckte var inkompetenta och inte borde behöva någon hjälp?
+
+Andreas (00:56:48):
+Ja, och en sak till ... Nej, den kommer senare.
+
+Joel (00:56:52):
+När jag funderar på vad vi kan säga om vår join tänker vi att vi måste fixa vår feature, så att vi åtminstone också kan resonera om cardinality preservation. Men vi tänker att det fortfarande finns hopp för vår feature. Vi läser CD ballot-kommentaren som att deras feature ska kontrolleras vid körning, eftersom de säger att referential constraints kan användas för optimeringar, men inte behövs.
+
+Om de föreslår en feature som bevarar kardinaliteten och kontrollerar det vid körning, kan vi ändå ha en feature som också bevarar kardinaliteten men gör kontrollen vid kompileringen.
+
+Här kanske vi ska visa skillnaden mellan en compile-time-kontroll och en runtime-kontroll. En compile-time-kontroll kan ge det jag kallar false positives: den kan säga att den inte kan bevisa att joinen är korrekt, trots att den kanske är det. Men fördelen är att om den godkänner joinen vid kompileringen, så är garantin alltid uppfylld. Med en runtime-kontroll kan man istället få det jag här kallar false negatives.
+
+Andreas (00:58:52):
+Ja, det är det du ska förklara: false positives och false negatives. Men vad mer måste vi gå igenom här?
+
+Joel (01:01:40):
+Vi inser också att vi har ett problem med nullvärden. En inner Key Join med nullable-kolumner kan filtrera bort rader. Om vi ska kunna tala om cardinality preservation måste vi antingen se till att det inte finns några nullvärden, eller uttryckligen säga att filtreringen är okej.
+
+Andreas (01:02:04):
+Den här sektionen är väldigt klurig, för den skulle kunna vara ett halvt föredrag i sig.
+
+Joel (01:02:10):
+Ja, men vi måste gå igenom den nu. Vi tar och går igenom det.
+
+Andreas (01:02:15):
+Ja, exakt. Jag tänker just nu på hur vi ska lägga upp det. Vi behöver nog testa lite olika upplägg på slides. Ska vi först definiera vad cardinality preservation är, eller ska vi följa den resa du gjorde? Ett alternativ är att börja med att förklara vad cardinality preserving betyder.
+
+Joel (01:02:36):
+Ska vi gå igenom det nu? Nu är vi på sliden som just nu heter The breakthrough. Vi har precis gått igenom hur vi fixar validation scope. Jag tänkte också gå igenom hur vi fixar nullhanteringen.
+
+Vi vill på något sätt kunna se i syntaxen att en Key Join bevarar kardinaliteten. Det finns två fall: antingen finns det inga nullvärden i de refererande kolumnerna, eller så kan det finnas det.
+
+Idén vid den här tiden var att lägga till nyckelordet NULLS som ett suffix. Det skulle visa den som läser frågan att det kan finnas nullvärden i de refererande kolumnerna. Om man inte angav NULLS skulle man kunna vara säker på att de kolumnerna inte innehöll nullvärden. Det var lösningen vi hade just då.
+
+Men sedan kom en annan idé på flyget. Vid det här laget hade jag kontaktat Peter Eisentraut och frågat om vi kunde träffas på PGConf.DE.
+
+Andreas (01:04:06):
+Där råkar jag också vara, för jag håller ett föredrag.
+
+Joel (01:04:11):
+Ja, PGConf i Tyskland. Peter Eisentraut har sagt att han kan träffa oss där och titta på vårt Key Joins-arbete.
+
+När jag sitter på flyget på väg ner inser jag att det här NULLS-nyckelordet inte blir bra. Det blir fult. Då kommer jag på att vi kan titta på join-typen istället och ta med den som ett villkor i våra matematiska villkor.
+
+Andreas (01:08:17):
+Här kan vi, om vi vill, tacka den stora anonyma databasen.
+
+Joel (01:08:22):
+Ja, det här måste vi verkligen tacka den stora kommersiella databasen för.
+
+Andreas (01:08:28):
+Och det händer förstås mitt när vi försöker få allt klart. Det kanske inte var så mycket slutspurt innan, men nu blev det det. Det här var ytterligare en sak som vi behövde få färdig.
+
+Joel (01:08:42):
+Ja, här blev det verkligen mycket.
+
+Andreas (01:08:45):
+Det här behövde vi göra om. Kodändringarna var mindre än vi trodde, men ändringarna i standardförslaget var större än vi trodde. Koden ändrades mindre än man kan tro, medan standardförslaget ändrades mycket.
+
+Joel (01:09:05):
+Ja, men allting ändrades ganska mycket.
+
+Andreas (01:09:07):
+Ja, men framför allt change proposalet.
+
+Joel (01:09:09):
+Kodbasen ändrades mycket också. Det var parsern som behölls.
+
+Andreas (01:09:16):
+Nej, det var mycket som ändrades.
+
+Joel (01:09:18):
+Det var en stor ändring.
+
+Andreas (01:09:20):
+Och allt skulle vara klart till vår självpåtagna deadline: mötet i Stockholm.
+
+
+26. The proof belongs to each join
+==================================
+
+Joel (00:59:00):
+När jag börjar tänka på att joinens resultat är det viktiga inser jag något mer. Tidigare har vi varit fokuserade på garantier för joinens indata. Det gäller förstås fortfarande efter genombrottet, men vi hade inte tänkt på att resonera på det här sättet om resultatet. Om vi kan göra det blir featuren matematiskt komponerbar, composable.
+
+I arbetet med cardinality preservation tänker jag på vårt exempel med tio joins, Readability at scale. Vid den här tiden pekade alla pilar åt vänster. Man börjar med den första tabellen, till exempel order_items, och gör sedan det som jag kallar en snowflake join.
+
+Men om man sedan joinar in en bastabell som refererar till order_items, till exempel refund_items eller något annat som refererar dit, kan man få fanout. Raderna i order_items dupliceras.
+
+Här inser vi att vi har ett problem med validation scope. Vi måste resonera om joinens indataoperander. En fråga är ju ett träd, och en Key Join måste kunna ha ett helt join-träd som indata.
+
+Andreas (01:00:54):
+Då behöver man förstås en bild av ett join-träd.
+
+Joel (01:00:56):
+Ja, vi måste kunna bevisa egenskaperna även när en Key Join har ett join-träd som indataoperand. Vi måste resonera om egenskaperna på operandernas yta. Annars får vi olika beteende om vi stoppar två joins i en vy och sedan joinar mot vyn, jämfört med om vi har de två joinerna direkt som indataoperand.
+
+Det ena problemet är alltså validation scope. Vi gör ett internt ändringsförslag i vår arbetsgrupp för att fixa det.
+
+Andreas (01:07:10):
+Här kan vi nämna att det här löste mycket av det tidigare arbetet. Om vi bestämmer oss för att visa fotot där vi sitter sena kvällar och försöker reda ut uniqueness kan vi knyta tillbaka till det. Nu blev det så mycket enklare.
+
+Joel (01:07:35):
+Ja, för nu blev det enkelt.
+
+Andreas (01:07:38):
+En binär operator, rekursiv och komponerbar.
+
+Joel (01:07:44):
+Precis. All den onödiga komplikationen, som dessutom inte gav oss det vi ville uppnå, försvann. Istället fick vi väldigt enkla matematiska villkor. Vi behövde bara resonera om en join i taget: titta på indataoperanderna och sedan föra informationen uppåt.
+
+
+27. Three conditions give a useful contract
+===========================================
+
+Joel (01:04:55):
+Antingen måste vi veta vid kompileringen att de refererande kolumnerna är known not null, som det heter på standardese, eller så måste join-typen vara en outer join som bevarar den refererande sidan, alltså den indataoperand som är refererande.
+
+Det blir ett villkor utöver de två vi alltid har haft: uniqueness och containment. Uniqueness säkerställer at most one. Containment säkerställer at least one. Tillsammans med det tredje villkoret, join-typen eller att de refererande kolumnerna är known not null, blir det exactly one, givet att join-typen inte introducerar null extension. Men det är en parentes.
+
+Vi får alltså former av Key Joins som bevarar kardinaliteten. När man läser en Key Join och tar hänsyn till join-typen kan man säga om den är cardinality preserved eller inte.
+
+Jag skriver ner det här för hand i Notes på min iPhone. Det blir de slutgiltiga matematiska villkoren och den slutgiltiga definitionen av en Key Join. Key Join blir ett standardiserat begrepp med en exakt betydelse och en exakt avsikt. Villkoren är tillräckliga för att säga att avsikten är uppnådd. Det är inte en ekvivalens, utan en implikation.
+
+Joel (01:09:27):
+En annan viktig del av genombrottet var att det gjorde att vi kunde få väldigt hög kvalitet på felmeddelandena.
+
+Andreas (01:09:42):
+Det är faktiskt en sak vi vill visa. Det kan vi prioritera framför en hel del annat.
+
+Joel (01:09:48):
+Framför allt vill vi visa fyra kategorier av felmeddelanden. Vi kan ta dem snabbt. Den första är att det inte finns någon underliggande foreign key, någon referential constraint, som matchar kolumnlistorna. Då kan vi inte gå vidare: det fanns ingen foreign key.
+
+De tre andra kategorierna gäller när det faktiskt finns en foreign key mellan de underliggande kolumnerna. Här kan vi också nämna, som en liten parentes, att vissa väldigt seniora personer i Postgres-communityt som vi har pratat med inte har förstått att det här handlar om mycket mer än att bara kontrollera om det finns en underliggande foreign key. Om det var det enda vi kontrollerade skulle vi ju inte ha de andra felkategorierna.
+
+Andreas (01:10:49):
+Men om vi ska vara ärliga hade vi inte riktigt förstått det själva heller.
+
+Joel (01:10:53):
+Nej, från början trodde vi bara att vi skulle leta efter en foreign key mellan de underliggande kolumnerna.
+
+De tre andra klasserna av buggar, och därmed felmeddelanden, som vi kan upptäcka är att de refererade kolumnerna inte kan bevisas vara unika vid join-punkten; att vi inte kan bevisa att de refererande värdena kommer att ha en match bland de refererade värdena; och slutligen det som har med nullhanteringen att göra.
+
+Om vi kan bevisa att de refererande kolumnerna är known not null vid join-punkten är det tillräckligt för det tredje villkoret. Kan vi inte bevisa det måste join-typen vara en outer join som bevarar den refererande tabellen, eller den refererande operanden ska vi säga.
+
+De här felmeddelandena gör att folk nu blir väldigt imponerade av kvaliteten när vi visar featuren på keyjoin.org och går igenom våra exempelfrågor. En kommentar vi minns är att Christoph Berg sa: ”All joins should be written like this.” Då vet jag inte ens om vi hade felmeddelandena helt på plats just där.
+
+Joel (01:12:20):
+Det var i Vancouver.
+
+Andreas (01:12:23):
+Det var precis när vi höll på med detta. Det var när den nya designen var på plats, men den var fortfarande in flux. Så vi vet inte riktigt. Vi tror att det kanske var en tidig version av felmeddelandena, men inte den fullständiga.
+
+Joel (01:12:37):
+Även Laurenz Albe var väldigt imponerad.
+
+Andreas (01:12:37):
+Ja, vilket bra mottagande.
+
+Joel (01:12:37):
+Deras väldigt positiva feedback gjorde att vi såklart blev väldigt glada.
+
+
+28. The first patch to -hackers
+===============================
+
+Andreas (01:12:58):
+Och sedan är nästa slide ”The first patch to -hackers”. Det handlar egentligen bara om att vi berättar att vi hann i tid trots denna stora rewrite. Vi hann i tid med patch, change proposal och alltihop. Trots att vi hade skrivit om det hann vi till deadline för mötet. Det är möjligt att den här sliden ska slås ihop med nästa. Vi får se, det är en möjlig förändring. Men den här handlar bara om att skryta om att vi hann i tid.
+
+Joel (01:13:35):
+Ja, Arne jobbade jättemycket. Han var en räddare. Du jobbade mycket, jag jobbade också mycket. Vi alla jobbade jättemycket. Men Arne jobbade och såg till att det här var en patch som vi inte skulle behöva skämmas för att skicka till -hackers. En möjlig miss, som vi kanske borde ha förstått, var att vi redan från början borde ha brutit upp patchen i mindre delar. För vi fick ju då feedback från Tomáš Vondra.
+
+Andreas (01:14:15):
+Ja, Tomáš Vondra tyckte att vår patch var alldeles för svår att reviewa. Vilket är helt rätt.
+
+Joel (01:14:19):
+Den måste brytas upp i mindre delar. En så här stor patch är helt omöjlig att committa.
+
+Andreas (01:14:27):
+Men jag tror inte att vi behöver säga så mycket mer om den här. Nu går vi över till själva Stockholmsmötet, BMA, ISO-mötet för Working Group 3. Egentligen alla Working Groups. Så det är nivån ovanför.
+
+
+29. Stockholm: two proposals, more collaborators
+================================================
+
+Joel (01:14:40):
+Ja. Innan Stockholmsmötet har den här stora kommersiella databasen postat ett paper för en feature som heter JOIN TO ONE. Då ser vi till vår förvåning att JOIN TO ONE inte har uppnått målet med cardinality preservation.
+
+Andreas (01:14:40):
+Förutom att det bara är runtime, som vi ogillar personligen, som vi diskuterade tidigare.
+
+Joel (01:15:17):
+Man kan säga att runtime har andra för- och nackdelar.
+
+Andreas (01:15:17):
+Ja, jag är ingen fan. Jag kanske säger det här också, om det är jag som tar den delen: jag är ingen fan.
+
+Joel (01:15:27):
+Jag är inte heller någon fan.
+
+Andreas (01:15:29):
+Det är trade-offs, men jag är ingen fan av de trade-offsen.
+
+Joel (01:15:33):
+Försvaret för runtime är ju om man inte har några foreign keys.
+
+Andreas (01:15:33):
+Alltså, jag tycker inte att det är så viktigt att gå in på det.
+
+Joel (01:15:40):
+Det viktiga att säga är att när vi ser JOIN TO ONE presenteras som ett förslag innan Stockholmsmötet, då ser vi till vår förvåning att den inte levererar på vad som utlovats. Den är inte cardinality preserving.
+
+Andreas (01:16:01):
+Den skyddar bara mot fanout. Den skyddar inte mot de andra två klasserna av buggar.
+
+Joel (01:16:06):
+Den borde mer korrekt heta JOIN TO AT MOST ONE.
+
+Andreas (01:16:12):
+Den skyddar inte mot filtrering.
+
+Joel (01:16:15):
+Precis. Om du till exempel joinar mot fel primary key kanske inte alls dina referencing-kolumners värden kommer att matcha. Och det är ännu värre om de faktiskt matchar när du joinar på fel primary key. Om det är NULL-värden kommer det att bli filtrering.
+
+Andreas (01:16:15):
+Vår oro för att vi har en konkurrerande feature minskas ganska drastiskt här.
+
+Joel (01:16:43):
+Men jag måste bara förtydliga att de hade ett fulhack för att lösa det här. De föreslog att left joins är vanligare än inner joins, och för sin JOIN TO ONE-feature ville de ändra så att left joins skulle bli default. Men det de missar då är att den fortfarande inte är cardinality preserving. Om du med cardinality preserving bara menar att du ska få lika många rader, så ja, visst. Men om du joinar mot fel primärnyckel blir det null-extendat.
+
+Andreas (01:17:25):
+Vi kan ha en jättelång rant om den här.
+
+Joel (01:17:27):
+Så det är bara trasigt.
+
+Andreas (01:17:30):
+Tyvärr godkänns den.
+
+Joel (01:17:31):
+Och vi trodde ju att den inte skulle bli godkänd, för att syntaxen inte var kompatibel med den kommersiella databasens syntax.
+
+Andreas (01:17:44):
+Och diverse andra anledningar. Här vet jag inte vilken detaljnivå vi vill gå in på, för här kan vi ha en jättelång rant, och det är inte vad det här talket handlar om. Det är bland annat så att paperet är trasigt, men de lagar det i panik med en snabb R1 på plats och så vidare. Det är allmänt kaos där.
+
+Joel (01:18:04):
+Men vi kommer då till Stockholmsmötet, som jag hostar — Joel här. Här kan du visa några fina bilder. Vi visar en bild på båtturen och en bild på hela SC 32 som står på verandan vid huset här. Då kan vi kanske även ringa in dem i bilden som sedan blev coauthors i paperet. Då spoilar vi lite, men det gör ingenting. Inför det här mötet är vi väldigt stolta över vårt förslag, som vi tycker har en helt formidabel discussion part, med jättebra exempel och förklaringen av våra felmeddelanden och allting. Sedan har vi också skrivit ett change proposal och kommit till mötet och presenterat det. I mötet finns det ett konsensus i kommittén om att man vill ha den här featuren. Men change proposalet är inte tillräckligt. Det anses inte vara komplett.
+
+Det är lite av ett bakslag för oss här. Då inser vi att vi nog aldrig kommer att kunna lyckas skriva det. Vi tyckte att vårt change proposal nog var tekniskt korrekt, men det var inte skrivet på det sätt som man ville skriva change proposals. För det finns ett språk som heter standardese.
+
+Andreas (01:20:45):
+Ja, det skulle vi kunna nämna på den här BMA-sliden.
+
+Joel (01:20:49):
+Vi ska också nämna att det är viktigt här att vi får kontakt och inser att det finns en svensk SQL-databas som heter Mimer, Mimer SQL.
+
+Andreas (01:20:57):
+Exakt, det är precis det jag vill säga på den här sliden.
+
+Andreas hade ju hört talas om den sedan länge, men han trodde att den inte fanns längre.
+
+Joel (01:21:06):
+Ja, jag hade inte hört talas om den. Men det var en väldigt trevlig man som heter Bengt Gunne som var med på mötet på plats. Han droppade ett antal väldigt skarpa kommentarer under mötet.
+
+Andreas (01:21:22):
+Ja, han gillar vår feature.
+
+Joel (01:21:23):
+Han gillar vår feature, och han såg vissa performance-problem i JOIN TO ONE, kan man säga. Sedan får vi även kontakt med en forskare vid universitetet i Edinburgh. Leonid, som kommer in senare. Det som händer i mötet är att JOIN TO ONE blir accepterat, trots våra objections. Vårt förslag blir inte accepterat.
+
+Andreas (01:22:02):
+Jag kommer inte ihåg om vi lägger ner det eller om det blir ett formellt beslut. Det blir i alla fall inte accepterat. Det kan vara så att vi själva lägger ner det.
+
+Joel (01:22:10):
+Men det är konsensus om att man vill ha featuren.
+
+Andreas (01:22:12):
+Konsensus för featuren, men vi hör att de inte gillar vår standardese.
+
+
+30. Standardese experts
+=======================
+
+Andreas (01:19:54):
+Det måste ju passa in med resten av standarden. Standardese är vad vi kallar språket som standarden är skriven i, där man ger formell betydelse åt vanliga engelska ord.
+
+Joel (01:20:05):
+Ja, så man tänker lite att det är som en bibel.
+
+Andreas (01:20:09):
+Vi använder inte exemplet med Bibeln, för Bibeln är inte skriven så.
+
+Joel (01:20:12):
+Nej. Och det finns bara några få personer i livet som är standardese-experter på den nivå som skulle kunna krävas för att skriva så här. Det här är väldigt komplicerat.
+
+Andreas (01:20:32):
+Den största liknelsen som jag tror att publiken fattar är att det är lite som RFC, fast mer extremt än RFC-språk.
+
+Joel (01:20:38):
+Ja, exakt. Det är en komplex feature, och vi har insett att vi behöver hjälp.
+
+Andreas (01:22:20):
+Det tar oss till nästa slide, ”Standardese experts”. Vi inser här att vi behöver hjälp.
+
+Och vi erbjuds hjälp i mötet.
+
+Joel (01:22:28):
+Ja, just det. Det kan vi faktiskt säga på sliden om Stockholmsmötet. Under mötet räcker Karl Schendel, som är implementatör av Ingres-databasen, upp handen och erbjuder sig frivilligt att hjälpa oss med change proposalet. Det är en enormt viktig händelse, för hade han inte räckt upp handen och erbjudit det, då vet vi inte om vi hade fortsatt. Det var ett sådant bakslag att inse att vårt change proposal inte var riktigt bra.
+
+Efter Stockholmsmötet ska alla editors för SQL-standarden ha ett editorsmöte på Åland. Då frågar jag om jag kan få följa med alla editors och flyga med till editorsmötet. Karl ska inte dit, men Stephen, Jörn, Jim och Vik ska dit. Då tänker jag att vi kanske kan prata om hur vi ska kunna få hjälp med standardesen, och jag flyger dit.
+
+Vi har ett väldigt bra möte. Där bestäms det att Vik kommer att åka ner till Stephen i Holland och flyga och träffa Karl i Kanada tillsammans med Jim, och då få hjälp med att skriva det här change proposalet. Vi ser en omedelbar fördel här. De här andra herrarna är ganska gamla. Fördelen är att de kan föra över sin kunskap till yngre generationer.
+
+Andreas (01:24:51):
+Men det är också så att det hela slutar med att vi också drar in Jörn.
+
+Joel (01:25:04):
+Ja, precis. Här hoppar vi lite nu. Under Stockholmsmötet bestäms det att vi ska ha ett webbmöte i augusti.
+
+Andreas (01:25:22):
+Ja, just det. Det får vi se sedan.
+
+Joel (01:25:24):
+Ja, ett webbmöte i augusti. Fram till mötet ska vi fixa vårt change proposal så att det blir rätt. Vik, Jim, Karl och Stephen jobbar med change proposalet, och det presenteras sedan på det här webbmötet i augusti. Men tyvärr upptäcks det några fel i det.
+
+Andreas (01:25:59):
+Ja, bland annat har vi gjort fel på säkerhetsmodellen.
+
+Detta är ganska komplext, även för experter. Så det är inte så konstigt att vi hade problem.
+
+Joel (01:26:15):
+Precis. Inte ens med de här experterna som har joinat gruppen lyckas vi på första försöket. Så det nekas tyvärr även på det mötet. Nu känns det ganska tungt, för vi känner att vi behöver ännu mer hjälp. Då har vi sådan tur att en viss stor kommersiell databas nyligen har börjat skära ner på personalen. Plötsligt finns två av dem tillgängliga. Jörn, som är en av editorerna för hela SQL-standarden, finns tillgänglig.
+
+Andreas (01:27:12):
+Och han kan hjälpa oss lite extra.
+
+Joel (01:27:15):
+Ja. Jag ringer Jörn och frågar om han kan tänka sig att joina vårt team, och han accepterar direkt. Jag flyger ner till Jörn och sitter och jobbar med honom i två dagar. Jörn nämner att det faktiskt finns en som är ännu bättre än han själv, som heter doktor Fred Zemke. Vi testar att kontakta honom, och han kan också tänka sig att hjälpa oss. Han har också tidigare jobbat för den stora kommersiella databasen. Det kanske inte behöver nämnas att han har gjort det.
+
+Andreas (01:27:56):
+För det är inte så relevant i historien. Men kanske. Vi får se hur sliden blir.
+
+Joel (01:28:01):
+Men i alla fall, med Jörn och Freds hjälp förbereder vi en ny version av proposalen.
+
+Andreas (01:28:18):
+Ja, precis. Beroende på plats och hur mycket tid vi har kanske vi kan visa det här med standardese. Vi har pratat om det tidigare, så någonstans kanske vi vill visa en slide med standardese-smakprover.
+
+Joel (01:28:34):
+Ja, exakt, om vi har utrymme.
+
+Andreas (01:28:35):
+Det är en sådan där optional grej, om det finns utrymme, så att folk får ett smakprov på standardese.
+
+Joel (01:28:45):
+Det här förslaget testar vi också på Bengt Gunne på Mimer, så han får läsa förslaget innan. Han har följt det och kollat på vår källkod i Postgres. Vi kanske helt enkelt bara nämner att Bengt Gunne gav sin feedback.
+
+Andreas (01:29:18):
+Jag är inte säker på om vi får plats med det på sliden. Men nu har vi det dikterat.
+
+Joel (01:29:24):
+Ja. När Jörn och Fred säger att det här nu ser bra ut, då känner vi att förslaget har en så pass hög kvalitet. Då har vi alltså Jim, Karl, Stephen, Vik, Jörn och Fred, som alla kan standardese och är editorer, som säger att det här nu är ett komplett förslag som håller, som är good enough. Då skickar vi in det.
+
+
+31. The final syntax changes
+============================
+
+Andreas (01:30:04):
+Sedan har vi nästa slide, som handlar om en sista ändring som gjordes i den här processen samtidigt som vi fixade standardesen. Den sista ändringen vi gjorde innan detta godtogs var att vi vände på riktningen på pilen. Sliden heter ”Reversing the arrows”, plus ”Making table reference mandatory”. Det är de sista ändringarna som gjordes semantiskt eller syntaktiskt över huvud taget.
+
+Joel (01:30:38):
+Det är tack vare feedback från Peter Eisentraut på förra webbmötet i augusti, där han igen påminner om att han inte var nöjd med syntaxen.
+
+Andreas (01:30:55):
+Vi tittade över det.
+
+Joel (01:30:56):
+Då insåg vi att högerpilar helt enkelt är vanligare. Det är mer naturligt att man har högerpilar. Om operandordningen är vänster–höger blir det så att den första kolumnlistan efter FOR KEY avser vänster operand, och nästa kolumnlista avser höger operand. Då blir det först vänster och sedan höger, vilket såklart nu i efterhand helt uppenbart blir bättre. Men Peter hade också kommenterat varför bara ena kolumnlistan har en tabellreferens. Varför inte båda? Då insåg vi såklart att båda ska ha en tabellreferens. De två ändringarna gjorde vi, och vi tycker att de väsentligt förbättrade syntaxen.
+
+Andreas (01:31:58):
+Anledningen till att vi inte hade lyssnat på Peter så noggrant var att vi i sluttampen var så upptagna med att få patchen till Postgres rätt och få semantiken rätt. Syntaxen hade varit samma jättelänge. Vi hade bara inte tänkt på den och inte riktigt lyssnat på hans feedback, som var väldigt bra.
+
+Joel (01:32:22):
+Ja. I efterhand måste man nog säga att Peter har haft ett stort tålamod med oss under alla dessa år. Vi behöver nog be lite om ursäkt för att vi inte har lyssnat mer på hans väldigt detaljerade och bra feedback. En annan sak han påpekade var att det fanns vissa dependency-problem i standardesen som hade med PGQ att göra. Det var också en grej som vi fixade till mötet i Uzbekistan. Vi är väldigt glada att vi både kunde förbättra syntaxen och fixa alla dependency-problem med PGQ. Det var de ändringarna vi gjorde till TAS-mötet i Uzbekistan.
+
+
+32. Acceptance in Tashkent
+==========================
+
+Andreas (01:33:17):
+Nästa slide: TAS-mötet. Här är en slide vars syfte, tänker jag, är att fira lite men också förklara vad som faktiskt accepterades. Vi fick lite kritik på mötet om vår standardese, men vi tyckte att det var saker på samma nivå som redan fanns i andra delar av standarden. I stället löste vi det genom att lova att fixa synpunkterna: godta det här paperet som det är, men fixa de synpunkterna, så att vi inte ska fortsätta den här cykeln i evighet. Det hittades inga fel i paperet, bara otydligheter, saker att förtydliga.
+
+Joel (01:34:01):
+Precis. Och vissa kommentarer kring scope rules. Då hade vi hittat olika precedents i standarden. Så det var lite trist att kritiken var att vi hade gjort på sätt A och borde göra på sätt B, men i standarden fanns både A och B.
+
+Andreas (01:34:33):
+Men den accepterades. Det var inga correctness-fel, utan det var formuleringar som inte var optimala.
+
+Joel (01:34:43):
+Argumentet som anfördes till varför den accepterades var att det här är en komplett feature. Man hade inte hittat några buggar, några tekniska fel, utan det var saker som behövde förtydligas. Han som objektade hade bara haft morgonen på sig att läsa igenom den. Men jag vet inte om vi ska ta upp det.
+
+Vi ska nog inte säga för mycket kring objektionen.
+
+Andreas (01:35:28):
+Det känns lite onödigt.
+
+Joel (01:35:28):
+Jag tycker att vi kanske håller det till att förslaget accepteras.
+
+Andreas (01:35:38):
+Jag tycker att vi håller det lite enkelt.
+
+Vi kanske bara håller det till en enkel, firande slide och utelämnar det där ”men”:et. Jag tror nästan att vi gör det, för det blir ett så konstigt avslut annars.
+
+Joel (01:35:57):
+Förslaget accepterades.
+
+Andreas (01:35:57):
+Vi kör en firande slide.
+
+Joel (01:35:57):
+Ja, så vi ändrar oss nu. På den här sliden, ”TAS Meeting”, säger vi bara att det var ett konsensus under mötet om att förslaget skulle accepteras. Det var ett väldigt fint mottagande av Uzbekistan. Vi var i Uzbekistans huvudstad, Tashkent, hos Uzbekistans Technical Regulator. Vi var inbjudna av deras ISO-standardiseringsgrupp.
+
+
+33. From shorthand to a verified contract
+=========================================
+
+Andreas (01:36:48):
+Efter den här sliden är själva storyn klar. Nästa slide heter ”Summary of the feature”. Vi vet inte om vi kommer att ha tid med den, men om vi har tid kommer den bara att vara: bang, det som standardiserades, i någon troligtvis matig query som visar att det blir tydligare. Typ före och efter med någon saftig query, om vi verkligen har tid.
+
+Joel (01:37:26):
+Men det tror jag verkligen inte att vi har.
+
+Andreas (01:37:27):
+Ett exempel på ”spot the bug”, något sådant.
+
+Joel (01:37:33):
+Ja, typ tio joins med något sådant.
+
+Andreas (01:37:40):
+Något mastigt exempel. Men det här är en slide som vi inte vet om vi hinner med.
+
+
+34. What we would do differently
+================================
+
+Andreas (01:37:40):
+Efter det har vi en annan slutslide, som heter ”Takeaways”. Där behöver vi inte så mycket. Det här kan vi fylla på. Vi kan bland annat berätta att vi hade behövt dra in standardese-experterna tidigare. Fast inte bara för att de är standardese-experter. Det är faktiskt fel sätt att formulera det. Vi borde ha dragit in dem, för jag tror helt ärligt att det behövs samarbete. Om man ska få in en komplex feature i SQL-standarden ska man inte göra det som ett ensamt bolag.
+
+Joel (01:38:28):
+Det är ett fel sätt att jobba, och det är det som blev så bra nu. Det kommer vi in på i nästa slide, men det behöver vi inte gå in på än. Hade vi några fler takeaways på den här sliden?
+
+Andreas (01:38:40):
+Jag tror att vi kan fylla på lite sedan. Det är lite så att standardprocessen är långsam och tar tid. Men vissa saker har också tagit tid för att det här är svårt.
+
+Vi kan också belysa att vi alla, förutom Joel under vissa perioder, har gjort det här som extraknäck och på fritiden. Det är bara Joel som har haft stora mängder heltid på detta. Det kan vi säga här. Jag vet inte om det passar in, men takeaways handlar främst om att processen är långsam.
+
+Joel (01:39:32):
+Och om man ska lära sig standardese och skriva standardese måste man läsa standardese och förstå att väldigt många av de här orden och termerna, som låter som engelska, har väldigt exakta, precisa betydelser som man måste slå upp och kolla. Man kan inte läsa det som vanlig engelska.
+
+Andreas (01:39:54):
+Jag tror att vi kan fylla på med andra takeaways.
+
+
+35. Implementations
+===================
+
+Andreas (01:39:54):
+Nästa slide är ”Implementations”. Den har vi av två syften. Det första är att tacka Bengt Gunne med hans Mimer. De har faktiskt implementerat detta på jättekort tid.
+
+Joel (01:40:18):
+På tre veckor har de implementerat den här featuren, tack vare vår specifikation men också väldigt mycket tack vare alla testfall i PostgreSQL-patchen. För dem var det helt fantastiskt att de kunde få ta del av allt arbetet helt gratis. Och vi sa bara: ”Welcome to open source.”
+
+Andreas (01:40:47):
+Ja, och argumenten från Gunne vägde starkt när det debatterades om läsbarheten av vår proposal.
+
+Joel (01:41:03):
+Ja, för Bengt kunde intyga att han tycker att vår specifikation var väldigt lätt att förstå, att den är komplett och att det här är en väldigt bra feature.
+
+Andreas (01:41:15):
+Då han använder den för implementering.
+
+Joel (01:41:17):
+Ja, det är en bra feature alltså.
+
+Andreas (01:41:18):
+På den här sliden gör vi sedan en liten grej och pushar folk att reviewa vår patch, så att Mimer inte är de enda som implementerar och så att Postgres kan bli nummer två.
+
+Joel (01:41:26):
+Precis. Vi behöver hjälp från communityt nu. Vi hoppas att fler ska intressera sig, tack vare att den är accepterad av SQL-kommittén, WG3.
+
+Andreas (01:41:41):
+Ja, vi kanske ska säga det. Men vi kan också bara säga att vi hoppas att folk intresserar sig för detta nu när den är accepterad, och efter att Postgres 19 har släppts. Vi skulle verkligen tycka att det var kul att jobba tillsammans med reviewers och göra vår patch bättre. Helt enkelt en sales pitch för vår patch, som vi kan improvisera där.
+
+
+36. Questions?
+==============
+
+Andreas (01:41:41):
+Sedan är nästa slide den sista riktiga sliden: ”Questions”. Det är bara: boom, frågor eller tack eller whatever. Det är den sista sliden, där vi visar att talket är slut. Så då har vi en sådan slutslide. Och sedan har jag två valfria slides.
+
+Dem skippar vi helt. Vi är långt över tid.
+
+Joel (01:42:34):
+Ja, men bra. Det var det.
+
+Andreas (01:42:34):
+Ja. Slut.
+
+
+A1. One hotel hid the bug
+=========================
+
+Joel (00:29:37):
+Vi hade ett väldigt bra exempel som vi kanske ska visa på den här sliden. Det gäller ett hotellbokningssystem med reservations och en kompositnyckel som består av hotel_id och room_number.
+
+I testfallen hade man bara ett hotell och en join som bara joinade på room_number. Man hade glömt att inkludera hotel_id. Det gav ändå rätt resultat i testmiljön, men när man fick två hotell började queryn ge fel resultat. Det var en sådan query som Key Joins kunde upptäcka.
+
+
+A2. A declaration is not a data guarantee
+=========================================
+
+(Den här reservbilden diskuteras inte separat i inspelningen.)
+
+
+A3. NOT NULL can be lost before the next join
+=============================================
+
+(Den här reservbilden diskuteras inte separat i inspelningen.)
+
+
+A4. The questions predate our proposal
+======================================
+
+(Den här reservbilden diskuteras inte separat i inspelningen.)
+
+Inspelningen avslutas vid 01:42:44.

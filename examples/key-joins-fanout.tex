@@ -1,0 +1,230 @@
+\documentclass[12pt]{article}
+\usepackage[paperwidth=36cm,paperheight=20.25cm,margin=0pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz}
+\usepackage{listings}
+\pagestyle{empty}
+\definecolor{ink}{HTML}{202020}
+\definecolor{sqlblue}{HTML}{245B97}
+\definecolor{muted}{HTML}{666666}
+\pagecolor{white}
+\color{ink}
+\renewcommand{\familydefault}{\ttdefault}
+
+% Fixed-pitch ASCII throughout. Only SQL keywords receive colour;
+% query results and diagnostics use plain monospace.
+\lstdefinestyle{mono}{
+  language={},
+  basicstyle=\ttfamily\fontsize{12}{16}\selectfont\color{ink},
+  keywordstyle={},identifierstyle={},commentstyle={},stringstyle={},
+  columns=fixed,basewidth=.525em,keepspaces=true,tabsize=4,
+  showstringspaces=false,showspaces=false,showtabs=false,
+  breaklines=false,numbers=none,frame=none,upquote=true,
+  aboveskip=0pt,belowskip=0pt,
+  xleftmargin=0pt,xrightmargin=0pt
+}
+\lstdefinestyle{sql}{
+  style=mono,language=SQL,morekeywords={KEY},
+  keywordstyle=\color{sqlblue}
+}
+\lstdefinestyle{diagnostic}{
+  style=mono,
+  basicstyle=\ttfamily\fontsize{11}{15}\selectfont\color{ink}
+}
+\newsavebox{\ordersdata}
+\newsavebox{\itemsdata}
+\newsavebox{\paymentsdata}
+\newsavebox{\rawon}
+\newsavebox{\rawkey}
+\newsavebox{\groupedon}
+\newsavebox{\groupedkey}
+
+% Validate the allocated vertical space with the editor's own compiler.
+\newcommand{\CheckHeight}[3]{%
+  \ifdim\dimexpr\ht#1+\dp#1\relax>#2\relax
+    \PackageError{terminal-layout}{#3 exceeds its vertical allocation}%
+      {Increase the allocation or adjust the terminal line spacing.}%
+  \fi
+}
+
+% Both pages use these exact same left-hand boxes and coordinates.
+% The two right-hand boxes are the only content replaced on page two.
+\newcommand{\JoinPage}[2]{%
+  \null
+  \begin{tikzpicture}[remember picture,overlay]
+  \begin{scope}[shift={(current page.north west)},x=1cm,y=-1cm,
+    every node/.style={anchor=north west,inner sep=0pt,outer sep=0pt,text=ink}]
+    \node[font=\ttfamily\fontsize{21}{25}\selectfont] at (.8,.55)
+      {What are key joins?};
+    \node[font=\ttfamily\fontsize{14}{18}\selectfont,text=muted] at (.8,1.85)
+      {Tables};
+    \node[font=\ttfamily\fontsize{14}{18}\selectfont,text=muted] at (8.8,1.85)
+      {ON};
+    \node[font=\ttfamily\fontsize{14}{18}\selectfont,text=muted] at (21.4,1.85)
+      {FOR KEY};
+
+    \node at (.8,2.65) {\usebox{\ordersdata}};
+    \node at (.8,7.0) {\usebox{\itemsdata}};
+    \node at (.8,12.05) {\usebox{\paymentsdata}};
+
+    \node at (8.8,2.65) {\usebox{#1}};
+    \node at (21.4,2.65) {\usebox{#2}};
+  \end{scope}
+  \end{tikzpicture}%
+}
+
+\begin{document}
+\begin{lrbox}{\ordersdata}\begin{minipage}{7.2cm}
+\begin{lstlisting}[style=sql]
+SELECT * FROM orders;
+\end{lstlisting}
+\begin{lstlisting}[style=mono]
+ id
+-----
+ 100
+ 101
+(2 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\itemsdata}\begin{minipage}{7.2cm}
+\begin{lstlisting}[style=sql]
+SELECT * FROM order_items;
+\end{lstlisting}
+\begin{lstlisting}[style=mono]
+ id | order_id | amount
+----+----------+--------
+  1 |      100 |  25.00
+  2 |      100 |  75.00
+  3 |      101 |  30.00
+(3 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\paymentsdata}\begin{minipage}{7.2cm}
+\begin{lstlisting}[style=sql]
+SELECT * FROM payments;
+\end{lstlisting}
+\begin{lstlisting}[style=mono]
+ id | order_id | amount
+----+----------+--------
+  1 |      100 |  40.00
+  2 |      100 |  60.00
+  3 |      101 |  30.00
+(3 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+
+\begin{lrbox}{\rawon}\begin{minipage}{11.9cm}
+\begin{lstlisting}[style=sql]
+SELECT o.id,
+       SUM(oi.amount) AS item_total,
+       SUM(p.amount)  AS payment_total
+FROM orders AS o
+LEFT JOIN order_items AS oi ON oi.order_id = o.id
+LEFT JOIN payments    AS p  ON p.order_id  = o.id
+GROUP BY o.id;
+\end{lstlisting}
+\vspace{.25cm}
+\begin{lstlisting}[style=mono]
+ id  | item_total | payment_total
+-----+------------+---------------
+ 100 |     200.00 |        200.00
+ 101 |      30.00 |         30.00
+(2 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+
+\begin{lrbox}{\rawkey}\begin{minipage}{13.8cm}
+\begin{lstlisting}[style=sql]
+SELECT o.id,
+       SUM(oi.amount) AS item_total,
+       SUM(p.amount)  AS payment_total
+FROM orders AS o
+LEFT JOIN order_items AS oi FOR KEY o (id) <- oi (order_id)
+LEFT JOIN payments    AS p  FOR KEY o (id) <- p (order_id)
+GROUP BY o.id;
+\end{lstlisting}
+\vspace{.25cm}
+\begin{lstlisting}[style=diagnostic]
+ERROR:  key join from referencing relation p to
+        referenced relation o cannot be proven
+LINE 6: LEFT JOIN payments    AS p  FOR KEY o (id) <- p (order_id)
+                                    ^
+DETAIL:  Referenced columns o (id) are not proven unique.
+         A preceding join may duplicate rows from
+         referenced relation o.
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+
+\begin{lrbox}{\groupedon}\begin{minipage}{11.9cm}
+\begin{lstlisting}[style=sql]
+SELECT o.id,
+       oi.item_total,
+       p.payment_total
+FROM orders AS o
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS item_total
+    FROM order_items
+    GROUP BY order_id
+) AS oi ON o.id = oi.order_id
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS payment_total
+    FROM payments
+    GROUP BY order_id
+) AS p ON o.id = p.order_id;
+\end{lstlisting}
+\vspace{.25cm}
+\begin{lstlisting}[style=mono]
+ id  | item_total | payment_total
+-----+------------+---------------
+ 100 |     100.00 |        100.00
+ 101 |      30.00 |         30.00
+(2 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+
+\begin{lrbox}{\groupedkey}\begin{minipage}{13.8cm}
+\begin{lstlisting}[style=sql]
+SELECT o.id,
+       oi.item_total,
+       p.payment_total
+FROM orders AS o
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS item_total
+    FROM order_items
+    GROUP BY order_id
+) AS oi FOR KEY o (id) <- oi (order_id)
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS payment_total
+    FROM payments
+    GROUP BY order_id
+) AS p FOR KEY o (id) <- p (order_id);
+\end{lstlisting}
+\vspace{.25cm}
+\begin{lstlisting}[style=mono]
+ id  | item_total | payment_total
+-----+------------+---------------
+ 100 |     100.00 |        100.00
+ 101 |      30.00 |         30.00
+(2 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+
+\CheckHeight{\ordersdata}{4.0cm}{Orders data}
+\CheckHeight{\itemsdata}{4.7cm}{Order items data}
+\CheckHeight{\paymentsdata}{7.4cm}{Payments data}
+\CheckHeight{\rawon}{16.8cm}{Original ON query}
+\CheckHeight{\rawkey}{16.8cm}{Original FOR KEY query}
+\CheckHeight{\groupedon}{16.8cm}{Corrected ON query}
+\CheckHeight{\groupedkey}{16.8cm}{Corrected FOR KEY query}
+
+\JoinPage{\rawon}{\rawkey}
+\newpage
+\JoinPage{\groupedon}{\groupedkey}
+\end{document}
+
+% ERROR and DETAIL are wrapped without changing their wording.
+% LINE 6 matches the second join in the displayed seven-line query.
+% The diagnostic caret has 36 leading spaces, locating FOR KEY on that line.
+% Displayed row order is illustrative; the queries have no ORDER BY.
+

@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What is a key join?</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #181818;
+    --muted: #626262;
+    --line: #dedede;
+    --accent: #444;
+    --condition-1: #275da8;
+    --condition-2: #087b88;
+    --condition-3a: #7751a8;
+    --condition-3b: #916500;
+    --condition-4: #b04a2e;
+    --condition-5: #38783a;
+  }
+  [data-condition="1"] { --condition-color: var(--condition-1); }
+  [data-condition="2"] { --condition-color: var(--condition-2); }
+  [data-condition="3a"] { --condition-color: var(--condition-3a); }
+  [data-condition="3b"] { --condition-color: var(--condition-3b); }
+  [data-condition="4"] { --condition-color: var(--condition-4); }
+  [data-condition="5"] { --condition-color: var(--condition-5); }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: #f5f5f5; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+  button { font: inherit; }
+  button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  .presentation { max-width: 2040px; margin: 0 auto; padding: 28px; min-height: calc(100svh - 88px); display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 30px; align-items: center; }
+  /* Slide navigation targets the presentation, not a highlighted control. */
+  .presentation:focus { outline: none; }
+  .presentation[data-fullscreen="true"] { min-height: 100svh; }
+  .diagram-wrap { position: relative; background: white; border: 1px solid var(--line); overflow: hidden; }
+  #diagram { display: block; width: 100%; height: auto; }
+  .notes { align-self: stretch; display: flex; align-items: center; }
+  .notes-inner { width: 100%; }
+  .notes h2 { font-size: 14px; line-height: 1.4; font-weight: 650; margin: 0 0 22px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .guarantees { list-style: none; padding: 0; margin: 0; }
+  .guarantees li { position: relative; padding: 0 28px 0 37px; margin-bottom: 26px; font-size: 20px; line-height: 1.5; letter-spacing: -.015em; }
+  .guarantees li::before { content: ""; position: absolute; top: .6em; left: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--condition-color); }
+  .guarantee-mark { position: absolute; right: 0; top: 1px; color: var(--ink); font: 600 22px Arial, Helvetica, sans-serif; }
+  #verdict-mark { font-family: Arial, Helvetica, sans-serif; }
+  .verdict { min-height: 3em; margin: 0 0 20px; font-size: 20px; line-height: 1.5; font-weight: 650; }
+  .explanations { border-top: 1px solid var(--line); padding-top: 20px; }
+  .explanations ul { margin: 0; padding-left: 20px; }
+  .explanations li { min-height: 4.5em; margin: 0 0 12px; font-size: 16px; line-height: 1.5; color: #4f4f4f; }
+  /* Reserve the final layout, including marks, verdict, and explanation slots. */
+  .notes [aria-hidden="true"] { visibility: hidden; }
+  .conditions { list-style: none; padding: 0; margin: 0; }
+  .conditions li { position: relative; padding: 0 28px 0 37px; margin: 0 0 20px; font-size: 17px; line-height: 1.4; }
+  .conditions strong { display: block; margin-bottom: 3px; font-size: 18px; color: var(--condition-color); }
+  .condition-number { position: absolute; top: 1px; left: 0; width: 27px; height: 27px; border: 1px solid var(--condition-color); color: var(--condition-color); border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+  .conditions-intro { margin: -14px 0 22px; font-size: 16px; line-height: 1.4; color: var(--muted); }
+  .condition-alternatives { min-width: 0; margin: 0; padding: 12px 10px; border: 1px solid var(--line); border-radius: 6px; }
+  .condition-alternatives legend { padding: 0 7px; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .condition-alternatives .conditions li:not(.condition-or) { margin-bottom: 0; }
+  .conditions .condition-or { padding: 0; margin: 12px 0; text-align: center; font-size: 13px; line-height: 1.2; font-weight: 650; letter-spacing: .08em; color: var(--muted); }
+  .presentation[data-kind="specification"] { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+  .presentation[data-kind="specification"] .notes { align-items: flex-start; }
+  #proof-notes h2 { margin-bottom: 18px; }
+  #proof-notes .conditions-intro { margin: -12px 0 14px; font-size: 15px; }
+  #proof-notes .conditions li { margin-bottom: 14px; font-size: 15px; line-height: 1.35; }
+  #proof-notes .conditions strong { font-size: 16px; margin-bottom: 2px; }
+  #proof-notes .condition-alternatives { padding: 10px; }
+  #proof-notes .condition-alternatives li:not(.condition-or) { margin-bottom: 0; }
+  #proof-notes .condition-or { margin: 8px 0; font-size: 13px; line-height: 1.1; }
+  #proof-notes .condition-and { margin: -4px 0 10px; text-align: center; font-size: 13px; line-height: 1.1; font-weight: 650; letter-spacing: .08em; color: var(--muted); }
+  .proof-implication { margin: 12px 0 14px; text-align: center; font: 44px/1 Arial, Helvetica, sans-serif; }
+  #implied-guarantees h2 { margin-bottom: 14px; }
+  #implied-guarantees .guarantees li { padding: 0 0 0 32px; margin-bottom: 10px; font-size: 16px; line-height: 1.4; }
+  .section-switch { min-width: auto; }
+  .presentation[data-kind="index"] { grid-template-columns: minmax(0, 1fr); }
+  .query-index { width: 100%; margin: 0 auto; padding: clamp(24px, 2vw, 36px); background: white; border: 1px solid var(--line); }
+  .query-index h1 { margin: 0 0 12px; font-size: clamp(26px, 2.3vw, 42px); line-height: 1.2; letter-spacing: -.025em; }
+  .query-index-lead { margin: 0 0 24px; font-size: clamp(16px, 1.1vw, 21px); line-height: 1.45; }
+  .query-index-lead strong { display: block; margin-bottom: 4px; font-weight: 600; }
+  .query-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .query-pair { display: grid; gap: 16px; }
+  .query-card { display: block; width: 100%; min-width: 0; margin: 0; padding: 18px; text-align: left; border: 1px solid #ccc; border-radius: 6px; background: white; color: var(--ink); cursor: pointer; }
+  .query-card:hover { background: #f7f7f7; border-color: #777; }
+  .query-card:focus-visible { outline-offset: 2px; }
+  .query-card-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .query-card-number { font-size: 14px; color: var(--muted); }
+  .query-card-verdict { font-size: clamp(15px, 1vw, 19px); font-weight: 600; }
+  .query-card-mark { font-family: Arial, Helvetica, sans-serif; }
+  .query-code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: clamp(13px, 1.2vw, 21px); line-height: 1.5; }
+  .query-card-wide { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(160px, 1fr) 2fr; gap: 24px; align-items: center; }
+  .query-card-wide .query-card-meta { flex-direction: column; justify-content: center; gap: 8px; margin-bottom: 0; }
+  .all-queries { position: absolute; top: 1.4%; right: 1.4%; z-index: 1; }
+  .all-queries.nav-button { min-width: 0; padding: 7px 11px; font-size: 13px; }
+  .presentation[data-kind="introduction"] { grid-template-columns: minmax(0, 1fr); }
+  .specification-intro { width: 100%; max-width: 1640px; margin: 0 auto; padding: clamp(24px, 2.5vw, 48px); background: white; border: 1px solid var(--line); }
+  .specification-intro h1 { margin: 0 0 18px; font-size: clamp(26px, 2.5vw, 42px); line-height: 1.2; letter-spacing: -.025em; }
+  .specification-intro .intro-lead { margin: 0 0 22px; max-width: 62em; font-size: clamp(18px, 1.6vw, 26px); line-height: 1.45; }
+  .syntax-directions { display: block; width: 100%; height: auto; }
+  .syntax-directions .syntax-role { font-size: 22px; fill: #626262; }
+  .syntax-directions .syntax-code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 24px; }
+  .syntax-directions .syntax-token { font-weight: 700; }
+  .syntax-directions .syntax-placeholder { font-style: italic; }
+  .syntax-directions .syntax-bracket { stroke: #999; stroke-width: 1; fill: none; }
+  .syntax-caption { margin: 10px 0 22px; text-align: center; font-size: clamp(16px, 1.35vw, 22px); line-height: 1.4; }
+  .intro-rules { margin: 0; padding: 18px 0 0 1.25em; border-top: 1px solid var(--line); font-size: clamp(17px, 1.4vw, 23px); line-height: 1.45; }
+  .intro-rules li { padding-left: .2em; margin-bottom: .45em; }
+  .intro-implication { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 20px; margin: 24px 0 0; font-size: clamp(15px, 1.25vw, 21px); font-weight: 650; letter-spacing: .055em; text-transform: uppercase; text-align: center; }
+  .intro-implication .implies { font: 36px/1 Arial, Helvetica, sans-serif; }
+  code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: .9em; }
+  .controls { min-height: 88px; padding: 18px 28px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; border-top: 1px solid var(--line); background: white; }
+  .controls-left { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  .fullscreen-message { max-width: 280px; margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .key-hint { margin: 0; font-size: 14px; color: var(--muted); }
+  kbd { font: 14px ui-monospace, monospace; display: inline-grid; place-items: center; min-width: 25px; height: 24px; margin: 0 2px; border: 1px solid #d2d2d2; border-bottom-width: 2px; border-radius: 4px; color: var(--ink); }
+  .navigation { display: flex; align-items: center; gap: 18px; }
+  .step-counter { color: var(--muted); min-width: 58px; text-align: center; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .nav-button { cursor: pointer; border: 1px solid #ccc; border-radius: 6px; background: white; color: var(--ink); padding: 10px 16px; font-size: 14px; min-width: 102px; }
+  .nav-button:hover:not(:disabled) { background: #f2f2f2; border-color: #999; }
+  .fullscreen-button { min-width: 132px; }
+  .nav-button:disabled { cursor: default; color: #aaa; border-color: #e5e5e5; }
+  #next:not(:disabled) { background: #202020; color: white; border-color: #202020; }
+  #next:hover:not(:disabled) { background: #414141; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  /* The diagram uses the same coordinates and proportions as the LaTeX page. */
+  svg text { fill: #111; font-family: Arial, Helvetica, sans-serif; }
+  svg .page-title { font-size: 36px; font-weight: 700; }
+  svg .table-name { font-size: 23px; font-weight: 700; }
+  svg .table-role { font-size: 17px; }
+  svg .column-name { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
+  svg .cell-value { font-size: 20px; font-variant-numeric: tabular-nums; }
+  svg .sql-null { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 16px; }
+  svg .query { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 20px; white-space: pre; }
+  svg .ddl { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; white-space: pre; }
+  svg .ddl-caption { font-size: 16px; fill: #626262; }
+  svg .proof-caption { font-size: 15px; fill: #626262; }
+  svg .proof-badge { fill: white; stroke: var(--condition-color, #777); stroke-width: 1; }
+  svg .proof-number { font-size: 15px; font-weight: 700; fill: var(--condition-color, #111); }
+  svg .outcome-heading { font-size: 23px; font-weight: 700; }
+  svg .outcome-label { font-size: 14px; letter-spacing: 1px; fill: #626262; }
+  svg .outcome-text { font-size: 20px; }
+  svg .proof-rule { stroke: var(--condition-color, #777); stroke-width: 1; fill: none; }
+  svg .surface-fact-label { font-size: 17px; font-weight: 600; fill: var(--condition-color, #111); }
+  svg .surface-fact-detail { font-size: 14px; fill: var(--condition-color, #626262); }
+  svg .surface-group { stroke: var(--condition-color, #777); stroke-width: 1; fill: none; }
+  svg .surface-null-box { stroke: var(--condition-color, #777); stroke-width: 1; fill: white; }
+  svg .surface-null-marker[data-known-nonnull="false"] .surface-null-box { stroke-dasharray: 3 3; }
+  svg .surface-null-value { font-size: 14px; fill: var(--condition-color, #111); }
+  svg .coverage-link { stroke: var(--condition-color); stroke-width: 1.2; fill: none; }
+  svg .condition-arrowhead { stroke: var(--condition-color); stroke-width: 1.2; fill: none; }
+  svg .base-facts-divider { stroke: #dedede; stroke-width: 1; }
+  svg [data-compact="true"] [data-table="result"] .cell-value { font-size: 16px; }
+  svg [data-compact="true"] [data-table="result"] .sql-null { font-size: 13px; }
+  svg [data-compact="true"] .query { font-size: 18px; }
+  svg .rule { stroke: #111; stroke-width: .65; fill: none; }
+  svg .outline { stroke: #111; stroke-width: 1; fill: none; }
+  svg .operator-arrow { stroke: #111; stroke-width: 1.2; fill: none; }
+  svg .cell-fill { fill: white; }
+  svg .row-link { fill: none; stroke: #92969b; stroke-width: 1; opacity: 0; pointer-events: none; transition: opacity 180ms ease; }
+  svg .row-link[data-condition] { stroke: var(--condition-color); }
+  [data-step="1"] .row-link { opacity: .8; }
+  [data-step="2"] .row-link, [data-step="3"] .row-link, [data-step="4"] .row-link { opacity: .5; }
+  [data-step="2"] .matched-row-link { opacity: .8; }
+  [data-complete="true"] .row-link { opacity: .5; }
+  [data-step="2"] .row-link[data-condition], [data-step="3"] .row-link[data-condition],
+  [data-complete="true"] .row-link[data-condition] { opacity: .8; }
+  /* An optional pointer focus makes an individual row arrow easier to trace. */
+  #diagram.has-row-focus .row-link { opacity: .12; }
+  #diagram.has-row-focus .row-link.focused { opacity: 1; stroke-width: 1.8; }
+  #diagram.has-row-focus [data-row].focused .row-focus { opacity: 1; }
+  .row-focus { fill: none; stroke: var(--condition-4); stroke-width: 1.2; opacity: 0; pointer-events: none; }
+  noscript { display: block; padding: 30px; text-align: center; }
+  @media (max-width: 1200px) and (min-width: 901px) {
+    .presentation { padding: 18px; gap: 20px; grid-template-columns: minmax(0, 1fr) 240px; }
+    .guarantees li { font-size: 18px; }
+  }
+  @media (min-width: 901px) and (max-height: 900px) {
+    .presentation[data-kind="index"] { padding: 18px; }
+    .query-index { padding: 24px; }
+    .query-index h1 { font-size: 28px; }
+    .query-index-lead { margin-bottom: 18px; font-size: 17px; line-height: 1.35; }
+    .query-grid, .query-pair { gap: 14px; }
+    .query-card { padding: 14px; }
+    .query-card-meta { margin-bottom: 10px; }
+    .query-code { font-size: clamp(12px, 1.2vw, 17px); line-height: 1.4; }
+    .presentation[data-kind="introduction"] { padding: 18px; }
+    .specification-intro { padding: 24px; }
+    .specification-intro h1 { font-size: 28px; margin-bottom: 14px; }
+    .specification-intro .intro-lead { font-size: 18px; line-height: 1.35; margin-bottom: 12px; }
+    .syntax-directions { max-height: 160px; }
+    .syntax-caption { font-size: 17px; margin: 6px 0 16px; }
+    .intro-rules { font-size: 18px; line-height: 1.35; padding-top: 14px; }
+    .intro-rules li { margin-bottom: .35em; }
+    .intro-implication { font-size: 16px; margin-top: 18px; }
+    .intro-implication .implies { font-size: 32px; }
+  }
+  @media (max-width: 900px) {
+    .presentation { padding: 14px; grid-template-columns: minmax(0, 1fr); gap: 22px; min-height: auto; }
+    .presentation[data-kind="specification"] { grid-template-columns: minmax(0, 1fr); }
+    .query-index { padding: 20px; }
+    .query-grid { grid-template-columns: minmax(0, 1fr); }
+    .query-card-wide { display: block; }
+    .query-card-wide .query-card-meta { flex-direction: row; justify-content: space-between; margin-bottom: 12px; }
+    .query-code { font-size: 13px; }
+    .notes { min-height: 230px; padding: 0 12px 14px; }
+    .notes-inner { max-width: 620px; }
+    .guarantees li { font-size: 18px; margin-bottom: 18px; }
+    .controls { position: sticky; bottom: 0; padding: 12px 14px; min-height: 72px; }
+    .key-hint { display: none; }
+    .navigation { width: 100%; justify-content: space-between; gap: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  @media print {
+    body { background: white; }
+    .presentation { display: block; padding: 0; }
+    .diagram-wrap { border: 0; }
+    .notes { padding: 24px; }
+    .controls { display: none; }
+    .all-queries { display: none; }
+  }
+</style>
+</head>
+<body>
+<main class="presentation" data-step="0" id="presentation" tabindex="-1">
+  <section class="query-index" id="query-index" aria-labelledby="query-index-title" hidden>
+    <h1 id="query-index-title">What is a <em>key join</em>?</h1>
+    <p class="query-index-lead"><strong>The query alone does not tell us whether it is a key join.</strong>The marks below describe the examples with their respective inputs. Choose a query to inspect those inputs and its result.</p>
+    <div class="query-grid" id="query-grid"></div>
+  </section>
+  <section class="specification-intro" id="specification-intro" aria-labelledby="specification-intro-title" hidden>
+    <h1 id="specification-intro-title">What is a &lt;<em>key join specification</em>&gt;?</h1>
+    <p class="intro-lead"><code>FOR KEY</code> makes the intent to write a key join explicit and requires the DBMS to verify it before execution.</p>
+    <svg class="syntax-directions" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 220" role="img" aria-labelledby="syntax-directions-title syntax-directions-desc">
+      <title id="syntax-directions-title">The two arrow directions</title>
+      <desc id="syntax-directions-desc">FOR KEY left table (left columns) right arrow right table (right columns): the left table is referencing and the right table is referenced. With a left arrow, the left table is referenced and the right table is referencing. The table references and column lists stay in left-to-right operand order.</desc>
+      <text class="syntax-role" x="390" y="26" text-anchor="middle">referencing</text>
+      <text class="syntax-role" x="1003" y="26" text-anchor="middle">referenced</text>
+      <path class="syntax-bracket" d="M 180 52 V 40 H 600 V 52 M 780 52 V 40 H 1226 V 52"/>
+      <text class="syntax-code syntax-token" x="28" y="82">FOR KEY</text>
+      <text class="syntax-code" x="180" y="82" xml:space="preserve"><tspan class="syntax-placeholder">&lt;left table&gt;</tspan> <tspan class="syntax-token">(</tspan><tspan class="syntax-placeholder">&lt;left columns&gt;</tspan><tspan class="syntax-token">)</tspan></text>
+      <text class="syntax-code syntax-token" x="690" y="82" text-anchor="middle">-&gt;</text>
+      <text class="syntax-code" x="780" y="82" xml:space="preserve"><tspan class="syntax-placeholder">&lt;right table&gt;</tspan> <tspan class="syntax-token">(</tspan><tspan class="syntax-placeholder">&lt;right columns&gt;</tspan><tspan class="syntax-token">)</tspan></text>
+      <text class="syntax-role" x="390" y="136" text-anchor="middle">referenced</text>
+      <text class="syntax-role" x="1003" y="136" text-anchor="middle">referencing</text>
+      <path class="syntax-bracket" d="M 180 162 V 150 H 600 V 162 M 780 162 V 150 H 1226 V 162"/>
+      <text class="syntax-code syntax-token" x="28" y="192">FOR KEY</text>
+      <text class="syntax-code" x="180" y="192" xml:space="preserve"><tspan class="syntax-placeholder">&lt;left table&gt;</tspan> <tspan class="syntax-token">(</tspan><tspan class="syntax-placeholder">&lt;left columns&gt;</tspan><tspan class="syntax-token">)</tspan></text>
+      <text class="syntax-code syntax-token" x="690" y="192" text-anchor="middle">&lt;-</text>
+      <text class="syntax-code" x="780" y="192" xml:space="preserve"><tspan class="syntax-placeholder">&lt;right table&gt;</tspan> <tspan class="syntax-token">(</tspan><tspan class="syntax-placeholder">&lt;right columns&gt;</tspan><tspan class="syntax-token">)</tspan></text>
+    </svg>
+    <p class="syntax-caption">The column lists follow operand order. The arrow points from referencing to referenced.</p>
+    <ul class="intro-rules">
+      <li>The DBMS proves sufficient conditions from the schema and query structure.</li>
+      <li>If it cannot prove them, it rejects the statement.</li>
+      <li>If accepted, <code>FOR KEY</code> is transformed into an <code>ON</code> condition that compares the corresponding columns for equality.</li>
+    </ul>
+    <p class="intro-implication"><span>Sufficient conditions</span><span class="implies" role="img" aria-label="imply">⇒</span><span>Guarantees</span></p>
+  </section>
+  <div class="diagram-wrap" id="diagram-panel">
+    <button type="button" class="nav-button all-queries" id="all-queries" aria-controls="query-index" hidden>All queries</button>
+    <svg id="diagram" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 810" role="img" aria-labelledby="diagram-title diagram-desc">
+      <title id="diagram-title">What is a key join?</title>
+      <desc id="diagram-desc">The reservations table is the referencing table. The rooms table is the referenced table. The presentation shows JOIN, LEFT JOIN, RIGHT JOIN, and FULL JOIN. Result cells appear in steps. The table data and query are also available as text after the presentation controls.</desc>
+      <defs>
+        <marker id="operator-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 L 2 5 Z" fill="#111"/></marker>
+        <marker id="row-head" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 8 4 L 0 8" fill="none" stroke="#92969b" stroke-width="1.2"/></marker>
+        <marker id="row-head-4" data-condition="4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 8 4 L 0 8" class="condition-arrowhead"/></marker>
+        <marker id="row-head-5" data-condition="5" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 8 4 L 0 8" class="condition-arrowhead"/></marker>
+        <marker id="coverage-head" data-condition="2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 8 4 L 0 8" class="condition-arrowhead"/></marker>
+      </defs>
+    </svg>
+  </div>
+  <aside class="notes" id="explanation-panel" aria-label="Explanation">
+    <div class="notes-inner" id="join-notes">
+      <section id="guarantees-section" aria-hidden="true" aria-labelledby="guarantees-heading">
+        <h2 id="guarantees-heading">Guarantees</h2>
+        <ul class="guarantees" role="list">
+          <li id="guarantee-rows" data-condition="4" aria-hidden="true"><span id="guarantee-rows-text">Every referencing row appears exactly once in the join result.</span><span class="guarantee-mark" id="guarantee-rows-mark" role="img" aria-label="Pass">✓</span></li>
+          <li id="guarantee-match" data-condition="5" aria-hidden="true"><span id="guarantee-match-text">Rows with no nulls in their referencing columns find a match.</span><span class="guarantee-mark" id="guarantee-match-mark" role="img" aria-label="Pass">✓</span></li>
+        </ul>
+      </section>
+      <p class="verdict" id="verdict" aria-hidden="true"><span id="verdict-mark" role="img" aria-label="Pass">✓</span> <span id="verdict-text">It’s a key join</span></p>
+      <div class="explanations" id="explanations" aria-hidden="true">
+        <ul>
+          <li id="explanation-extra" aria-hidden="true">Unmatched referenced rows are NULL-padded on the referencing side.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="notes-inner" id="proof-notes" hidden>
+      <h2>Sufficient conditions</h2>
+      <p class="conditions-intro">All three must hold</p>
+      <ol class="conditions">
+        <li id="condition-unique" data-condition="1" aria-hidden="true"><span class="condition-number">1</span><strong>Uniqueness</strong><span id="condition-unique-text">All-non-null combinations of referenced values are unique.</span><span class="guarantee-mark" id="condition-unique-mark" role="img" aria-label="Established">✓</span></li>
+      </ol>
+      <p class="condition-and" id="condition-and-coverage" aria-hidden="true">AND</p>
+      <ol class="conditions" start="2">
+        <li id="condition-coverage" data-condition="2" aria-hidden="true"><span class="condition-number">2</span><strong>Coverage</strong><span id="condition-coverage-text">Every all-non-null combination of referencing values has a matching referenced row.</span><span class="guarantee-mark" id="condition-coverage-mark" role="img" aria-label="Established">✓</span></li>
+      </ol>
+      <p class="condition-and" id="condition-and-alternatives" aria-hidden="true">AND</p>
+      <fieldset class="condition-alternatives" id="condition-alternatives" aria-labelledby="alternatives-heading" aria-hidden="true">
+        <legend id="alternatives-heading">At least one</legend>
+        <ol class="conditions">
+          <li id="condition-nonnull" data-condition="3a" aria-hidden="true"><span class="condition-number">3a</span><strong>Known not null</strong><span id="condition-nonnull-text">Every referencing column is known not null.</span><span class="guarantee-mark" id="condition-nonnull-mark" role="img" aria-label="Established">✓</span></li>
+          <li class="condition-or" id="condition-or" role="presentation" aria-hidden="true">OR</li>
+          <li id="condition-preservation" data-condition="3b" aria-hidden="true"><span class="condition-number">3b</span><strong>Preservation</strong><span id="condition-preservation-text">The join type preserves the referencing operand.</span><span class="guarantee-mark" id="condition-preservation-mark" role="img" aria-label="Established">✓</span></li>
+        </ol>
+      </fieldset>
+      <div class="proof-implication" id="proof-implication" role="img" aria-label="These sufficient conditions imply the guarantees." aria-hidden="true">⇓</div>
+      <section id="implied-guarantees" aria-labelledby="implied-guarantees-heading" aria-hidden="true">
+        <h2 id="implied-guarantees-heading">Guarantees</h2>
+        <ul class="guarantees" role="list">
+          <li data-condition="4"><span id="implied-guarantee-rows-text"></span></li>
+          <li data-condition="5"><span id="implied-guarantee-match-text"></span></li>
+        </ul>
+      </section>
+    </div>
+  </aside>
+</main>
+<footer class="controls" id="presentation-controls">
+  <div class="controls-left">
+    <p class="key-hint">Use <kbd aria-label="Left Arrow">←</kbd> and <kbd aria-label="Right Arrow">→</kbd> to change the step.</p>
+    <button type="button" class="nav-button fullscreen-button" id="fullscreen" aria-pressed="false" title="Enter full screen">Full screen</button>
+    <button type="button" class="nav-button section-switch" id="section-switch" aria-controls="presentation">Key join specifications →</button>
+    <p class="fullscreen-message" id="fullscreen-message" role="status" aria-live="polite" hidden></p>
+  </div>
+  <nav class="navigation" aria-label="Presentation steps">
+    <button type="button" class="nav-button" id="previous" aria-controls="presentation" aria-keyshortcuts="ArrowLeft" disabled>← Previous</button>
+    <span class="step-counter" id="step-counter">1 / 36</span>
+    <button type="button" class="nav-button" id="next" aria-controls="presentation" aria-keyshortcuts="ArrowRight">Next →</button>
+  </nav>
+</footer>
+<p id="step-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true">Step 1 of 36. JOIN. Start.</p>
+<section class="sr-only" id="table-data" aria-label="Table data and query"></section>
+<noscript>Enable JavaScript to view the tables and change the step.</noscript>
+<script>
+"use strict";
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("diagram");
+  const presentation = document.getElementById("presentation");
+  const reservations = [
+    [1, 10, 100, "Alice"],
+    [2, 10, 100, "Bob"],
+    [3, null, 100, "Carol"],
+    [null, 20, 100, "David"],
+    [null, null, null, "Emma"],
+    [4, 30, null, "Alice"]
+  ];
+  const rooms = [
+    [10, 100, 1250],
+    [null, null, 9850],
+    [10, 101, 2475],
+    [null, 100, 3450],
+    [20, 100, 1890],
+    [20, 200, 8950],
+    [30, null, 6300]
+  ];
+  const examples = [
+    { name: "inner", joinType: "JOIN",
+      reservations: reservations.filter(row => row.every(value => value !== null)),
+      rooms: rooms.filter(row => row.every(value => value !== null)) },
+    { name: "inner-negative", joinType: "JOIN", reservations, rooms },
+    { name: "left", joinType: "LEFT JOIN", reservations, rooms },
+    { name: "left-negative", joinType: "RIGHT JOIN", reservations, rooms },
+    { name: "right", joinType: "RIGHT JOIN", swapped: true, reservations, rooms },
+    { name: "right-negative", joinType: "LEFT JOIN", swapped: true, reservations, rooms },
+    { name: "full", joinType: "FULL JOIN", swapped: true, reservations, rooms }
+  ];
+  examples.forEach(example => {
+    example.referencingOffset = example.swapped ? 3 : 0;
+    example.leftTable = example.swapped ? "rooms" : "reservations";
+    example.rightTable = example.swapped ? "reservations" : "rooms";
+    example.leftAlias = example.swapped ? "ro" : "re";
+    example.rightAlias = example.swapped ? "re" : "ro";
+    const resultValues = (reservation, room) => example.swapped ? [...room, ...reservation] : [...reservation, ...room];
+    const preservesLeft = example.joinType === "LEFT JOIN" || example.joinType === "FULL JOIN";
+    const preservesRight = example.joinType === "RIGHT JOIN" || example.joinType === "FULL JOIN";
+    const preservesReservations = example.swapped ? preservesRight : preservesLeft;
+    const preservesRooms = example.swapped ? preservesLeft : preservesRight;
+    // Ordinary SQL equality cannot match a null value. Keep source-row
+    // positions separately: the nullable id is not a row identifier.
+    example.resultRows = example.reservations.flatMap((row, sourceIndex) => {
+      const matches = example.rooms.map((room, roomIndex) => ({ room, roomIndex }))
+        .filter(({ room }) => row[1] !== null && row[2] !== null && room[0] === row[1] && room[1] === row[2]);
+      if (matches.length) return matches.map(({ room, roomIndex }) => ({ values: resultValues(row, room), sourceIndex, roomIndex, matched: true }));
+      return preservesReservations
+        ? [{ values: resultValues(row, [null, null, null]), sourceIndex, roomIndex: null, matched: false }] : [];
+    });
+    if (preservesRooms) {
+      const matchedRooms = new Set(example.resultRows.filter(row => row.matched).map(row => row.roomIndex));
+      example.rooms.forEach((room, roomIndex) => {
+        if (!matchedRooms.has(roomIndex)) example.resultRows.push({
+          values: resultValues([null, null, null, null], room),
+          sourceIndex: null, roomIndex, matched: false
+        });
+      });
+    }
+    // Check input-row occurrences, not total result cardinality or nullable ids.
+    example.referencingOccurrences = example.reservations.map((row, index) =>
+      example.resultRows.filter(result => result.sourceIndex === index).length);
+    example.failedReferencingRows = example.referencingOccurrences.flatMap((count, index) => count === 1 ? [] : [index]);
+    example.guarantees = [
+      example.failedReferencingRows.length === 0,
+      example.reservations.every((row, index) => row[1] === null || row[2] === null ||
+        example.resultRows.some(result => result.sourceIndex === index && result.matched))
+    ];
+    example.phases = ["start", "rows", "matches"];
+    example.paddingStage = example.resultRows.some(row => row.sourceIndex !== null && !row.matched) ? 2 : null;
+    example.extraStage = null;
+    if (example.resultRows.some(row => row.sourceIndex === null)) {
+      example.extraStage = example.phases.length;
+      example.phases.push("extras");
+    }
+    // ON joins still execute when they are not key joins. First show the query,
+    // then reveal its complete result, including every unmatched outer-join row.
+    example.fullStage = example.phases.length - 1;
+    example.revealTogether = example.guarantees.some(passed => !passed);
+    if (example.revealTogether) example.phases = ["start", "complete"];
+    example.compact = example.resultRows.length > 6;
+    example.resultRowHeight = example.compact ? 20 : 26.4;
+    example.query = `SELECT ${example.leftAlias}.*, ${example.rightAlias}.*\nFROM ${example.leftTable} AS ${example.leftAlias}\n${example.joinType} ${example.rightTable} AS ${example.rightAlias}\n  ON ${example.leftAlias}.hotel_id = ${example.rightAlias}.hotel_id\n AND ${example.leftAlias}.room_number = ${example.rightAlias}.room_number;`;
+  });
+  function resultRevealStage(example, stage) {
+    return example.revealTogether && stage > 0 ? example.fullStage : stage;
+  }
+  function resultCellStep(example, row, col) {
+    if (row.sourceIndex === null) return example.extraStage;
+    const referencing = col >= example.referencingOffset && col < example.referencingOffset + 4;
+    return referencing ? 1 : row.matched ? 2 : example.paddingStage;
+  }
+  const guaranteeText = ["guarantee-rows-text", "guarantee-match-text"]
+    .map(id => document.getElementById(id).textContent);
+  const guaranteeSummary = guaranteeText.join(" ");
+  ["implied-guarantee-rows-text", "implied-guarantee-match-text"].forEach((id, index) => {
+    document.getElementById(id).textContent = guaranteeText[index];
+  });
+  // This second part reasons from declarations, independently of sample data.
+  const proofExamples = examples.map(source => {
+    const example = {
+      name: source.name + "-specification", kind: "specification",
+      joinType: source.joinType, swapped: Boolean(source.swapped),
+      leftTable: source.leftTable, rightTable: source.rightTable,
+      leftAlias: source.leftAlias, rightAlias: source.rightAlias,
+      knownNotNull: source.name === "inner", resultRowHeight: 26.4,
+      phases: ["start", "uniqueness", "coverage", "alternatives"]
+    };
+    const preservesReferencing = example.joinType === "FULL JOIN" ||
+      example.joinType === (example.swapped ? "RIGHT JOIN" : "LEFT JOIN");
+    example.conditions = [true, true, example.knownNotNull, preservesReferencing];
+    const conditionGroups = [example.conditions[0], example.conditions[1],
+      example.conditions[2] || example.conditions[3]];
+    const failedCondition = conditionGroups.findIndex(passed => !passed);
+    example.accepted = failedCondition === -1;
+    example.decisionStage = example.accepted ? 3 : failedCondition + 1;
+    example.phases = example.phases.slice(0, example.decisionStage + 1);
+    example.rejectionLines = example.accepted ? [] : [
+      ["Uniqueness of the referenced column combination is not established."],
+      ["Coverage of the referencing column combination is not established."],
+      ["The referencing columns are possibly nullable.",
+        "The join type does not preserve the referencing operand."]
+    ][failedCondition];
+    example.ddlUnique = "UNIQUE (hotel_id, room_number)";
+    example.ddlForeignKey = "FOREIGN KEY (hotel_id, room_number)\nREFERENCES rooms (hotel_id, room_number)";
+    const nullability = example.knownNotNull ? " NOT NULL" : "";
+    example.ddlColumns = `hotel_id INTEGER${nullability},\nroom_number INTEGER${nullability},`;
+    example.query = `SELECT ${example.leftAlias}.*, ${example.rightAlias}.*\nFROM ${example.leftTable} AS ${example.leftAlias}\n${example.joinType} ${example.rightTable} AS ${example.rightAlias}\n  FOR KEY ${example.leftAlias} (hotel_id, room_number) ${example.swapped ? "<-" : "->"} ${example.rightAlias} (hotel_id, room_number);`;
+    return example;
+  });
+  const allExamples = [...examples, ...proofExamples];
+  const singleStepProofs = new Set([
+    "inner-negative-specification", "left-specification",
+    "left-negative-specification", "right-negative-specification"
+  ]);
+  const steps = allExamples.flatMap(example => example.phases
+    .map((phase, stage) => ({ example, stage }))
+    .filter(({ stage }) => !singleStepProofs.has(example.name) || stage === example.decisionStage));
+  const queryIndex = { name: "query-index", kind: "index", phases: ["index"] };
+  steps.unshift({ example: queryIndex, stage: 0 });
+  const firstProofStep = 1 + examples.reduce((total, example) => total + example.phases.length, 0);
+  const specificationIntro = { name: "specification-intro", kind: "introduction", phases: ["introduction"] };
+  steps.splice(firstProofStep, 0, { example: specificationIntro, stage: 0 });
+  let step = 0;
+
+  // Build the index from the same queries and verdicts as the diagrams.
+  // Each column pairs examples with the same operand order.
+  const queryCards = new Map();
+  const queryGrid = document.getElementById("query-grid");
+  const allQueriesButton = document.getElementById("all-queries");
+  let queryPair;
+  examples.forEach((example, index) => {
+    const wide = index === examples.length - 1;
+    if (!wide && index % 2 === 0) {
+      queryPair = document.createElement("div");
+      queryPair.setAttribute("class", "query-pair");
+      queryGrid.appendChild(queryPair);
+    }
+    const card = document.createElement("button");
+    card.setAttribute("type", "button");
+    card.setAttribute("class", wide ? "query-card query-card-wide" : "query-card");
+    card.setAttribute("data-query-example", example.name);
+    card.setAttribute("aria-controls", "diagram-panel explanation-panel");
+    const meta = document.createElement("span");
+    meta.setAttribute("class", "query-card-meta");
+    const number = document.createElement("span");
+    number.setAttribute("class", "query-card-number");
+    number.textContent = `Example ${index + 1}`;
+    meta.appendChild(number);
+    const verdict = document.createElement("span");
+    verdict.setAttribute("class", "query-card-verdict");
+    const passes = example.guarantees.every(Boolean);
+    const mark = document.createElement("span");
+    mark.setAttribute("class", "query-card-mark");
+    mark.setAttribute("aria-hidden", "true");
+    mark.textContent = passes ? "✓ " : "✗ ";
+    verdict.appendChild(mark);
+    const verdictText = document.createElement("span");
+    verdictText.textContent = passes ? "Key join" : "Not a key join";
+    verdict.appendChild(verdictText);
+    meta.appendChild(verdict);
+    card.appendChild(meta);
+    const code = document.createElement("code");
+    code.setAttribute("class", "query-code");
+    code.textContent = example.query;
+    card.appendChild(code);
+    card.addEventListener("click", () => {
+      showStep(steps.findIndex(item => item.example === example && item.stage === 0));
+      presentation.focus({ preventScroll: true });
+    });
+    (wide ? queryGrid : queryPair).appendChild(card);
+    queryCards.set(example.name, card);
+  });
+  allQueriesButton.addEventListener("click", () => {
+    const card = queryCards.get(steps[step].example.name);
+    showStep(0);
+    if (card) card.focus({ preventScroll: true });
+  });
+
+  function element(name, attrs = {}, parent = svg) {
+    const node = document.createElementNS(NS, name);
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value));
+    parent.appendChild(node);
+    return node;
+  }
+  function label(text, x, y, className, anchor = "middle", parent = svg) {
+    const node = element("text", { x, y, class: className, "text-anchor": anchor, "dominant-baseline": "middle" }, parent);
+    node.textContent = text;
+    return node;
+  }
+  function line(x1, y1, x2, y2, className, parent = svg) {
+    return element("line", { x1, y1, x2, y2, class: className }, parent);
+  }
+  function drawTable(config) {
+    const { name, x, y, widths, headers, rows, parent, example } = config;
+    const group = element("g", { "data-table": name }, parent);
+    const headerHeight = 28, rowHeight = name === "result" ? example.resultRowHeight : 26.4;
+    const width = widths.reduce((sum, value) => sum + value, 0);
+    const bodyHeight = rows.length * rowHeight;
+    let left = x;
+    headers.forEach((header, col) => {
+      label(header, left + widths[col] / 2, y + headerHeight / 2, "column-name", "middle", group);
+      left += widths[col];
+    });
+    rows.forEach((row, rowIndex) => {
+      const rowGroup = element("g", { "data-row": rowIndex,
+        ...(name === "result" ? { "data-reveal-step": example.resultRows[rowIndex].sourceIndex === null ? example.extraStage : 1, visibility: "hidden" } : {}) }, group);
+      const top = y + headerHeight + rowIndex * rowHeight;
+      let cellLeft = x;
+      row.forEach((value, col) => {
+        const cell = element("g", { class: "cell", "data-col": col,
+          ...(name === "result" ? { "data-reveal-step": resultCellStep(example, example.resultRows[rowIndex], col), visibility: "hidden" } : {}) }, rowGroup);
+        // Result cells reveal their border and value together. With no fill,
+        // adjacent cells cannot cover each other's shared borders.
+        element("rect", { x: cellLeft, y: top, width: widths[col], height: rowHeight,
+          class: name === "result" ? "rule cell-border" : "cell-fill" }, cell);
+        const textValue = value === null ? "NULL" : String(value);
+        const isGuest = headers[col] === "guest_name" || headers[col] === "re.guest_name";
+        label(textValue, isGuest ? cellLeft + 12 : cellLeft + widths[col] - 12, top + rowHeight / 2,
+          "cell-value" + (value === null ? " sql-null" : ""), isGuest ? "start" : "end", cell);
+        cellLeft += widths[col];
+      });
+      const focusOffset = name === "result" ? widths.slice(0, example.referencingOffset).reduce((sum, value) => sum + value, 0) : 0;
+      const focusWidth = name === "result" ? widths.slice(example.referencingOffset, example.referencingOffset + 4).reduce((sum, value) => sum + value, 0) : width;
+      element("rect", { x: x + focusOffset + .7, y: top + .7, width: focusWidth - 1.4, height: rowHeight - 1.4, class: "row-focus" }, rowGroup);
+    });
+    // Keep the header visible on its own until the result rows appear.
+    // Draw rules last so the white cell backgrounds do not cover them.
+    const headerGrid = element("g", { class: "header-grid" }, group);
+    left = x;
+    widths.slice(0, -1).forEach(w => { left += w; line(left, y, left, y + headerHeight, "rule", headerGrid); });
+    element("rect", { x, y, width, height: headerHeight, class: "outline" }, headerGrid);
+    if (name !== "result" && rows.length) {
+      const bodyGrid = element("g", { class: "body-grid" }, group);
+      const bodyTop = y + headerHeight;
+      left = x;
+      widths.slice(0, -1).forEach(w => { left += w; line(left, bodyTop, left, bodyTop + bodyHeight, "rule", bodyGrid); });
+      for (let i = 1; i < rows.length; i++) line(x, bodyTop + i * rowHeight, x + width, bodyTop + i * rowHeight, "rule", bodyGrid);
+      element("path", { d: `M ${x} ${bodyTop} V ${bodyTop + bodyHeight} H ${x + width} V ${bodyTop}`, class: "outline" }, bodyGrid);
+    }
+    return group;
+  }
+
+  const pageTitle = label("What is a ", 50, 53, "page-title", "start");
+  element("tspan", { "font-style": "italic" }, pageTitle).textContent = "key join";
+  element("tspan", {}, pageTitle).textContent = "?";
+  // Give assistive technology real tables as an alternative to the SVG.
+  const dataSection = document.getElementById("table-data");
+  function accessibleTable(captionText, headers, rows, parent) {
+    const table = document.createElement("table");
+    const caption = table.createCaption(); caption.textContent = captionText;
+    const tr = table.createTHead().insertRow();
+    headers.forEach(header => { const th = document.createElement("th"); th.scope = "col"; th.textContent = header; tr.appendChild(th); });
+    const body = table.createTBody();
+    rows.forEach(row => { const tr = body.insertRow(); row.forEach(value => { tr.insertCell().textContent = value === null ? "NULL" : String(value); }); });
+    parent.appendChild(table);
+    return table;
+  }
+
+  function buildExample(example) {
+    const scene = element("g", { "data-example": example.name, "data-compact": example.compact, display: "none", "aria-hidden": "true" });
+    example.scene = scene;
+    const { resultRows } = example;
+    const queryTop = example.compact ? 376 : 332;
+    const queryHeight = example.compact ? 100 : 120;
+    const queryBottom = queryTop + queryHeight;
+    const queryLineHeight = example.compact ? 18 : 20;
+    const tableDefinitions = {
+      reservations: { alias: "re", role: "Referencing table", widths: [64, 128, 160, 160], headers: ["id", "hotel_id", "room_number", "guest_name"] },
+      rooms: { alias: "ro", role: "Referenced table", widths: [128, 160, 120], headers: ["hotel_id", "room_number", "price"] }
+    };
+    const inputs = [example.leftTable, example.rightTable].map((name, index) => ({
+      ...tableDefinitions[name], name, center: index === 0 ? 364 : 1076, rows: example[name]
+    }));
+    // Draw row links in the outer margin. They do not pass through the query.
+    const links = element("g", { class: "row-links", "aria-hidden": "true" }, scene);
+    resultRows.forEach((row, resultIndex) => {
+      const resultY = 108 + 28 + (resultIndex + .5) * example.resultRowHeight;
+      if (row.roomIndex !== null) {
+        const sourceY = 558 + 28 + row.roomIndex * 26.4 + 13.2;
+        const path = example.swapped
+          ? `M 158 ${sourceY} C 14 ${sourceY}, 10 ${resultY}, 256 ${resultY}`
+          : `M 1282 ${sourceY} C 1426 ${sourceY}, 1430 ${resultY}, 1184 ${resultY}`;
+        element("path", { d: path,
+          class: "row-link referenced-row-link" + (row.matched ? " matched-row-link" : ""),
+          ...(row.matched ? { "data-condition": "5" } : {}),
+          "data-referenced-row": row.roomIndex, "data-result-row": resultIndex,
+          "data-reveal-step": row.matched ? 2 : example.extraStage,
+          visibility: "hidden", "marker-end": row.matched ? "url(#row-head-5)" : "url(#row-head)" }, links);
+      }
+      if (row.sourceIndex === null) return;
+      const sourceY = 558 + 28 + row.sourceIndex * 26.4 + 13.2;
+      const path = example.swapped
+        ? `M 1334 ${sourceY} C 1426 ${sourceY}, 1430 ${resultY}, 1184 ${resultY}`
+        : `M 106 ${sourceY} C 14 ${sourceY}, 10 ${resultY}, 256 ${resultY}`;
+      element("path", { d: path,
+        class: "row-link", "data-condition": "4", "data-source-row": row.sourceIndex, "data-result-row": resultIndex,
+        "marker-end": "url(#row-head-4)" }, links);
+    });
+
+    label("Join result", 720, 88, "table-name", "middle", scene);
+    const resultHeaders = inputs.flatMap(input => input.headers.map(header => `${input.alias}.${header}`));
+    drawTable({ name: "result", x: 260, y: 108, widths: inputs.flatMap(input => input.widths),
+      headers: resultHeaders, rows: resultRows.map(row => row.values), parent: scene, example });
+
+    const resultBottom = 108 + 28 + resultRows.length * example.resultRowHeight;
+    element("path", { d: `M 720 ${queryTop} V ${resultBottom + 2.4}`, class: "operator-arrow", "marker-end": "url(#operator-head)" }, scene);
+    element("rect", { x: 368, y: queryTop, width: 704, height: queryHeight, class: "outline query-box" }, scene);
+    const queryLines = [
+      [["SELECT", true], [` ${example.leftAlias}.*, ${example.rightAlias}.*`, false]],
+      [["FROM", true], [` ${example.leftTable} `, false], ["AS", true], [` ${example.leftAlias}`, false]],
+      [[example.joinType, true], [` ${example.rightTable} `, false], ["AS", true], [` ${example.rightAlias}`, false]],
+      [["  ", false], ["ON", true], [` ${example.leftAlias}.hotel_id = ${example.rightAlias}.hotel_id`, false]],
+      [[" ", false], ["AND", true], [` ${example.leftAlias}.room_number = ${example.rightAlias}.room_number;`, false]]
+    ];
+    queryLines.forEach((parts, index) => {
+      const text = element("text", { x: 398, y: queryTop + (example.compact ? 14 : 20) + index * queryLineHeight, class: "query", "dominant-baseline": "middle", "xml:space": "preserve" }, scene);
+      parts.forEach(([content, bold]) => {
+        const span = element("tspan", { "font-weight": bold ? 700 : 400 }, text);
+        span.textContent = content;
+      });
+    });
+    const inputArrowBend = example.compact ? 488 : 478;
+    element("path", { d: `M 364 500.4 V ${inputArrowBend} H 520 V ${queryBottom + 2.4}`, class: "operator-arrow", "marker-end": "url(#operator-head)" }, scene);
+    element("path", { d: `M 1076 500.4 V ${inputArrowBend} H 920 V ${queryBottom + 2.4}`, class: "operator-arrow", "marker-end": "url(#operator-head)" }, scene);
+
+    inputs.forEach(input => {
+      label(input.name, input.center, 516, "table-name", "middle", scene);
+      label(input.role, input.center, 537.2, "table-role", "middle", scene);
+      const width = input.widths.reduce((sum, value) => sum + value, 0);
+      drawTable({ name: input.name, x: input.center - width / 2, y: 558,
+        widths: input.widths, headers: input.headers, rows: input.rows, parent: scene });
+    });
+
+    const dataGroup = document.createElement("section");
+    dataGroup.setAttribute("aria-label", `${example.joinType} example`);
+    dataGroup.hidden = true;
+    dataSection.appendChild(dataGroup);
+    example.dataGroup = dataGroup;
+    inputs.forEach(input => accessibleTable(`${input.name} — ${input.role}`, input.headers, input.rows, dataGroup));
+    const queryText = document.createElement("pre"); queryText.textContent = example.query; dataGroup.appendChild(queryText);
+    const accessibleResult = accessibleTable("Join result", resultHeaders, resultRows.map(row => row.values), dataGroup);
+    example.accessibleResultRows = accessibleResult.querySelectorAll("tbody tr");
+    const orderNote = document.createElement("p");
+    orderNote.textContent = "The rows are arranged to make their connections easy to follow. The query itself does not specify their order.";
+    dataGroup.appendChild(orderNote);
+    const matchLinksNote = document.createElement("p");
+    matchLinksNote.setAttribute("data-match-links-note", "");
+    matchLinksNote.hidden = true;
+    matchLinksNote.textContent = "Arrows connect each matched referenced row to its result rows. One referenced row can supply values to several result rows.";
+    dataGroup.appendChild(matchLinksNote);
+    if (example.revealTogether) {
+      const failureNote = document.createElement("p");
+      failureNote.setAttribute("data-failure-note", "");
+      failureNote.hidden = true;
+      const rows = example.failedReferencingRows.map(index =>
+        `Input row ${index + 1} (${example.reservations[index].map(value => value === null ? "NULL" : value).join(", ")}) appears ${example.referencingOccurrences[index]} times in the result.`);
+      failureNote.textContent = "This ON join executes and its complete result is shown, but it is not a key join. " + rows.join(" ");
+      dataGroup.appendChild(failureNote);
+    }
+
+    scene.querySelectorAll('[data-table="reservations"] [data-row], [data-table="result"] [data-row]').forEach(row => {
+      row.addEventListener("pointerenter", event => {
+        if (steps[step].example !== example || steps[step].stage !== 1 || event.pointerType === "touch") return;
+        clearRowFocus();
+        const rowIndex = Number(row.dataset.row);
+        const sourceIndex = row.parentElement.dataset.table === "result" ? resultRows[rowIndex].sourceIndex : rowIndex;
+        if (sourceIndex === null) return;
+        svg.classList.add("has-row-focus");
+        scene.querySelectorAll(`.row-link[data-source-row="${sourceIndex}"]`).forEach(node => node.classList.add("focused"));
+        scene.querySelector(`[data-table="reservations"] [data-row="${sourceIndex}"]`).classList.add("focused");
+        resultRows.forEach((result, index) => { if (result.sourceIndex === sourceIndex) scene.querySelector(`[data-table="result"] [data-row="${index}"]`).classList.add("focused"); });
+      });
+      row.addEventListener("pointerleave", clearRowFocus);
+    });
+  }
+  examples.forEach(buildExample);
+
+  function proofBadge(text, x, y, parent) {
+    element("rect", { x: x - 16, y: y - 13, width: 32, height: 26, rx: 13, class: "proof-badge" }, parent);
+    label(text, x, y, "proof-number", "middle", parent);
+  }
+
+  function proofReveal(stage, parent, className = "", condition = null) {
+    return element("g", { "data-reveal-step": stage, visibility: "hidden", class: className,
+      ...(condition ? { "data-condition": condition } : {}) }, parent);
+  }
+
+  function buildProofExample(example) {
+    const scene = element("g", { "data-example": example.name, "data-kind": "specification", display: "none", "aria-hidden": "true" });
+    example.scene = scene;
+    const definitions = {
+      reservations: { alias: "re", role: "Referencing table", widths: [64, 128, 160, 160], headers: ["id", "hotel_id", "room_number", "guest_name"] },
+      rooms: { alias: "ro", role: "Referenced table", widths: [128, 160, 120], headers: ["hotel_id", "room_number", "price"] }
+    };
+    const inputs = [example.leftTable, example.rightTable].map((name, index) => {
+      const definition = definitions[name];
+      const center = index === 0 ? 364 : 1076;
+      const width = definition.widths.reduce((sum, value) => sum + value, 0);
+      const x = center - width / 2;
+      let columnX = x;
+      const columns = definition.headers.map((column, columnIndex) => {
+        const bounds = { name: column, x: columnX, width: definition.widths[columnIndex] };
+        columnX += bounds.width;
+        return bounds;
+      });
+      const keyColumns = columns.filter(column => column.name === "hotel_id" || column.name === "room_number");
+      const pairStart = keyColumns[0].x;
+      const pairEnd = keyColumns[1].x + keyColumns[1].width;
+      return { ...definition, name, center, width, x, keyColumns, pairStart, pairEnd, pairCenter: (pairStart + pairEnd) / 2 };
+    });
+    const headers = inputs.flatMap(input => input.headers.map(header => `${input.alias}.${header}`));
+    label("Join result", 720, 88, "table-name", "middle", scene);
+    drawTable({ name: "result", x: 260, y: 108, widths: inputs.flatMap(input => input.widths),
+      headers, rows: [], parent: scene, example });
+
+    // The diagram shows acceptance or rejection; the sidebar shows implication.
+    const outcome = proofReveal(example.decisionStage, scene, "proof-outcome");
+    if (example.accepted) {
+      element("rect", { x: 560, y: 196, width: 320, height: 48, rx: 5, class: "proof-rule" }, outcome);
+      label("✓ Accepted", 720, 220, "outcome-heading", "middle", outcome);
+    } else {
+      element("rect", { x: 260, y: 154, width: 920, height: 132, rx: 5, class: "proof-rule" }, outcome);
+      label("✗ Rejected before execution", 720, 182, "outcome-heading", "middle", outcome);
+      example.rejectionLines.forEach((text, index) => label(text, 720, 219 + index * 31, "outcome-text", "middle", outcome));
+    }
+    element("path", { d: `M 720 332 V ${example.accepted ? 255 : 297}`, class: "operator-arrow", "marker-end": "url(#operator-head)" }, scene);
+    element("rect", { x: 248, y: 332, width: 944, height: 120, class: "outline query-box" }, scene);
+    const queryLines = [
+      [["SELECT", true], [` ${example.leftAlias}.*, ${example.rightAlias}.*`, false]],
+      [["FROM", true], [` ${example.leftTable} `, false], ["AS", true], [` ${example.leftAlias}`, false]],
+      [[example.joinType, true], [` ${example.rightTable} `, false], ["AS", true], [` ${example.rightAlias}`, false]],
+      [["  ", false], ["FOR KEY", true], [` ${example.leftAlias} (hotel_id, room_number) `, false], [example.swapped ? "<-" : "->", true], [` ${example.rightAlias} (hotel_id, room_number);`, false]]
+    ];
+    queryLines.forEach((parts, index) => {
+      const text = element("text", { x: 278, y: 354 + index * 26, class: "query", "dominant-baseline": "middle", "xml:space": "preserve" }, scene);
+      parts.forEach(([content, bold]) => element("tspan", { "font-weight": bold ? 700 : 400 }, text).textContent = content);
+    });
+    const preservation = proofReveal(3, scene, "preservation-evidence", "3b");
+    proofBadge("3b", 224, 406, preservation);
+    element("rect", { x: 273, y: 393, width: example.joinType.length * 12 + 10, height: 26, rx: 3, class: "proof-rule" }, preservation);
+    element("path", { d: "M 364 500.4 V 478 H 520 V 454.4", class: "operator-arrow", "marker-end": "url(#operator-head)" }, scene);
+    element("path", { d: "M 1076 500.4 V 478 H 920 V 454.4", class: "operator-arrow", "marker-end": "url(#operator-head)" }, scene);
+
+    inputs.forEach(input => {
+      const { x, width } = input;
+      label(input.name, input.center, 516, "table-name", "middle", scene);
+      label(input.role, input.center, 537.2, "table-role", "middle", scene);
+      drawTable({ name: input.name, x, y: 558, widths: input.widths, headers: input.headers, rows: [], parent: scene });
+      // Declarations supply the base facts. Conditions are annotated separately
+      // on the columns exposed at the join operand's surface.
+      const declarations = element("g", { class: "base-declarations", "data-operand": input.name }, scene);
+      line(x, 675, x + width, 675, "base-facts-divider", declarations);
+      label(`Base facts from CREATE TABLE ${input.name}:`, x, 695, "ddl-caption", "start", declarations);
+      if (input.name === "rooms") {
+        const uniqueDDL = proofReveal(1, declarations, "ddl-evidence");
+        label(example.ddlUnique, x + 12, 720, "ddl", "start", uniqueDDL);
+      } else {
+        const nonnullDDL = proofReveal(3, declarations, "ddl-evidence");
+        example.ddlColumns.split("\n").forEach((text, index) => label(text, x + 12, 720 + index * 22, "ddl", "start", nonnullDDL));
+        const coverageDDL = proofReveal(2, declarations, "ddl-evidence");
+        example.ddlForeignKey.split("\n").forEach((text, index) => label(text, x + 12, 770 + index * 22, "ddl", "start", coverageDDL));
+      }
+    });
+
+    const referencing = inputs.find(input => input.name === "reservations");
+    const referenced = inputs.find(input => input.name === "rooms");
+    const surface = element("g", { class: "surface-facts" }, scene);
+
+    // Uniqueness belongs to the combination, not to either column alone.
+    const unique = proofReveal(1, surface, "uniqueness-evidence", "1");
+    element("path", { d: `M ${referenced.pairStart + 5} 592 V 600 H ${referenced.pairEnd - 5} V 592`,
+      class: "surface-group", "data-operand": "rooms", "data-columns": "hotel_id,room_number" }, unique);
+    proofBadge("1", referenced.pairCenter - 50, 618, unique);
+    label("Unique", referenced.pairCenter - 22, 618, "surface-fact-label", "start", unique);
+    label("all-non-null combinations", referenced.pairCenter, 638, "surface-fact-detail", "middle", unique);
+
+    // Coverage is one relation between two column groups. Its direction follows
+    // the reference, even when the referencing operand is on the right.
+    const coverage = proofReveal(2, surface, "coverage-evidence", "2");
+    [referencing, referenced].forEach(input => element("rect", {
+      x: input.pairStart - 3, y: 555, width: input.pairEnd - input.pairStart + 6, height: 34, rx: 3,
+      class: "surface-group", "data-operand": input.name, "data-columns": "hotel_id,room_number"
+    }, coverage));
+    const sourceX = example.swapped ? referencing.pairStart - 3 : referencing.pairEnd + 3;
+    const targetX = example.swapped ? referenced.pairEnd + 3 : referenced.pairStart - 3;
+    // Rounded bends stay outside the key groups; the lower lane leaves space
+    // for uniqueness and per-column nullability between the headers and link.
+    const coverageCenter = (sourceX + targetX) / 2;
+    const direction = Math.sign(targetX - sourceX);
+    element("path", { d: `M ${sourceX} 589 V 639 Q ${sourceX} 657, ${sourceX + direction * 18} 657 H ${targetX - direction * 18} Q ${targetX} 657, ${targetX} 639 V 589`, class: "coverage-link",
+      "data-from": "reservations", "data-to": "rooms", "marker-end": "url(#coverage-head)" }, coverage);
+    element("rect", { x: coverageCenter - 82, y: 643, width: 164, height: 28, fill: "white" }, coverage);
+    proofBadge("2", coverageCenter - 63, 657, coverage);
+    label("Coverage", coverageCenter - 35, 657, "surface-fact-label", "start", coverage);
+
+    // Nullability is a separate fact for each exposed referencing column.
+    const nonnull = proofReveal(3, surface, "nonnull-evidence", "3a");
+    referencing.keyColumns.forEach(column => {
+      const marker = element("g", { class: "surface-null-marker", "data-operand": "reservations",
+        "data-column": column.name, "data-known-nonnull": example.knownNotNull }, nonnull);
+      line(column.x + column.width / 2, 586, column.x + column.width / 2, 594, "surface-group", marker);
+      element("rect", { x: column.x + 6, y: 594, width: column.width - 12, height: 24, rx: 3, class: "surface-null-box" }, marker);
+      label(example.knownNotNull ? "Known not null" : "Possibly nullable", column.x + column.width / 2, 606, "surface-null-value", "middle", marker);
+    });
+    proofBadge("3a", referencing.pairCenter - 73, 638, nonnull);
+    label("Nullability", referencing.pairCenter - 49, 638, "surface-fact-label", "start", nonnull);
+
+    const dataGroup = document.createElement("section");
+    dataGroup.setAttribute("aria-label", `${example.leftTable} ${example.joinType} ${example.rightTable}: key join specification`);
+    dataGroup.hidden = true;
+    dataSection.appendChild(dataGroup);
+    example.dataGroup = dataGroup;
+    inputs.forEach(input => accessibleTable(`${input.name} — ${input.role}`, input.headers, [], dataGroup));
+    const queryText = document.createElement("pre"); queryText.textContent = example.query; dataGroup.appendChild(queryText);
+    accessibleTable("Join result columns", headers, [], dataGroup);
+    const entries = [
+      `At the rooms operand surface, all-non-null combinations of (hotel_id, room_number) are unique. Base fact from CREATE TABLE rooms: ${example.ddlUnique}`,
+      `At the operand surfaces, every all-non-null combination of reservations (hotel_id, room_number) is covered by rooms (hotel_id, room_number). Base fact from CREATE TABLE reservations: ${example.ddlForeignKey}`,
+      `At the reservations operand surface, hotel_id: ${example.knownNotNull ? "known not null" : "possibly nullable"}; room_number: ${example.knownNotNull ? "known not null" : "possibly nullable"}. Base facts from CREATE TABLE reservations: ${example.ddlColumns}`,
+      `${example.joinType} ${example.conditions[3] ? "preserves" : "does not preserve"} the referencing operand.`,
+      example.accepted ? `Accepted. Guarantees: ${guaranteeSummary}` : `Rejected before execution. ${example.rejectionLines.join(" ")}`
+    ];
+    entries.forEach((text, index) => {
+      const entry = document.createElement("p");
+      entry.setAttribute("data-reveal-step", [1, 2, 3, 3, example.decisionStage][index]);
+      entry.textContent = text;
+      dataGroup.appendChild(entry);
+    });
+  }
+  proofExamples.forEach(buildProofExample);
+
+  function clearRowFocus() {
+    svg.classList.remove("has-row-focus");
+    svg.querySelectorAll(".focused").forEach(node => node.classList.remove("focused"));
+  }
+
+  function showStep(index) {
+    step = Math.max(0, Math.min(steps.length - 1, index));
+    clearRowFocus();
+    const { example, stage } = steps[step];
+    presentation.dataset.step = String(stage);
+    presentation.dataset.example = example.name;
+    const isProof = example.kind === "specification";
+    const isIntro = example.kind === "introduction";
+    const isIndex = example.kind === "index";
+    const isSpecificationPart = isProof || isIntro;
+    const isResult = !isSpecificationPart && !isIndex;
+    presentation.dataset.kind = isIndex ? "index" : isIntro ? "introduction" : isProof ? "specification" : "result";
+    presentation.dataset.complete = String(Boolean(!isSpecificationPart && example.revealTogether && stage > 0));
+    document.getElementById("query-index").hidden = !isIndex;
+    document.getElementById("specification-intro").hidden = !isIntro;
+    document.getElementById("diagram-panel").hidden = isIntro || isIndex;
+    document.getElementById("explanation-panel").hidden = isIntro || isIndex;
+    allQueriesButton.hidden = !isResult;
+    dataSection.hidden = isIntro || isIndex;
+    allExamples.forEach(item => {
+      const active = item === example;
+      const revealStage = resultRevealStage(item, stage);
+      item.scene.setAttribute("display", active ? "inline" : "none");
+      item.scene.setAttribute("aria-hidden", String(!active));
+      item.dataGroup.hidden = !active;
+      item.scene.querySelectorAll("[data-reveal-step]").forEach(node => {
+        const visible = active && revealStage >= Number(node.dataset.revealStep);
+        node.setAttribute("visibility", visible ? "visible" : "hidden");
+        node.setAttribute("aria-hidden", String(!visible));
+      });
+      if (item.kind === "specification") {
+        item.dataGroup.querySelectorAll("[data-reveal-step]").forEach(node => {
+          node.hidden = !active || stage < Number(node.dataset.revealStep);
+        });
+        return;
+      }
+      item.dataGroup.querySelector("[data-match-links-note]").hidden = !active || revealStage < 2;
+      const failureNote = item.dataGroup.querySelector("[data-failure-note]");
+      if (failureNote) failureNote.hidden = !active || stage === 0;
+      item.accessibleResultRows.forEach((row, rowIndex) => {
+        row.hidden = !active || revealStage < (item.resultRows[rowIndex].sourceIndex === null ? item.extraStage : 1);
+        row.querySelectorAll("td").forEach((cell, col) => {
+          const result = item.resultRows[rowIndex];
+          const value = result.values[col];
+          cell.textContent = !active || revealStage < resultCellStep(item, result, col)
+            ? "Not yet revealed" : value === null ? "NULL" : String(value);
+        });
+      });
+    });
+    document.getElementById("join-notes").hidden = !isResult;
+    document.getElementById("proof-notes").hidden = !isProof;
+    document.getElementById("section-switch").textContent = isSpecificationPart ? "← Key joins" : "Key join specifications →";
+    pageTitle.textContent = isSpecificationPart ? "What is a <" : "What is a ";
+    element("tspan", { "font-style": "italic" }, pageTitle).textContent = isSpecificationPart ? "key join specification" : "key join";
+    element("tspan", {}, pageTitle).textContent = isSpecificationPart ? ">?" : "?";
+    const title = isSpecificationPart ? "What is a <key join specification>?" : "What is a key join?";
+    document.title = title;
+    document.getElementById("diagram-title").textContent = title;
+    if (isIndex) {
+      document.getElementById("step-status").textContent = `Step ${step + 1} of ${steps.length}. What is a key join? Choose one of seven ON join examples. Each card states whether the join is a key join for its example inputs. Select it to inspect those inputs and reveal its result.`;
+    } else if (isIntro) {
+      document.getElementById("step-status").textContent = `Step ${step + 1} of ${steps.length}. What is a key join specification? Introduction. FOR KEY requires the DBMS to prove sufficient conditions before execution. The arrow points from referencing to referenced; column lists follow operand order. If accepted, FOR KEY becomes an ON condition with equality comparisons.`;
+    } else if (isProof) showProofNotes(example, stage);
+    else showResultNotes(example, stage);
+    document.getElementById("step-counter").textContent = `${step + 1} / ${steps.length}`;
+    document.getElementById("previous").disabled = step === 0;
+    document.getElementById("next").disabled = step === steps.length - 1;
+  }
+
+  function showProofNotes(example, stage) {
+    const conditionIds = ["unique", "coverage", "nonnull", "preservation"];
+    const alternativesRevealed = stage >= 3;
+    document.getElementById("condition-and-coverage").setAttribute("aria-hidden", String(stage < 2));
+    document.getElementById("condition-and-alternatives").setAttribute("aria-hidden", String(!alternativesRevealed));
+    document.getElementById("condition-alternatives").setAttribute("aria-hidden", String(!alternativesRevealed));
+    conditionIds.forEach((id, index) => {
+      const revealed = stage >= Math.min(index + 1, 3);
+      document.getElementById(`condition-${id}`).setAttribute("aria-hidden", String(!revealed));
+      setMark(`condition-${id}-mark`, example.conditions[index]);
+      const mark = document.getElementById(`condition-${id}-mark`);
+      mark.setAttribute("aria-label", example.conditions[index] ? "Established" : "Not established");
+      // Show each result independently; OR means one established alternative suffices.
+      mark.setAttribute("aria-hidden", String(!revealed));
+    });
+    document.getElementById("condition-or").setAttribute("aria-hidden", String(!alternativesRevealed));
+    const decisionRevealed = stage >= example.decisionStage;
+    const implyGuarantees = decisionRevealed && example.accepted;
+    document.getElementById("proof-implication").setAttribute("aria-hidden", String(!implyGuarantees));
+    document.getElementById("implied-guarantees").setAttribute("aria-hidden", String(!implyGuarantees));
+    document.getElementById("diagram-desc").textContent = `The reservations table is the referencing operand on the ${example.swapped ? "right" : "left"}; rooms is the referenced operand. Only column headers are shown, with no sample data. Conditions are checked on facts at the operand surfaces: uniqueness of the referenced column combination, coverage between the two column groups, and whether each referencing column is known not null. The DDL below supplies the base facts. The join type can preserve the referencing operand. Conditions 1 and 2 and either 3a or 3b imply the guarantees. Rejection means the guarantees cannot be established from these declarations and this query.`;
+    let phaseText = "Start. Check the facts at the operand surfaces and the join type.";
+    if (stage >= 1 && stage <= 2) {
+      const id = conditionIds[stage - 1];
+      phaseText = `${example.conditions[stage - 1] ? "Established" : "Not established"}: ${document.getElementById(`condition-${id}-text`).textContent}`;
+    } else if (stage === 3) {
+      phaseText = "At least one of conditions 3a and 3b must hold. " + conditionIds.slice(2)
+        .map((id, index) => `Condition ${index === 0 ? "3a" : "3b"}. ${example.conditions[index + 2] ? "Established" : "Not established"}: ${document.getElementById(`condition-${id}-text`).textContent}`)
+        .join(" ");
+    }
+    if (decisionRevealed) phaseText += example.accepted ? ` Accepted. Guarantees: ${guaranteeSummary}`
+      : ` Rejected before execution. ${example.rejectionLines.join(" ")}`;
+    document.getElementById("step-status").textContent = `Step ${step + 1} of ${steps.length}. Key join specification. ${example.leftTable} ${example.joinType} ${example.rightTable}. ${phaseText}`;
+  }
+
+  function showResultNotes(example, stage) {
+    const revealStage = resultRevealStage(example, stage);
+    const resultDescription = example.revealTogether && stage > 0
+      ? "This ON join executes and its complete result is shown, but it is not a key join."
+      : "Result cells appear in steps; cells that have not yet been revealed are not drawn.";
+    document.getElementById("diagram-desc").textContent = `The reservations table is the referencing table on the ${example.swapped ? "right" : "left"}. The rooms table is the referenced table on the ${example.swapped ? "left" : "right"}. Both tables enter the ${example.joinType} below the result. ${resultDescription} SQL null values are written as NULL. The table data and query are also available as text after the presentation controls.`;
+    document.getElementById("guarantees-section").setAttribute("aria-hidden", String(revealStage === 0));
+    document.getElementById("guarantee-rows").setAttribute("aria-hidden", String(revealStage < 1));
+    document.getElementById("guarantee-match").setAttribute("aria-hidden", String(revealStage < 2));
+    ["guarantee-rows-mark", "guarantee-match-mark"].forEach((id, index) => setMark(id, example.guarantees[index]));
+    const isKeyJoin = example.guarantees.every(Boolean);
+    const finalStep = stage === example.phases.length - 1;
+    setMark("verdict-mark", isKeyJoin);
+    document.getElementById("verdict-text").textContent = isKeyJoin ? "It’s a key join" : "It’s not a key join";
+    document.getElementById("verdict").setAttribute("aria-hidden", String(!finalStep));
+    const showExtra = example.extraStage !== null && revealStage >= example.extraStage;
+    document.getElementById("explanation-extra").setAttribute("aria-hidden", String(!showExtra));
+    document.getElementById("explanations").setAttribute("aria-hidden", String(!showExtra));
+    const phaseText = example.revealTogether && stage > 0
+      ? "The ON join executes; its complete result is shown. " + example.guarantees.map((passed, index) => `${passed ? "Pass" : "Fail"}: ${guaranteeText[index]}`).join(" ")
+      : stage === 0 ? "Start." : stage <= 2
+      ? `${example.guarantees[stage - 1] ? "Pass" : "Fail"}: ${guaranteeText[stage - 1]}`
+      : document.getElementById("explanation-extra").textContent;
+    document.getElementById("step-status").textContent = `Step ${step + 1} of ${steps.length}. ${example.leftTable} ${example.joinType} ${example.rightTable}. ${phaseText}${finalStep ? " " + document.getElementById("verdict-text").textContent + "." : ""}`;
+  }
+  function setMark(id, passed) {
+    const mark = document.getElementById(id);
+    mark.textContent = passed ? "✓" : "✗";
+    mark.setAttribute("aria-label", passed ? "Pass" : "Fail");
+  }
+  const fullscreenButton = document.getElementById("fullscreen");
+  const fullscreenMessage = document.getElementById("fullscreen-message");
+  function isFullscreen() {
+    return Boolean(document.fullscreenElement || document.webkitFullscreenElement || document.webkitIsFullScreen);
+  }
+  function syncFullscreenButton() {
+    const active = isFullscreen();
+    document.getElementById("presentation-controls").hidden = active;
+    presentation.dataset.fullscreen = String(active);
+    fullscreenButton.textContent = active ? "Exit full screen" : "Full screen";
+    fullscreenButton.setAttribute("aria-pressed", String(active));
+    fullscreenButton.setAttribute("title", active ? "Exit full screen. You can also press Esc." : "Enter full screen");
+  }
+  function reportFullscreenError() {
+    fullscreenMessage.textContent = isFullscreen()
+      ? "Press Esc to leave full screen."
+      : "Full screen is not available in this browser. Try this file in another browser.";
+    fullscreenMessage.hidden = false;
+    syncFullscreenButton();
+  }
+  async function toggleFullscreen() {
+    fullscreenMessage.hidden = true;
+    fullscreenButton.disabled = true;
+    try {
+      if (isFullscreen()) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (!exit) throw new Error("No fullscreen exit method");
+        await exit.call(document);
+      } else {
+        const root = document.documentElement;
+        const enter = root.requestFullscreen || root.webkitRequestFullscreen;
+        if (!enter) throw new Error("No fullscreen request method");
+        // Call directly from the user's click to preserve user activation.
+        await enter.call(root);
+      }
+    } catch {
+      reportFullscreenError();
+    } finally {
+      fullscreenButton.disabled = false;
+      syncFullscreenButton();
+    }
+  }
+  fullscreenButton.addEventListener("click", toggleFullscreen);
+  for (const eventName of ["fullscreenchange", "webkitfullscreenchange"]) {
+    document.addEventListener(eventName, () => {
+      fullscreenMessage.hidden = true;
+      syncFullscreenButton();
+    });
+  }
+  for (const eventName of ["fullscreenerror", "webkitfullscreenerror"]) {
+    document.addEventListener(eventName, reportFullscreenError);
+  }
+  syncFullscreenButton();
+  document.getElementById("previous").addEventListener("click", () => showStep(step - 1));
+  document.getElementById("next").addEventListener("click", () => showStep(step + 1));
+  document.getElementById("section-switch").addEventListener("click", () => showStep(step < firstProofStep ? firstProofStep : 0));
+  document.addEventListener("keydown", event => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest("input, textarea, select, [contenteditable='true']")) return;
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    if (!event.repeat) {
+      showStep(step + (event.key === "ArrowRight" ? 1 : -1));
+      presentation.focus({ preventScroll: true });
+    }
+  });
+  showStep(0);
+})();
+</script>
+</body>
+</html>
