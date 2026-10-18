@@ -3,6 +3,9 @@
 % All historical SQL is labelled. Contemporary examples use TAS-028R1 syntax.
 % Current presenter notes and provenance are kept beside each slide below.
 % Earlier Markdown presenter guides are preserved in archive/.
+% Main talk: 27 slides, Questions at 38:00; six unplanned appendix slides.
+% Timing includes brief pauses and speaker handoffs. Rehearse against 40 minutes.
+% Checkpoints: breakthrough at 16:15; acceptance ends 28:15; payoff ends 36:00.
 \documentclass[12pt]{article}
 \usepackage[paperwidth=400mm,paperheight=225mm,margin=0mm]{geometry}
 \usepackage[T1]{fontenc}
@@ -65,36 +68,31 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
 \TimelineRegister{6}{1}{2021-03-27}{2021-03-27}{}
 \TimelineRegister{7}{2}{2021-03-27}{2021-03-31}{}
 \TimelineRegister{8}{2}{2021-03-28}{2021-03-31}{}
-\TimelineRegister{9}{2}{2021-03-28}{2022-05-09}{}
-\TimelineRegister{10}{2}{2021-12-01}{2022-03-31}{}
-\TimelineRegister{11}{2}{2022-01-24}{2022-05-09}{}
-\TimelineRegister{12}{2}{2022-05-09}{2023-09-27}{CMN-023}
-\TimelineRegister{13}{2}{2023-09-28}{2024-09-30}{}
-\TimelineRegister{14}{2}{2024-09-30}{2024-10-25}{}
-\TimelineRegister{15}{1}{2024-10-06}{2024-10-06}{}
-\TimelineRegister{16}{1}{2024-10-23}{2024-10-23}{}
-\TimelineRegister{17}{1}{2025-02-08}{2025-02-08}{}
-\TimelineRegister{18}{2}{2024-12-21}{2025-07-17}{POS-009}
-\TimelineRegister{19}{2}{2025-09-22}{2025-12-08}{BCN-060}
-\TimelineRegister{20}{2}{2025-10-21}{2025-10-24}{}
-\TimelineRegister{21}{2}{2025-12-09}{2025-12-11}{W30-020}
-\TimelineRegister{22}{2}{2025-12-08}{2025-12-11}{W30-020}
-\TimelineRegister{23}{2}{2026-04-02}{2026-04-21}{}
-\TimelineRegister{24}{1}{2026-04-04}{2026-04-04}{}
-\TimelineRegister{25}{2}{2026-03-12}{2026-05-28}{}
-\TimelineRegister{26}{2}{2026-06-15}{2026-06-19}{BMA-015}
-\TimelineRegister{27}{2}{2026-06-15}{2026-09-30}{W32-024}
-\TimelineRegister{28}{2}{2026-08-18}{2026-09-20}{TAS-028}
-\TimelineRegister{29}{1}{2026-10-12}{2026-10-12}{TAS-028}
-\TimelineRegister{30}{0}{}{}{}
-\TimelineRegister{31}{0}{}{}{}
-\TimelineRegister{32}{0}{}{}{}
+\TimelineRegister{9}{2}{2021-12-01}{2022-05-09}{}
+\TimelineRegister{10}{2}{2022-05-09}{2023-09-27}{CMN-023}
+\TimelineRegister{11}{2}{2024-09-30}{2024-10-25}{}
+\TimelineRegister{12}{1}{2024-10-23}{2024-10-23}{}
+\TimelineRegister{13}{1}{2025-02-08}{2025-02-08}{}
+\TimelineRegister{14}{2}{2024-12-21}{2025-07-17}{POS-009}
+\TimelineRegister{15}{2}{2025-09-22}{2025-12-08}{BCN-060}
+\TimelineRegister{16}{2}{2026-04-02}{2026-04-21}{}
+\TimelineRegister{17}{1}{2026-04-04}{2026-04-04}{}
+\TimelineRegister{18}{2}{2025-10-21}{2026-05-28}{}
+\TimelineRegister{19}{2}{2026-06-15}{2026-06-19}{BMA-015}
+\TimelineRegister{20}{2}{2026-06-15}{2026-09-30}{W32-024}
+\TimelineRegister{21}{1}{2026-10-12}{2026-10-12}{TAS-028}
+\TimelineRegister{22}{0}{}{}{}
+\TimelineRegister{23}{0}{}{}{}
+\TimelineRegister{24}{0}{}{}{}
+\TimelineRegister{25}{0}{}{}{}
+\TimelineRegister{26}{0}{}{}{}
+\TimelineRegister{27}{0}{}{}{}
+\TimelineRegister{28}{2}{2021-03-28}{2022-05-09}{}
+\TimelineRegister{29}{2}{2023-09-28}{2024-09-30}{}
+\TimelineRegister{30}{1}{2024-10-06}{2024-10-06}{}
+\TimelineRegister{31}{2}{2025-12-09}{2025-12-11}{W30-020}
+\TimelineRegister{32}{2}{2025-12-08}{2025-12-11}{W30-020}
 \TimelineRegister{33}{0}{}{}{}
-\TimelineRegister{34}{0}{}{}{}
-
-
-
-\TimelineRegister{35}{0}{}{}{}
 
 \newcommand{\TimelineProposal}[4]{%
   \TimelineDateX{#1}{\TimelineProposalX}%
@@ -372,9 +370,10 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \FanoutCheckHeight{\fanoutTerminal}{125mm}{Fanout psql session}
 
 % 1. Designing a new SQL language feature
+% Rehearsal: 0:15; elapsed 0:00--0:15.
 % Presenter note: Open with the outcome: WG3 agreed to accept the proposal in Tashkent. This talk is the story of how the feature changed, not a tutorial on every rule.
 % The recording identifies Joel and Andreas as the presenters. Use Joel Jacobson, the international spelling he uses in the PostgreSQL community.
-\begin{slide}{1}{PGConf.EU \textperiodcentered{} Valencia \textperiodcentered{} 20 October 2026}{Designing a new SQL language feature}{PGConf.EU 2026 \textperiodcentered{} Designing a new SQL language feature: Key joins}{1 / 34}
+\begin{slide}{1}{PGConf.EU \textperiodcentered{} Valencia \textperiodcentered{} 20 October 2026}{Designing a new SQL language feature}{PGConf.EU 2026 \textperiodcentered{} Designing a new SQL language feature: Key joins}{1 / 27}
 \pdfbookmark[0]{Designing a new SQL language feature}{slide-1}
 \txt{18}{83}{364}{63}{77.5}{ink}{\textbf{Key joins}}
 \txt{20}{125}{350}{27}{33.2}{muted}{Five years from an idea to an SQL feature}
@@ -383,8 +382,9 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \end{slide}
 
 % 2. Who are we?
+% Rehearsal: 0:30; elapsed 0:15--0:45.
 % Presenter note: Recording 00:00–01:25. Both of us have written and reviewed large SQL queries, stored procedures, layered CTEs and views. That is the practical reason we care. Keep personal introductions short; this is not a CV slide.
-\begin{slide}{2}{Application queries brought us here}{Who are we?}{Presenters\textquoteright{} account; PGConf.EU session listing}{2 / 34}
+\begin{slide}{2}{Application queries brought us here}{Who are we?}{Presenters\textquoteright{} account; PGConf.EU session listing}{2 / 27}
 \pdfbookmark[0]{Who are we?}{slide-2}
 \txt{18}{77}{171}{34}{41}{blue}{\textbf{Andreas Karlsson}}
 \txt{211}{77}{171}{34}{41}{blue}{\textbf{Joel Jacobson}}
@@ -395,26 +395,27 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \end{slide}
 
 % 3. What will this talk be about?
+% Rehearsal: 0:30; elapsed 0:45--1:15.
 % Presenter note: Recording 01:27–06:17. Signal the promised story: proposals that did not work, community feedback, implementation and committee collaboration. Acceptance is the coauthors’ first-hand report of the TAS meeting, not a claim that a new ISO edition has already been published.
-% The prepared talk is timed separately in this guide; leave time for questions.
-\begin{slide}{3}{One idea, many revisions}{What will this talk be about?}{2021 mailing-list discussion; WG3 papers; presenters\textquoteright{} account of TAS}{3 / 34}
+% Keep this to 30 seconds. Acceptance gives the audience a reason to follow the journey.
+\begin{slide}{3}{One idea, many revisions}{What will this talk be about?}{2021 mailing-list discussion; WG3 papers; presenters\textquoteright{} account of TAS}{3 / 27}
 \pdfbookmark[0]{What will this talk be about?}{slide-3}
-\txt{18}{80}{100}{37}{45.5}{blue}{2021}
-\txt{18}{103}{103}{25}{30.8}{ink}{A shorter way\\to write joins}
-\txt{149}{80}{100}{37}{45.5}{blue}{2024\textendash{}2026}
-\txt{149}{103}{106}{25}{30.8}{ink}{From shorthand\\to guarantees}
-\txt{280}{80}{100}{37}{45.5}{teal}{October 2026}
-\txt{280}{103}{105}{25}{30.8}{ink}{Key Joins\\accepted by WG3}
-\draw[blue,line width=1.5pt,-{Stealth[length=3mm]}] (120,103) -- (140,103);
-\draw[blue,line width=1.5pt,-{Stealth[length=3mm]}] (255,103) -- (272,103);
+\txt{18}{77}{364}{16}{20}{muted}{12 OCTOBER 2026 \textperiodcentered{} TASHKENT}
+\txt{18}{94}{364}{42}{51}{teal}{\textbf{Key Joins accepted by WG3}}
+\draw[rulecolor,line width=1pt] (18,127) -- (382,127);
+\txt{18}{144}{170}{16}{20}{blue}{\textbf{WHERE WE STARTED}}
+\txt{18}{163}{170}{27}{33}{ink}{A shorter way to write joins.}
+\txt{211}{144}{171}{16}{20}{blue}{\textbf{WHERE IT LED}}
+\txt{211}{163}{171}{27}{33}{ink}{New join syntax with\\compile-time guarantees.}
 \end{slide}
 
 % 4. It runs. Is it right?
+% Rehearsal: 1:15; elapsed 1:15--2:30.
 % Presenter note: Establish the purpose without explaining the fanout or revealing
 % FOR KEY syntax and diagnostics yet. "Key Joins are about writing joins whose
 % intent is easier to read, and letting the database check that intent. That
 % helps us catch query bugs during development." Invite the audience to consider
-% the query, then continue the story. Return to it after acceptance and the retrospective.
+% the query, then continue the story. Promise to return to it after acceptance and the final guarantees.
 % Source attribution stays in notes because the thread title reveals the problem:
 % Paul Jungwirth, "Avoiding double-counting in aggregates with more than one join?"
 % https://www.postgresql.org/message-id/flat/86b9ec78-925c-1935-bc9d-6bad4ceb1f40@illuminatedcomputing.com
@@ -427,13 +428,16 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % the whole query correct. The standalone examples/key-joins-fanout.tex retains
 % the input rows, complete diagnostic, and corrected aggregation queries.
 % Omit the tentative BEAVER percentages from the recording: they awaited verification.
-\begin{slide}{4}{}{It runs. Is it right?}{}{4 / 34}
+% Delivery: State the task: item totals and payment totals for each order.
+% Give the audience a moment to look, without explaining the fanout yet.
+\begin{slide}{4}{}{It runs. Is it right?}{}{4 / 27}
 \pdfbookmark[0]{It runs. Is it right?}{slide-4}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,85) {\usebox{\openingFanout}};
 \txt{18}{188}{364}{26}{32}{blue}{Make join intent explicit. Catch mistakes before execution.}
 \end{slide}
 
 % 5. More joins. More to check.
+% Rehearsal: 0:30; elapsed 2:30--3:00.
 % Presenter note: This is an example of complexity, not a claim that this query
 % contains a bug. "For each join, we need to understand the relevant constraints
 % and what the preceding query does to the rows. As queries grow, that becomes
@@ -445,17 +449,19 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % example: aggregate each many side by order_id before joining it to orders.
 % This leaves o.id unique for the next join and returns the intended 100/100.
 % The query author chooses where to aggregate; FOR KEY verifies each join.
-\begin{slide}{5}{}{More joins. More to check.}{}{5 / 34}
-\pdfbookmark[0]{More joins. More to check.}{slide-4-corrected}
+% Delivery: 30 seconds only. Do not read or explain the individual joins.
+\begin{slide}{5}{}{More joins. More to check.}{}{5 / 27}
+\pdfbookmark[0]{More joins. More to check.}{slide-5}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexOn}};
 \txt{18}{198}{364}{21}{26}{blue}{Now imagine these names refer to views built on other views.}
 \end{slide}
 
 % 6. Joel’s first idea
+% Rehearsal: 1:30; elapsed 3:00--4:30.
 % Presenter note: Recording 06:17–08:57. Joel saw Neo4j’s SQL/Cypher comparison and mistakenly assumed its arrows meant foreign-key references. That misunderstanding inspired the idea. This exact path-expression query is reproduced in the written background and 2021 thread. It was a convenience idea, with the presence of a foreign key as a check; it did not yet have today’s preservation contract.
 % Source: https://www.postgresql.org/message-id/flat/CAMsGm5eeDXFX7oA9H6hF0E%2BaZZP4D8nbChtt_3BSotGPLXshNQ%40mail.gmail.com
-\begin{slide}{6}{27 March 2021 \textperiodcentered{} Inspired by Cypher}{Joel\textquoteright{}s first idea}{pgsql-hackers, March 2021 \textperiodcentered{} \textquotedblleft{}Avoid JOINs by using path expressions to follow FKs\textquotedblright{}}{6 / 34}
-\pdfbookmark[0]{Joel\textquoteright{}s first idea}{slide-5}
+\begin{slide}{6}{27 March 2021 \textperiodcentered{} Inspired by Cypher}{Joel\textquoteright{}s first idea}{pgsql-hackers, March 2021 \textperiodcentered{} \textquotedblleft{}Avoid JOINs by using path expressions to follow FKs\textquotedblright{}}{6 / 27}
+\pdfbookmark[0]{Joel\textquoteright{}s first idea}{slide-6}
 \txt{18}{76}{350}{14.5}{17.8}{blue}{\textbf{COULD SQL FOLLOW FOREIGN KEYS WITH PATH EXPRESSIONS?}}
 \codeat{18}{95}{22}{28.6}{\textcolor{blue}{\textbf{SELECT}} \textcolor{blue}{\textbf{DISTINCT}} od.order\_id.customer\_id.company\_name\strut \\
 \textcolor{blue}{\textbf{FROM}} order\_details \textcolor{blue}{\textbf{AS}} od\strut \\
@@ -465,10 +471,13 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \end{slide}
 
 % 7. Feedback from mailinglist
+% Rehearsal: 1:15; elapsed 4:30--5:45.
 % Presenter note: Recording 08:57–10:42. Credit the actual argument correctly: Álvaro Herrera raised ambiguity after adding a foreign key; Tom Lane explained the dependency problem and the composite-key issue. Andrew Dunstan and Pavel Stehule objected to hiding joins. Pantelis Theodosiou discussed intermediate results and repeated paths.
 % Joel initially defended the idea by comparing it to USING/NATURAL. In retrospect, an existing awkward feature is not a good reason to add another. Keep this self-critical rather than dismissing the feedback.
-\begin{slide}{7}{Late March 2021 \textperiodcentered{} The problems with implicit joins}{Feedback from mailinglist}{pgsql-hackers, March 2021 \textperiodcentered{} Herrera, Lane, Dunstan, Stehule, Theodosiou}{7 / 34}
-\pdfbookmark[0]{Feedback from mailinglist}{slide-6}
+% Delivery: Concentrate on relationship ambiguity and hidden joins. The other
+% questions are visible context; do not enumerate every historical objection.
+\begin{slide}{7}{Late March 2021 \textperiodcentered{} The problems with implicit joins}{Feedback from mailinglist}{pgsql-hackers, March 2021 \textperiodcentered{} Herrera, Lane, Dunstan, Stehule, Theodosiou}{7 / 27}
+\pdfbookmark[0]{Feedback from mailinglist}{slide-7}
 \txt{18}{78}{170}{27}{33.2}{ink}{What about composite keys?\\[4mm]Which foreign key?}
 \txt{211}{78}{171}{27}{33.2}{ink}{What about outer joins?\\[4mm]How many joins did we just write?}
 \draw[rulecolor,line width=1pt] (18,142) -- (382,142);
@@ -476,146 +485,115 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \end{slide}
 
 % 8. Proposal from Vik
+% Rehearsal: 1:30; elapsed 5:45--7:15.
 % Presenter note: Recording 10:42–13:02. Vik’s concrete alternative mattered more than his “terrible idea” opening. The WITH example is the historical suggestion, not final syntax. It also handles multi-column foreign keys. Andreas recalls this as the point where he became interested. Vik’s insistence on working with the SQL standard shaped the next step.
 % Quotes verified against Vik's public messages of 28 March (two different replies) and 31 March 2021. The first concerns the implicit-path idea; the last agrees with Pavel about avoiding proprietary syntax. Preserve the original capitalized Standard. The dates in the footer link to the three original messages.
-\begin{slide}{8}{28\textendash{}31 March 2021 \textperiodcentered{} Keep the join explicit}{Proposal from Vik}{Vik Fearing, pgsql-hackers: \href{https://www.postgresql.org/message-id/f2eff805-69ec-4968-788c-053abd32b168@postgresfriends.org}{28 March (first reply)}; \href{https://www.postgresql.org/message-id/f5770a13-61a6-603e-6a66-14c65eea9998@postgresfriends.org}{28 March (follow-up)}; \href{https://www.postgresql.org/message-id/e1e3b3d1-d337-db15-71c9-d1e4da6f5e9c@postgresfriends.org}{31 March 2021}}{8 / 34}
-\pdfbookmark[0]{Proposal from Vik}{slide-7}
+% Transition: Keeping the join explicit solved one problem. Naming a foreign
+% key exposed another. Introduce Anders Granlund as an early coauthor here.
+\begin{slide}{8}{28\textendash{}31 March 2021 \textperiodcentered{} Keep the join explicit}{Proposal from Vik}{Vik Fearing, pgsql-hackers: \href{https://www.postgresql.org/message-id/f2eff805-69ec-4968-788c-053abd32b168@postgresfriends.org}{28 March (first reply)}; \href{https://www.postgresql.org/message-id/f5770a13-61a6-603e-6a66-14c65eea9998@postgresfriends.org}{28 March (follow-up)}; \href{https://www.postgresql.org/message-id/e1e3b3d1-d337-db15-71c9-d1e4da6f5e9c@postgresfriends.org}{31 March 2021}}{8 / 27}
+\pdfbookmark[0]{Proposal from Vik}{slide-8}
 \txt{18}{77}{364}{27}{34}{ink}{\textquotedblleft{}This is a terrible idea, but let me explain why.\textquotedblright{}}
 \txt{18}{111}{364}{27}{34}{ink}{\textquotedblleft{}SQL is not an implicit language, though.\textquotedblright{}}
 \codeat{18}{135}{25}{32.5}{\textcolor{blue}{\textbf{FROM}} a \textcolor{blue}{\textbf{JOIN}} b \textcolor{blue}{\textbf{WITH}} a\_b\_fk\strut}
 \txt{18}{166}{364}{27}{34}{ink}{\textquotedblleft{}I'm with you on this: let's do it the Standard way,\\or not do it at all.\textquotedblright{}}
 \end{slide}
 
-% 9. Syntax bikeshedding
-% Presenter note: Recording 13:02–14:36. Introduce Anders Granlund as an early coauthor. The keywords on screen are successive ideas, not an exhaustive chronological list and not all from a single paper. The first WITH is Vik's March suggestion; JOIN WITH is Joel's fully spelled-out December 28 proposal; FOREIGN KEY is the January 2022 draft with one referencing-column list; KEY FROM is the later two-list form. Table and constraint names are adapted consistently. Avoid spending the talk arguing which keyword is prettiest.
-\begin{slide}{9}{March 2021\textendash{}May 2022 \textperiodcentered{} With Anders Granlund, the mailing list and Hacker News}{Syntax bikeshedding}{Historical forms, with names adapted \textperiodcentered{} March and December 2021 correspondence; January and May 2022 drafts}{9 / 34}
-\pdfbookmark[0]{Syntax bikeshedding}{slide-8}
-\txt{18}{74}{364}{13}{16}{muted}{MARCH 2021}
-\codeat{18}{85}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{WITH}} employees\_dept\_id\_fkey\strut}
-\txt{18}{106}{364}{13}{16}{muted}{DECEMBER 2021}
-\codeat{18}{117}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} \textcolor{blue}{\textbf{WITH}} e.employees\_dept\_id\_fkey d\strut}
-\txt{18}{138}{364}{13}{16}{muted}{JANUARY 2022}
-\codeat{18}{149}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{FOREIGN}} \textcolor{blue}{\textbf{KEY}} (dept\_id) \textcolor{blue}{\textbf{FROM}} e\strut}
-\txt{18}{170}{364}{13}{16}{muted}{TWO COLUMN LISTS}
-\codeat{18}{181}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{KEY}} (id) \textcolor{blue}{\textbf{FROM}} e (dept\_id)\strut}
-\end{slide}
-
-% 10. Why does constraint names not work?
+% 9. Why does constraint names not work?
+% Rehearsal: 2:15; elapsed 7:15--9:30.
 % Presenter note: Recording 14:36–15:55. Keep the user’s exact title. This teaching example uses two instances of employees, each carrying the same declared dept_id foreign key. A derived table is a query result, such as a view or subquery. The base constraint name alone cannot choose between employee_dept_id and manager_dept_id at this surface. One could design more syntax to resolve this, but a bare name is not enough. This is the specific repeated-base-table issue documented in POS-009 p.3.
 % The JOIN WITH form adapts Joel's December 28, 2021 example, the latest fully spelled-out constraint-name proposal found before the January draft. Later replies also floated incomplete USING KEY/FOREIGN KEY forms. The orange name is known but does not select employee_dept_id versus manager_dept_id. Do not claim all conceivable constraint-name designs are impossible, or that constraint names must be globally unique.
-\begin{slide}{10}{Late 2021\textendash{}early 2022 (approx.) \textperiodcentered{} A declaration is not a column occurrence}{Why does constraint names not work?}{\href{https://www.postgresql.org/message-id/a9a9c45b-7c90-45dc-bdcf-7b3b32a97d41@www.fastmail.com}{JOIN WITH proposal, 28 December 2021}; POS-009, p. 3 \textperiodcentered{} adapted example}{10 / 34}
+% Merged column-list solution (formerly a separate slide):
+% Presenter note: Recording 15:55–16:28. Andreas recalls inspiration from PostgreSQL ON CONFLICT’s ability to identify a unique constraint by columns instead of name. This is an analogy about identifying a relationship; the key-join proof is more involved. The displayed historical syntax follows UTC-107 / CMN-023: the newly joined right table’s list comes first. Later slides will change this.
+% Constraint-name syntax was considered, not proved impossible in all conceivable designs.
+% The adapted referenced column is departments(id). The historical KEY FROM
+% form puts the new/right operand list first. Show the same staff view throughout.
+% The solution chooses employee_dept_id explicitly; manager_dept_id is another
+% occurrence, not another declaration. The DBMS finds the supporting constraint.
+\begin{slide}{9}{Late 2021\textendash{}May 2022 (approx.) \textperiodcentered{} A declaration is not a column occurrence}{Why does constraint names not work?}{\href{https://www.postgresql.org/message-id/a9a9c45b-7c90-45dc-bdcf-7b3b32a97d41@www.fastmail.com}{JOIN WITH proposal, 28 December 2021}; POS-009, p. 3 \textperiodcentered{} adapted example}{9 / 27}
 \pdfbookmark[0]{Why does constraint names not work?}{slide-9}
-\codeat{18}{74}{21}{27.3}{\textcolor{blue}{\textbf{CREATE}} \textcolor{blue}{\textbf{VIEW}} staff \textcolor{blue}{\textbf{AS}}\strut \\
+\codeat{18}{73}{20}{25}{\textcolor{blue}{\textbf{CREATE VIEW}} staff \textcolor{blue}{\textbf{AS}}\strut \\
 \textcolor{blue}{\textbf{SELECT}} e.dept\_id \textcolor{blue}{\textbf{AS}} employee\_dept\_id,\strut \\
 \hspace*{3.675em}m.dept\_id \textcolor{blue}{\textbf{AS}} manager\_dept\_id\strut \\
 \textcolor{blue}{\textbf{FROM}} employees \textcolor{blue}{\textbf{AS}} e\strut \\
-\textcolor{blue}{\textbf{LEFT}} \textcolor{blue}{\textbf{JOIN}} employees \textcolor{blue}{\textbf{AS}} m \textcolor{blue}{\textbf{ON}} e.manager\_id = m.emp\_id;\strut}
-\txt{18}{126}{364}{18}{22}{muted}{Both columns originate from the same foreign key declaration.}
-\codeat{18}{145}{22}{28.6}{\textcolor{blue}{\textbf{FROM}} staff \textcolor{blue}{\textbf{AS}} s\strut \\
-\textcolor{blue}{\textbf{LEFT}} \textcolor{blue}{\textbf{JOIN}} \textcolor{blue}{\textbf{WITH}} s.\textcolor{orange}{\underline{employees\_dept\_id\_fkey}} d\strut}
-\txt{18}{181}{364}{23}{29}{orange}{Which occurrence: \texttt{employee\_dept\_id} or \texttt{manager\_dept\_id}?}
+\textcolor{blue}{\textbf{LEFT JOIN}} employees \textcolor{blue}{\textbf{AS}} m \textcolor{blue}{\textbf{ON}} e.manager\_id = m.emp\_id;\strut}
+\txt{18}{121}{364}{18}{22}{muted}{Both columns originate from the same foreign key declaration.}
+\draw[rulecolor,line width=.7pt] (18,135) -- (382,135);
+\txt{18}{144}{172}{14.5}{18}{orange}{\textbf{THE NAME LEAVES A CHOICE}}
+\codeat{18}{160}{17}{22}{\textcolor{blue}{FROM} staff \textcolor{blue}{AS} s\strut \\
+\textcolor{blue}{LEFT JOIN WITH} s.employees\_dept\_id\_fkey d\strut}
+\txt{18}{182}{172}{20}{25}{ink}{Employee or manager department?}
+\txt{211}{144}{171}{14.5}{18}{blue}{\textbf{COLUMNS MAKE THE CHOICE EXPLICIT}}
+\codeat{211}{160}{17}{22}{\textcolor{blue}{FROM} staff \textcolor{blue}{AS} s\strut \\
+\textcolor{blue}{LEFT JOIN} departments \textcolor{blue}{AS} d\strut \\
+\hspace*{2em}\textcolor{blue}{KEY} (id) \textcolor{blue}{FROM} s (employee\_dept\_id);\strut}
 \end{slide}
 
-% 11. Alternative: column lists
-% Presenter note: Recording 15:55–16:28. Andreas recalls inspiration from PostgreSQL ON CONFLICT’s ability to identify a unique constraint by columns instead of name. This is an analogy about identifying a relationship; the key-join proof is more involved. The displayed historical syntax follows UTC-107 / CMN-023: the newly joined right table’s list comes first. Later slides will change this.
-% Constraint-name syntax was considered, not proved impossible in all conceivable designs.
-\begin{slide}{11}{January\textendash{}May 2022 \textperiodcentered{} Identify the columns exposed by the query}{Alternative: column lists}{May 2022 SIS draft, p. 2; UTC-107 and CMN-023 \textperiodcentered{} two explicit column lists}{11 / 34}
-\pdfbookmark[0]{Alternative: column lists}{slide-10}
-\codeat{18}{80}{25}{32.5}{\textcolor{blue}{\textbf{SELECT}} o.id, c.name\strut \\
-\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
-\textcolor{blue}{\textbf{JOIN}} customers \textcolor{blue}{\textbf{AS}} c \textcolor{blue}{\textbf{KEY}} (id) \textcolor{blue}{\textbf{FROM}} o (customer\_id);\strut}
-\txt{18}{146}{350}{27}{33.2}{ink}{Two lists identify the relationship.\\The DBMS finds the supporting constraint.}
-\txt{18}{190}{350}{18}{22.1}{orange}{Historical KEY FROM syntax, with names adapted for this example.}
-\end{slide}
-
-% 12. Learning the standards process
+% 10. Learning the standards process
+% Rehearsal: 1:15; elapsed 9:30--10:45.
 % Presenter note: Recording 16:28–19:15. Explain WG3 once: the working group responsible for SQL and related database languages. SIS is the Swedish national standards body. Keith Hare presented UTC-107 at Zeist; the next minutes say it was discussed. Joel and Anders then presented CMN-023 in Casablanca. Jörn and Karl saw practical value; Vik volunteered to help.
 % Do not state that nobody responded at UTC as an objective minutes finding. The coauthors’ experience was that the first presentation did not give them a clear next step. Source: W25-001 item 9.2.9; W26-001r1 item 9.2.3.
-\begin{slide}{12}{May 2022\textendash{}September 2023 \textperiodcentered{} From Sweden to WG3}{Learning the standards process}{UTC-107 \ensuremath{\rightarrow} W25-001; CMN-023R3 \ensuremath{\rightarrow} W26-001R1}{12 / 34}
-\pdfbookmark[0]{Learning the standards process}{slide-11}
+\begin{slide}{10}{May 2022\textendash{}September 2023 \textperiodcentered{} From Sweden to WG3}{Learning the standards process}{UTC-107 \ensuremath{\rightarrow} W25-001; CMN-023R3 \ensuremath{\rightarrow} W26-001R1}{10 / 27}
+\pdfbookmark[0]{Learning the standards process}{slide-10}
 \txt{18}{80}{350}{14.5}{17.8}{blue}{\textbf{2022 \textperiodcentered{} SWEDEN}}
 \txt{18}{97}{108}{26}{32.0}{ink}{A proposal sent\\to SIS}
 \txt{147}{80}{350}{14.5}{17.8}{blue}{\textbf{FEBRUARY 2023 \textperiodcentered{} UTC}}
 \txt{147}{97}{109}{26}{32.0}{ink}{Keith presents\\UTC-107}
 \txt{277}{80}{350}{14.5}{17.8}{blue}{\textbf{SEPTEMBER 2023 \textperiodcentered{} CMN}}
 \txt{277}{97}{108}{26}{32.0}{ink}{Joel and Anders\\present CMN-023}
-\draw[blue,line width=1.3pt,-{Stealth[length=3mm]}] (122,116) -- (140,116);
-\draw[blue,line width=1.3pt,-{Stealth[length=3mm]}] (252,116) -- (270,116);
+\draw[blue,line width=1.3pt,-{Stealth[length=3mm]}] (122,106) -- (140,106);
+\draw[blue,line width=1.3pt,-{Stealth[length=3mm]}] (252,106) -- (270,106);
 \txt{18}{159}{350}{27}{33.2}{ink}{Vik offers to help. Karl and Jörn see the use case.}
 \txt{18}{191}{350}{18}{22.1}{muted}{Submitting a paper was only the beginning.}
 \end{slide}
 
-% 13. Sidetrack: the MATCH predicate
-% Presenter note: Recording 19:15–22:01. The MATCH predicate is distinct from a foreign key’s MATCH type. The idea was to build on it to simplify the change proposal, but it did not settle the intended null behavior. This was an internal exploration, not a released implementation. Ordinary equality does not match a null component. We return to the nullability breakthrough later. No need to teach MATCH PARTIAL here or claim no DBMS has ever implemented the predicate.
-% Suggested narration: We already knew how an ordinary equality join behaves.
-% Keeping that behaviour made the feature much easier to reason about.
-% A NULL in any compared column prevents a match, even against another NULL.
-% Leave the separate question of preserving unmatched rows for The breakthrough,
-% where taking the join type into account becomes the next discovery.
-\begin{slide}{13}{Late 2023\textendash{}2024 (approx.) \textperiodcentered{} A shortcut that did not simplify the design}{Sidetrack: the MATCH predicate}{Presenters\textquoteright{} design recollection \textperiodcentered{} recording 19:15\textendash{}22:01}{13 / 34}
-\pdfbookmark[0]{Sidetrack: the MATCH predicate}{slide-12}
-\txt{18}{80}{165}{29}{35.7}{blue}{The hope}
-\txt{18}{104}{165}{25}{30.8}{ink}{Build on the MATCH predicate\\to make the proposal smaller.}
-\txt{211}{80}{170}{29}{35.7}{orange}{The complication}
-\txt{211}{104}{170}{25}{30.8}{ink}{What should happen when some\\referencing values are NULL?}
-\draw[rulecolor,line width=1pt] (18,153) -- (382,153);
-\txt{18}{163}{364}{23}{28}{blue}{The insight}
-\txt{18}{180}{364}{26}{32}{ink}{Transform to an ordinary equijoin.\\A NULL in any compared column means no match.}
-\end{slide}
-
-% 14. Pitching it to the PostgreSQL community
+% 11. A prototype in Athens
+% Rehearsal: 1:00; elapsed 10:45--11:45.
 % Presenter note: Recording 22:01–24:37 and 26:27–28:04. Describe the hallway-salesman anecdote briefly. First found prototype commit is 30 September 2024, followed by the October Athens conference. Base tables were a useful first implementation milestone; it was a mistake to think that this settled the feature’s scope. Query operands also include views, CTEs, subqueries and joined tables.
-\begin{slide}{14}{September\textendash{}October 2024 \textperiodcentered{} A prototype for Athens}{Pitching it to the PostgreSQL community}{Prototype history, September\textendash{}October 2024; PGConf.EU Athens}{14 / 34}
-\pdfbookmark[0]{Pitching it to the PostgreSQL community}{slide-13}
+% Transition: Base tables worked. Real application queries contain views,
+% CTEs and earlier joins. Those must have a specified meaning too.
+\begin{slide}{11}{September\textendash{}October 2024 \textperiodcentered{} A prototype for Athens}{A prototype in Athens}{Prototype history, September\textendash{}October 2024; PGConf.EU Athens}{11 / 27}
+\pdfbookmark[0]{A prototype in Athens}{slide-11}
 \txt{18}{78}{350}{34}{41.8}{blue}{\textquotedblleft{}Do you use joins?\textquotedblright{}}
 \txt{18}{112}{350}{27}{33.2}{ink}{We wrote a small PostgreSQL prototype.\\Then Joel took a laptop around PGConf.EU.}
 \txt{18}{165}{350}{27}{33.2}{ink}{The first implementation only handled base tables.}
 \end{slide}
 
-% 15. New arrow syntax
-% Presenter note: Recording 24:37–26:27. The old FROM keyword competed visually with the FROM clause. The 6 October 2024 patch changed KEY FROM/TO to arrows. At this stage the unqualified list refers to the newly joined right operand. The left column joins customers to orders, replacing FROM by <-; the right column joins orders to customers, replacing TO by ->. Both retain the right operand's column list first. FOR had not yet been added. Do not silently present this as today’s syntax.
-% Source: 2024-10-06T23-38-32.100_00_0002-Use-arrow-syntax-and-for-Foreign-Key-Joins.patch.
-\begin{slide}{15}{6 October 2024 \textperiodcentered{} Fewer competing meanings for FROM}{New arrow syntax}{Prototype patch, 6 October 2024 \textperiodcentered{} historical syntax}{15 / 34}
-\pdfbookmark[0]{New arrow syntax}{slide-14}
-\txt{18}{77}{364}{14.5}{18}{blue}{\textbf{BEFORE}}
-\codeat{18}{94}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (id) \textcolor{blue}{\textbf{FROM}} o (customer\_id)\strut}
-\codeat{211}{94}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (customer\_id) \textcolor{blue}{\textbf{TO}} c (id)\strut}
-\draw[rulecolor,line width=.5pt] (18,123) -- (382,123);
-\txt{18}{138}{364}{14.5}{18}{blue}{\textbf{AFTER}}
-\codeat{18}{155}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (id) <- o (customer\_id)\strut}
-\codeat{211}{155}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (customer\_id) -> c (id)\strut}
-\txt{18}{191}{364}{18}{22}{muted}{The historical column-list order was still right operand first.}
-\end{slide}
-
-% 16. Reactions from the community
+% 12. Derived tables need common rules
+% Rehearsal: 1:15; elapsed 11:45--13:00.
 % Presenter note: Recording 26:27–28:04. This is a paraphrase, not a direct Peter quote. Joel’s email of 23 October 2024 thanks Peter for changing his view: one implementation accepting what another rejects would be a portability problem. Andreas also recalls changing his mind. We wanted a specified conservative proof, not arbitrary implementation guesses.
 % Primary correspondence: /Users/joel/Downloads/Foreign key joins.eml, Joel to Peter Geoghegan, 23 October 2024.
-\begin{slide}{16}{23 October 2024 \textperiodcentered{} Peter Geoghegan \textperiodcentered{} Athens}{Reactions from the community}{Joel \ensuremath{\rightarrow} Peter Geoghegan, 23 October 2024; presenters\textquoteright{} recollection}{16 / 34}
-\pdfbookmark[0]{Reactions from the community}{slide-15}
-\txt{18}{79}{352}{32}{39.4}{ink}{Derived tables must not mean\\something different in each implementation.}
+\begin{slide}{12}{23 October 2024 \textperiodcentered{} Peter Geoghegan \textperiodcentered{} Athens}{Derived tables need common rules}{Joel \ensuremath{\rightarrow} Peter Geoghegan, 23 October 2024; presenters\textquoteright{} recollection}{12 / 27}
+\pdfbookmark[0]{Derived tables need common rules}{slide-12}
+\txt{18}{79}{352}{32}{39.4}{ink}{Which derived tables are accepted\\must not depend on the implementation.}
 \draw[rulecolor,line width=1pt] (18,128) -- (382,128);
 \txt{18}{146}{170}{25}{30.8}{ink}{Our initial plan:\\leave the hard cases\\to implementations.}
 \txt{211}{146}{171}{25}{30.8}{blue}{What changed:\\define the derivation\\rules together.}
 \end{slide}
 
-% 17. Trying to get derived tables right
+% 13. Trying to get derived tables right
+% Rehearsal: 1:15; elapsed 13:00--14:15.
 % Photograph date confirmed by Joel: 8 February 2025.
 % Presenter note: Recording 28:04–34:18. The two supplied photographs show our work on join trees and a recursive compile-time proof algorithm. Explain how each query operation changes the facts exposed by its result: uniqueness, coverage and nullability. An underlying foreign key is a starting fact, not the proof for a derived operand. The close-up shows us trying to track those facts through a whole join tree.
 % Early papers already attempted derivations. The challenge here was making the rules precise, complete and implementable. Duplicate identical referenced rows still multiply a SQL bag join, so functional dependency alone is not enough.
-% The fanout and aggregate-before-join examples now appear in the two opening What are key joins? pages; refer back to them if useful.
+% Delivery: Use the photos as a human moment. A query operation changes what
+% we know about its result; do not teach the full fact-propagation algorithm here.
 % Photographs: user attachments codex-clipboard-af4e4de9-a0e2-4f60-bf08-b3941d526db5.png and codex-clipboard-5a734962-f112-48a6-aa4e-137f1f6bcccf.png. Both photographs are preserved uncropped at their original aspect ratios.
-\begin{slide}{17}{8 February 2025 \textperiodcentered{} Working out the proof rules}{Trying to get derived tables right}{Photographs supplied by the presenters}{17 / 34}
-\pdfbookmark[0]{Trying to get derived tables right}{slide-16}
+\begin{slide}{13}{8 February 2025 \textperiodcentered{} Working out the proof rules}{Trying to get derived tables right}{Photographs supplied by the presenters}{13 / 27}
+\pdfbookmark[0]{Trying to get derived tables right}{slide-13}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (54.5833,70) {\KeyJoinsPhotoOne};
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (172.0833,70) {\KeyJoinsPhotoTwo};
 \end{slide}
 
-% 18. Restarting work with ISO
+% 14. Restarting work with ISO
+% Rehearsal: 1:15; elapsed 14:15--15:30.
 % Photograph date confirmed by Joel: 17 July 2025; distinct from the December 2024 visit.
 % Presenter note: Recording 34:26–37:51. Joel visits Vik in France around Christmas 2024. Later Jim Melton helps with the proposal in Paris; do not date the Paris meeting to Christmas. This is a deliberate return to a narrow normative scope, despite the earlier work on derived-table algorithms. POS-009R1 and BCN-060 focus on base tables, while the broader design remains in discussion material.
 % Tell the “now this will surely pass” moment in your own words rather than manufacturing an English verbatim quotation.
-\begin{slide}{18}{December 2024\textendash{}July 2025 \textperiodcentered{} Working with Vik and Jim}{Restarting work with ISO}{POS-009R1 / BCN-060; presenters\textquoteright{} account of work with Vik and Jim}{18 / 34}
-\pdfbookmark[0]{Restarting work with ISO}{slide-19}
+% Transition: The general rules were hard, so we tried a smaller first step.
+% This was a narrower normative proposal, not a decision that derived tables
+% no longer mattered. Keep the two dates for the visits distinct.
+\begin{slide}{14}{December 2024\textendash{}July 2025 \textperiodcentered{} Working with Vik and Jim}{Restarting work with ISO}{POS-009R1 / BCN-060; presenters\textquoteright{} account of work with Vik and Jim}{14 / 27}
+\pdfbookmark[0]{Restarting work with ISO}{slide-14}
 \txt{18}{79}{240}{14.5}{17.8}{blue}{\textbf{THE PLAN}}
 \txt{18}{92}{240}{27}{33.2}{ink}{A small change proposal\\for base tables.}
 \txt{18}{124}{240}{14.5}{17.8}{blue}{\textbf{AND A SEPARATE DISCUSSION}}
@@ -626,11 +604,14 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{277}{205.5}{105}{10}{12}{muted}{Photograph: 17 July 2025}
 \end{slide}
 
-% 19. KEY is not a keyword!
+% 15. KEY is not a keyword!
+% Rehearsal: 0:45; elapsed 15:30--16:15.
 % Presenter note: Recording 37:51–40:53. Keep the exact title as requested, and immediately explain its deliberate shorthand: PostgreSQL does have a KEY token, but it is unreserved. FOR is reserved. Peter Eisentraut’s feedback forces the grammar issue into focus. Adding FOR avoids making KEY newly reserved and avoids ambiguity with existing identifier/alias uses.
 % The local src/include/parser/kwlist.h confirms the keyword categories. W30-001 records the BCN question about KEY; W30-020/R1 supplies the resulting FOR KEY form. Do not claim that KEY is not a keyword in any SQL implementation.
-\begin{slide}{19}{September\textendash{}December 2025 \textperiodcentered{} PostgreSQL KEY is unreserved; FOR is reserved}{KEY is not a keyword!}{Peter Eisentraut\textquoteright{}s feedback, recalled by the presenters \textperiodcentered{} W30-020R1 grammar}{19 / 34}
-\pdfbookmark[0]{KEY is not a keyword!}{slide-20}
+% Delivery: Explain the alias ambiguity and credit Peter in 45 seconds.
+% Arrow notation had replaced FROM/TO by then; the detailed comparison is backup.
+\begin{slide}{15}{September\textendash{}December 2025 \textperiodcentered{} PostgreSQL KEY is unreserved; FOR is reserved}{KEY is not a keyword!}{Peter Eisentraut\textquoteright{}s feedback, recalled by the presenters \textperiodcentered{} W30-020R1 grammar}{15 / 27}
+\pdfbookmark[0]{KEY is not a keyword!}{slide-15}
 \txt{18}{76}{364}{23}{29}{blue}{Peter Eisentraut spotted the grammar problem.}
 \codeat{18}{101}{29}{37.7}{\textcolor{blue}{\textbf{FROM}} orders key\strut}
 \txt{18}{128}{364}{24}{30}{ink}{Here, \texttt{key} can already be a table alias.}
@@ -639,62 +620,39 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{192}{364}{18}{22}{muted}{A reserved word gives the parser an unambiguous start.}
 \end{slide}
 
-% 20. Riga: meeting Arne Roland
-% Presenter note: Recording 41:30–43:40. Joel meets Arne while Andreas is talking to him. Shared interests include serious application SQL, formal reasoning and correctness. Their first collaboration was SQL-query equivalence and theorem proving. The background dates the invitation to help with Key Joins to 12 March 2026. Avoid implying Arne wrote the 2024 prototype or joined the patch immediately in Riga. He is not expected in the Valencia audience.
-\begin{slide}{20}{21\textendash{}24 October 2025 \textperiodcentered{} PGConf.EU}{Riga: meeting Arne Roland}{Presenters\textquoteright{} recollection; correspondence chronology in background notes}{20 / 34}
-\pdfbookmark[0]{Riga: meeting Arne Roland}{slide-21}
-\txt{18}{80}{353}{35}{43.0}{blue}{A conversation about SQL\\becomes a collaboration.}
-\txt{18}{135}{350}{26}{32.0}{ink}{First: proofs of query equivalence.\\Later: the Key Joins patch and specification.}
-\txt{18}{186}{350}{20}{24.6}{muted}{Arne joins the implementation effort in March 2026.}
-\end{slide}
-
-% 21. FILTER (WHERE …)
-% Presenter note: Recording 43:40–45:42. Karl Schendel asks for extra join conditions; Vik suggests FILTER (WHERE ...), recorded in the W30 minutes. The displayed syntax is the actual BMA stage (June 2026), with an illustrative active predicate. It is not current syntax.
-% BMA-015R1 already promises non-null enrichment on p.5 while retaining supplemental FILTER on pp.9–11 and SC AND FSC on p.43. This is an inconsistency in that stage, recognized later, not a conflict created only by a later promise. TAS-028 removed the supplemental clause; R1 explains why its role was confusing. Some users expected a predicate to help prove a key join; others expected it merely to restrict the ON condition. The PostgreSQL prototype can separately reason about some operand filter conjuncts; do not confuse those with the removed supplemental clause.
-% Source: GRU-001R1 item 9.4.5; BMA-015R1 pp.5,9–11,43; TAS-028R1 p.2.
-\begin{slide}{21}{December 2025 \textperiodcentered{} A requested feature that we later removed}{FILTER (WHERE \textellipsis{})}{W30 request; BMA-015R1 syntax shown; supplemental FILTER removed in TAS}{21 / 34}
-\pdfbookmark[0]{FILTER (WHERE \textellipsis{})}{slide-22}
-\codeat{18}{76}{23}{29.9}{\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
-\textcolor{blue}{\textbf{LEFT}} \textcolor{blue}{\textbf{JOIN}} customers \textcolor{blue}{\textbf{AS}} c\strut \\
-\hspace*{2.100em}\textcolor{blue}{\textbf{FOR}} \textcolor{blue}{\textbf{KEY}} (id) <- o (customer\_id)\strut \\
-\hspace*{2.100em}\textcolor{blue}{\textbf{FILTER}} (\textcolor{blue}{\textbf{WHERE}} c.active)\strut}
-\end{slide}
-
-% 22. A puzzling objection
-% Presenter note: Recording 45:38–48:04. The visible testing objection is an anonymous paraphrase of W30-028, sections 1.1 (p.2) and 1.10 (p.5), not a quotation. The other objections below remain background for questions. First, section 1.15 (p.6) treats an equality predicate as verification of set containment. It selects matching row pairs, but does not establish that a matching referenced row exists for every non-null reference: referencing values {1,2} versus referenced values {1} give a counterexample.
-% Second, section 1.5 (p.3) infers that a compile-time check has a hole because values are only available at run time. Suitable schema constraints can support static proof without inspecting rows. Acknowledge the valid part of the criticism: the contemporary draft needed qualifications for nulls, deferred constraints, and NOT ENFORCED constraints. Merely finding a constraint declaration does not justify an unconditional claim about current data. W30-030 clarified the metadata-check intention, but did not erase that distinction.
-% Third, sections 1.1 (p.2) and 1.10 (p.5) frame the feature as compensation for inadequate testing or user mistakes. Tests and declarative checks address different risks. JOIN TO ONE later made subtle query mistakes a central motivation (BMA-038 and BMA-038R1, section 1.1, p.2). Describe this as a contrast in emphasis, not proof of dishonesty or a reversal on runtime checks: W30-028 already advocated a runtime alternative in sections 1.7 and 1.15.
-% The contemporary proposal also had genuine gaps in its view, derivation and schema-change rules; do not present those criticisms as errors simply because later versions addressed them. Keep names and paper numbers off the visible slide, with the precise sources here for questions. Do not claim a formal rejection or hidden corporate motives.
-\begin{slide}{22}{December 2025 \textperiodcentered{} Testing and compile-time proof}{A puzzling objection}{Objection paraphrased \textperiodcentered{} Sources and qualifications in presenter notes}{22 / 34}
-\pdfbookmark[0]{A puzzling objection}{slide-23}
-\txt{18}{84}{172}{16}{20}{orange}{\textbf{OBJECTION (PARAPHRASED)}}
-\txt{211}{84}{171}{16}{20}{blue}{\textbf{OUR RESPONSE}}
-\txt{18}{103}{172}{30}{38}{ink}{\textit{Application testing should catch these mistakes; they do not justify new SQL syntax.}}
-\txt{211}{103}{171}{30}{38}{ink}{Buggy queries can pass tests on the chosen data.\\[5mm]\texttt{FOR KEY} requires a proof from the schema and query structure.}
-\end{slide}
-
-% 23. The breakthrough
+% 16. The breakthrough
+% Rehearsal: 2:30; elapsed 16:15--18:45.
 % Presenter note: Clean transcript section 25, recording 53:18–01:09:20; section 26 supplies the intervening validation-scope discussion at 59:00–01:01:40. Tell the story in this order. In the middle of the implementation push, Vik sends Joel a message about a CD ballot comment that hints a similar join feature will probably be proposed soon. A CD is a Committee Draft; the comment is formal feedback on that draft, not the feature proposal itself. Joel starts asking what Key Joins can promise about their result, rather than concentrating only on the input checks. A non-null foreign key to a primary key gives the simple starting example: each referencing row contributes exactly one output row.
 % CD terminology: https://committee.iso.org/sites/tc5sc2/home/about/content-left-area/iso-stages-developpement/committee-draft-cd.html
 % The prospect of another proposal is both unsettling and stimulating. Joel sees an opportunity to establish the result guarantee at compile time. The transcript describes a runtime interpretation of the ballot comment; do not present that interpretation as an independently established requirement of the other proposal, or infer motives. The visible wording is a paraphrase, not a quotation from the ballot.
 % The result question exposes two design problems. A later join can multiply rows, so proof must apply to the complete operands of each binary join. Nullable references can disappear in an inner join. Joel first considers a NULLS suffix, then rejects it on the flight to PGConf.DE: taking the ordinary join type into account in the proof makes the extra NULLS keyword unnecessary. Peter Eisentraut has agreed to meet them there; Andreas is also attending to give a talk.
-% Continue with validation scope on the next slide; return to the two result guarantees after acceptance and the retrospective. The result guarantee is local to each join; outer joins can additionally emit referenced-only rows, so do not promise equal total row counts for every key join. Earlier drafts already had nullability logic; the breakthrough was the clear result contract and a composable proof. Keep the extent of the resulting rewrite qualitative: the speakers differ on how much code versus standard text changed.
-\begin{slide}{23}{2\textendash{}21 April 2026 \textperiodcentered{} A message from Vik changes the question}{The breakthrough}{Presenters\textquoteright{} recollection \textperiodcentered{} Key Joins Valencia recording, 53:18\textendash{}1:09:20}{23 / 34}
-\pdfbookmark[0]{The breakthrough}{slide-25}
-\txt{18}{75}{364}{24}{29}{ink}{\textbf{Vik spots a CD ballot comment}: feedback on a Committee Draft\\of the SQL standard. It suggests a similar feature will probably\\be proposed soon.}
-\txt{18}{114}{364}{28}{35}{blue}{Joel starts thinking: what can Key Joins guarantee\\about their result?}
-\txt{18}{148}{364}{25}{31}{ink}{That question exposes two problems:\\the scope of the proof, and nulls.}
-\txt{18}{181}{364}{24}{30}{ink}{On the flight to PGConf.DE, Joel realizes we can drop the proposed\\\texttt{NULLS} keyword if we take the join type into account.}
+% Continue with validation scope on the next slide; illustrate the two result guarantees in detail after acceptance. The result guarantee is local to each join; outer joins can additionally emit referenced-only rows, so do not promise equal total row counts for every key join. Earlier drafts already had nullability logic; the breakthrough was the clear result contract and a composable proof. Keep the extent of the resulting rewrite qualitative: the speakers differ on how much code versus standard text changed.
+% Transition: During this rethink, we also found a bug in our own checker.
+% These April discoveries overlapped; the next example was shared on 4 April.
+% Ordinary equality never matches a NULL. Whether an unmatched referencing row
+% survives depends on the join type; the proof must take that into account.
+\begin{slide}{16}{2\textendash{}21 April 2026 \textperiodcentered{} A message from Vik changes the question}{The breakthrough}{Presenters\textquoteright{} recollection \textperiodcentered{} Key Joins Valencia recording, 53:18\textendash{}1:09:20}{16 / 27}
+\pdfbookmark[0]{The breakthrough}{slide-16}
+\txt{18}{75}{364}{23}{28}{ink}{Vik spots a CD ballot comment: feedback on a Committee Draft.\\It hints that a similar feature may soon be proposed.}
+\txt{18}{105}{364}{27}{33}{blue}{Joel asks: what can we guarantee about the result?}
+\txt{18}{130}{364}{24}{30}{ink}{Every referencing row appears exactly once.\\Every row with no nulls in its referencing columns finds its unique match.}
+\draw[rulecolor,line width=.7pt] (18,162) -- (382,162);
+\txt{18}{175}{364}{23}{29}{ink}{On the flight to PGConf.DE, Joel realizes the join type can account\\for nulls. We no longer need the proposed \texttt{NULLS} keyword.}
 \end{slide}
 
-% 24. The Composability Bug
+% 17. The Composability Bug
+% Rehearsal: 2:30; elapsed 18:45--21:15.
 % Presenter note: Clean transcript section 26, recording 59:00–01:01:40 and 01:07:10–01:07:44. The two panels are reconstructed as vector text from section 2 of /Users/joel/src/wg3-papers/papers/key-joins/proposal-validation-scope.html, the presenters' discussion document shared with the Key Joins group on 4 April 2026. SQL is extracted verbatim; diagnostics retain all words with layout line wrapping. The screenshot asset is no longer used.
 % Tell the surprising part first: moving the first join into a view changed whether the payments join was accepted. These are our historical validation and syntax. At that time the first column list described the right operand and had no table reference. Do not read the arrows using the later left-to-right list order.
 % Inline validation found orders' base-table primary key; view validation saw the repeated order IDs. The order_items/orders result can contain several rows for one order, so a payment can match several rows in that operand. The original INNER JOIN can also lose coverage of orders; the reported error highlights uniqueness. The two SELECT * queries expose different output column sets, so describe the same join structure and relevant values, not identical result schemas.
 % The fix checks the complete operands of each binary join. Derive their facts, prove the join, then pass facts about its result upward. Both forms of this example must be rejected when the referenced columns are not proven unique. This makes the reasoning recursive and composable. Link back to the earlier whiteboard photographs: the result contract clarified what each proof step had to establish.
 % The closing sentence is quoted from the discussion document. Apply it to the refactoring illustrated here, not as a claim about every possible view rewrite. Keep the guarantee local to each join. These diagnostics are historical illustrations, not standardized error wording.
-\begin{slide}{24}{4 April 2026 \textperiodcentered{} Syntax used at the time}{The Composability Bug}{From the validation-scope discussion shared with the Key Joins group, 4 April 2026}{24 / 34}
-\pdfbookmark[0]{The Composability Bug}{slide-26}
+% Delivery: Lead with the different acceptance after moving a join into a
+% view. Explain repeated order IDs; do not read both old SQL blocks line by line.
+% Transition: The proof had to follow the query structure. The implementation
+% then had to carry facts about each intermediate result.
+\begin{slide}{17}{4 April 2026 \textperiodcentered{} Syntax used at the time}{The Composability Bug}{From the validation-scope discussion shared with the Key Joins group, 4 April 2026}{17 / 27}
+\pdfbookmark[0]{The Composability Bug}{slide-17}
 % Two panels reproduce the original comparison with editable PDF text.
 \path[draw=compoBorder,fill=white,line width=.6pt,rounded corners=2.5mm] (18,66) rectangle (194,190);
 \path[draw=compoBorder,fill=white,line width=.6pt,rounded corners=2.5mm] (206,66) rectangle (382,190);
@@ -715,7 +673,8 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{198}{364}{23}{28}{ink}{Refactoring joins into a view should not change whether a query compiles.}
 \end{slide}
 
-% 25. The road to the first patch
+% 18. The road to the first patch
+% Rehearsal: 2:30; elapsed 21:15--23:45.
 % Presenter note: Recording 48:04--53:18 and 01:12:58--01:14:27. This expands
 % March--May on the main timeline. The goal was a working implementation before
 % the June WG3 meeting in Stockholm. Joel invited Arne to help on 12 March.
@@ -739,45 +698,33 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % After submission, Tomas Vondra asks for smaller reviewable pieces. Keep this
 % earlier presenter context available for questions: a working prototype still
 % needs a patch series whose individual changes reviewers can understand.
-\begin{slide}{25}{March\textendash{}May 2026}{The road to the first patch}{Implementation history and presenters\textquoteright{} account \textperiodcentered{} \href{https://www.postgresql.org/message-id/00c30670-64e1-4c30-a349-784426d333df@app.fastmail.com}{First public patch: 28 May 2026}}{25 / 34}
-\pdfbookmark[0]{The road to the first patch}{slide-28}
-% A detailed chronology beneath the deck's calendar timeline. The milestones
-% have equal spacing for readability; date labels retain the available precision.
-\draw[rulecolor,line width=1.4pt] (76,79) -- (76,179);
-\foreach \y in {79,99,119,139,159}{%
-  \filldraw[fill=blue,draw=white,line width=.5mm] (76,\y) circle[radius=1.7mm];
-}
-\filldraw[fill=teal,draw=white,line width=.5mm] (76,179) circle[radius=2.2mm];
-
-\txt{18}{75}{51}{19}{23}{muted}{March\textendash{}April}
-\txt{86}{75}{68}{22}{27}{ink}{\textbf{Arne}}
-\txt{160}{72}{222}{22}{27}{ink}{Strengthens query analysis and reworks\\view revalidation.}
-
-\txt{18}{95}{51}{19}{23}{muted}{10 April}
-\txt{86}{95}{68}{22}{27}{ink}{\textbf{Joel}}
-\txt{160}{92}{222}{22}{27}{ink}{Fixes the composability bug:\\check the complete intermediate result.}
-
-\txt{18}{115}{51}{19}{23}{muted}{Early May}
-\txt{86}{115}{68}{22}{27}{ink}{\textbf{Joel}}
-\txt{160}{112}{222}{22}{27}{ink}{Rewrites the proof engine around\\facts on each intermediate result.}
-
-\txt{18}{135}{51}{19}{23}{muted}{May}
-\txt{86}{135}{68}{22}{27}{ink}{\textbf{Arne}}
-\txt{160}{135}{222}{22}{27}{ink}{Tackles the difficult concurrency fixes.}
-
-\txt{18}{155}{51}{19}{23}{muted}{May}
-\txt{86}{152}{68}{20}{25}{ink}{\textbf{Joel, Andreas\\and Arne}}
-\txt{160}{152}{222}{22}{27}{ink}{Add tests and fix bugs in view\\and dependency handling.}
-
-\txt{18}{175}{51}{19}{23}{teal}{\textbf{28 May}}
-\txt{86}{175}{68}{22}{27}{ink}{\textbf{Joel}}
-\txt{160}{175}{222}{22}{27}{ink}{Posts the first patch to \texttt{pgsql-hackers}.}
-
-\draw[rulecolor,line width=.7pt] (18,191) -- (382,191);
-\txt{18}{198}{364}{22}{27}{blue}{A working implementation before the June WG3 meeting in Stockholm.}
+% Meeting Arne (formerly a separate slide):
+% Presenter note: Recording 41:30–43:40. Joel meets Arne while Andreas is talking to him. Shared interests include serious application SQL, formal reasoning and correctness. Their first collaboration was SQL-query equivalence and theorem proving. The background dates the invitation to help with Key Joins to 12 March 2026. Avoid implying Arne wrote the 2024 prototype or joined the patch immediately in Riga. He is not expected in the Valencia audience.
+% Delivery: Three overlapping phases, not a strict handover. The earlier
+% composability fix belongs to April; the surface-fact rewrite follows in May.
+% Keep the full dates and architecture evidence above available for questions.
+% Transition: We arrived in Stockholm with a working patch. The proposal still
+% needed work; Karl offered to help see it through.
+\begin{slide}{18}{October 2025\textendash{}May 2026}{The road to the first patch}{Implementation history and presenters\textquoteright{} account \textperiodcentered{} \href{https://www.postgresql.org/message-id/00c30670-64e1-4c30-a349-784426d333df@app.fastmail.com}{First public patch: 28 May 2026}}{18 / 27}
+\pdfbookmark[0]{The road to the first patch}{slide-18}
+\txt{18}{73}{364}{22}{27}{ink}{We met Arne in Riga. In March, he joined the Key Joins effort.}
+\draw[rulecolor,line width=1.4pt] (76,102) -- (76,164);
+\foreach \y in {102,133,164}{\filldraw[fill=blue,draw=white,line width=.5mm] (76,\y) circle[radius=1.8mm];}
+\txt{18}{98}{51}{18}{22}{muted}{March\textendash{}April}
+\txt{86}{98}{62}{22}{27}{ink}{\textbf{Arne}}
+\txt{154}{95}{228}{22}{27}{ink}{Strengthens query analysis and reworks\\stored-view revalidation.}
+\txt{18}{129}{51}{18}{22}{muted}{Early May}
+\txt{86}{129}{62}{22}{27}{ink}{\textbf{Joel}}
+\txt{154}{126}{228}{22}{27}{ink}{Rebuilds the proof around facts\\on each intermediate result.}
+\txt{18}{160}{51}{18}{22}{muted}{May}
+\txt{86}{155}{62}{19}{24}{ink}{\textbf{Arne, Joel\\and Andreas}}
+\txt{154}{155}{228}{22}{27}{ink}{Arne tackles concurrency; together we test\\and fix view and dependency handling.}
+\draw[rulecolor,line width=.7pt] (18,187) -- (382,187);
+\txt{18}{194}{364}{22}{27}{teal}{\textbf{28 May: first public patch.} Ready for the June meeting in Stockholm.}
 \end{slide}
 
-% 26. Stockholm: two proposals, more collaborators
+% 19. Stockholm: two proposals, more collaborators
+% Rehearsal: 1:15; elapsed 23:45--25:00.
 % Presenter note: Recording 01:14:40–01:22:19. Joel hosts the meeting; Andreas attends as a guest. The amended JOIN TO ONE proposal requires explicit INNER or LEFT. LEFT can preserve the left row count; INNER may filter unmatched rows. Neither requires that the selected columns follow a declared FK. Its runtime error on multiple matches and our compile-time proof are different mechanisms.
 % Do not repeat the background claim that any filtering contradicts the original cardinality-preserving-table comment: the quoted comment says “subset.” The BMA minutes record JTO acceptance and request that Key Joins be revised and brought back. Karl volunteers to help. Bengt engages as an implementer; Leonid asks about how restrictive the proof rules should be.
 % Sources: BMA-038R1 pp.2–4; W32-001R1 items 9.4.2 and 9.4.11.
@@ -785,8 +732,8 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % feature and volunteered to see the Change Proposal through. Mention Karl's
 % crucial contribution verbally. Feature support is distinct from accepting
 % the Change Proposal.
-\begin{slide}{26}{15\textendash{}19 June 2026 \textperiodcentered{} BMA}{Stockholm: two proposals, more collaborators}{BMA-038R1; W32-001R1, pp. 11\textendash{}14; presenters\textquoteright{} account}{26 / 34}
-\pdfbookmark[0]{Stockholm: two proposals, more collaborators}{slide-29}
+\begin{slide}{19}{15\textendash{}19 June 2026 \textperiodcentered{} BMA}{Stockholm: two proposals, more collaborators}{BMA-038R1; W32-001R1, pp. 11\textendash{}14; presenters\textquoteright{} account}{19 / 27}
+\pdfbookmark[0]{Stockholm: two proposals, more collaborators}{slide-19}
 \txt{18}{77}{184}{14.5}{17.8}{blue}{\textbf{JOIN TO ONE}}
 \txt{18}{90}{184}{24}{29.5}{ink}{Check at runtime that each left row\\has at most one match.}
 \txt{18}{115}{184}{22}{27}{ink}{JOIN TO ONE is accepted.}
@@ -798,12 +745,16 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (214,74) {\KeyJoinsStockholmPhoto};
 \end{slide}
 
-% 27. Standardese experts
+% 20. Standardese experts
+% Rehearsal: 2:00; elapsed 25:00--27:00.
 % Presenter note: Recording 01:22:20–01:30:04. Karl’s offer at Stockholm matters enormously. Work at the editors’ meeting in Åland, then with Jörn and Fred, improves the feature as well as the words. All six names appear among TAS-028R1’s coauthors alongside the original developers. Do not imply all held the same editorial office or add current employer claims.
 % The displayed sentence quotes the first sentence of TAS-028R1 p.5, proposed 7.10 SR4.1)a)iii). The term “simply contain” denotes a defined syntactic relationship. Likewise immediately, generally and broadly are technical modifiers, not ordinary conversational emphasis. The example illustrates why experienced standard authors matter.
 % W32 in August still did not accept the proposal. That is different from the October TAS outcome. The lesson is to collaborate with the relevant experts earlier, not send them a finished design to rubber-stamp.
-\begin{slide}{27}{June\textendash{}September 2026 \textperiodcentered{} A shared design effort, not just proofreading}{Standardese experts}{TAS-028R1, pp. 1, 5 (7.10 SR 4.1)a)iii)); presenters\textquoteright{} account}{27 / 34}
-\pdfbookmark[0]{Standardese experts}{slide-30}
+% Delivery: Credit the contributors without reading every name. Use simply
+% contain as one example of why the editors helped shape a precise design.
+% Transition: With that collaboration, we brought the revised proposal to Tashkent.
+\begin{slide}{20}{June\textendash{}September 2026 \textperiodcentered{} A shared design effort, not just proofreading}{Standardese experts}{TAS-028R1, pp. 1, 5 (7.10 SR 4.1)a)iii)); presenters\textquoteright{} account}{20 / 27}
+\pdfbookmark[0]{Standardese experts}{slide-20}
 \txt{18}{78}{240}{27}{33.2}{ink}{Vik Fearing \textperiodcentered{} Jim Melton\\Karl Schendel \textperiodcentered{} Stephen Cannan\\Jörn Bartels \textperiodcentered{} Fred Zemke}
 \draw[rulecolor,line width=1pt] (18,128) -- (258,128);
 \txt{18}{145}{240}{25}{30.8}{blue}{\textquotedblleft{}Let J be a <joined table> that does not\\simply contain a <partitioned join table>.\textquotedblright{}}
@@ -811,28 +762,16 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (277,65) {\KeyJoinsStandardesePhoto};
 \end{slide}
 
-% 28. The final syntax changes
-% Presenter note: Recording 01:30:04–01:33:17. Peter Eisentraut kept pressing on the syntax. Gerald Venzl had also made related order/name objections in W30-027. Credit the useful criticism wherever it came from.
-% The arrow direction did not change its meaning: it still points from referencing to referenced columns. The two lists changed order, and both references became mandatory. This also resolves naming when either operand is itself a joined table. Both table references are chosen from names exposed by their corresponding complete operand.
-% The TAS work also repairs dependency handling, including SQL/PGQ interactions; do not say all the changes were cosmetic.
-\begin{slide}{28}{August\textendash{}September 2026 \textperiodcentered{} Put the column lists in the order of the join operands}{The final syntax changes}{W30-027, pp. 2\textendash{}3; TAS-028R1, p. 2}{28 / 34}
-\pdfbookmark[0]{The final syntax changes}{slide-31}
-\txt{18}{76}{350}{14.5}{17.8}{blue}{\textbf{EARLIER}}
-\codeat{18}{91}{23}{29.9}{\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
-\textcolor{blue}{\textbf{JOIN}} customers \textcolor{blue}{\textbf{AS}} c \textcolor{blue}{\textbf{FOR}} \textcolor{blue}{\textbf{KEY}} (id) <- o (customer\_id)\strut}
-\txt{18}{132}{350}{14.5}{17.8}{blue}{\textbf{FINAL}}
-\codeat{18}{147}{23}{29.9}{\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
-\textcolor{blue}{\textbf{JOIN}} customers \textcolor{blue}{\textbf{AS}} c \textcolor{blue}{\textbf{FOR}} \textcolor{blue}{\textbf{KEY}} o (customer\_id) -> c (id)\strut}
-\txt{18}{191}{350}{20}{24.6}{teal}{Name both sides. Read left to right. Follow the same foreign key.}
-\end{slide}
-
-% 29. Acceptance in Tashkent
+% 21. Acceptance in Tashkent
+% Rehearsal: 1:15; elapsed 27:00--28:15.
 % Presenter note: Recording 01:33:17–01:36:48. The presenters explicitly decided this should be a celebration slide. Their account is that the meeting reached consensus to accept the proposal, with wording cleanup still to follow. Keep the distinction between a WG3 decision, incorporation into an IWD, and a published ISO edition. No official TAS minutes are available in the archive snapshot; TAS-001R1 is the previous W32 meeting’s minutes, not this decision.
 % Do not replay the personal arguments from the meeting or claim the feature is already committed to PostgreSQL.
 % Credits verified against the author list on TAS-028R1, page 1, in cover order.
 % Joel uses Jacobson here, his requested PostgreSQL-community spelling.
-\begin{slide}{29}{12 October 2026 \textperiodcentered{} TAS}{Acceptance in Tashkent}{TAS-028R1, p. 1; presenters\textquoteright{} first-hand account of the TAS decision}{29 / 34}
-\pdfbookmark[0]{Acceptance in Tashkent}{slide-32}
+% Delivery: Finish the historical story here and allow a short pause.
+% Transition to the final notation and examples: So what did all that work give us?
+\begin{slide}{21}{12 October 2026 \textperiodcentered{} TAS}{Acceptance in Tashkent}{TAS-028R1, p. 1; presenters\textquoteright{} first-hand account of the TAS decision}{21 / 27}
+\pdfbookmark[0]{Acceptance in Tashkent}{slide-21}
 \txt{18}{75}{184}{18}{22.1}{ink}{ISO/IEC JTC 1/SC 32/WG 3}
 \txt{18}{89}{184}{31}{38.1}{teal}{Reached consensus to accept\\TAS-028R1 \textemdash{} Key Joins: The Proposal}
 \txt{18}{129}{184}{14.5}{17.8}{blue}{\textbf{CO-AUTHORS OF TAS-028R1}}
@@ -842,22 +781,30 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{202}{364}{17}{20.9}{ink}{Five years of work, many collaborators. Thank you to our hosts in Uzbekistan.}
 \end{slide}
 
-
-% 30. What we would do differently
-% Presenter note: Recording 01:37:40–01:39:54. The main lesson is collaboration across organizations and disciplines. Standards experts are not merely copyeditors; their questions can expose missing design decisions. Implementations and examples reveal issues the prose misses. Most contributors worked alongside other responsibilities, so five elapsed years are not five years of full-time coding.
-% Tie back to one candid mistake: hiding joins, relying on constraint names alone, leaving derivations implementation-defined, or the extra FILTER clause. Avoid implying all criticism was good or every delay useful.
-% Close the retrospective, then introduce the technical examples:
-% "So, what did all that work give us?"
-\begin{slide}{30}{Lessons from the journey}{What we would do differently}{Presenters\textquoteright{} retrospective}{30 / 34}
-\pdfbookmark[0]{What we would do differently}{slide-34}
-\txt{18}{78}{350}{29}{35.7}{ink}{Bring implementers and standards experts in earlier.}
-\txt{18}{115}{350}{29}{35.7}{ink}{Write queries, code and specification together.}
-\txt{18}{152}{350}{29}{35.7}{ink}{Treat criticism as a way to test the design.}
-\txt{18}{190}{350}{19}{23.4}{blue}{A useful feature can be very different from the idea that started it.}
+% 22. The syntax we arrived at
+% Rehearsal: 1:15; elapsed 28:15--29:30.
+% Presenter note: Recording 01:30:04–01:33:17. Peter Eisentraut kept pressing on the syntax. Gerald Venzl had also made related order/name objections in W30-027. Credit the useful criticism wherever it came from.
+% The arrow direction did not change its meaning: it still points from referencing to referenced columns. The two lists changed order, and both references became mandatory. This also resolves naming when either operand is itself a joined table. Both table references are chosen from names exposed by their corresponding complete operand.
+% The TAS work also repairs dependency handling, including SQL/PGQ interactions; do not say all the changes were cosmetic.
+% Delivery: This is the final design after the historical story. The old
+% right-first order is preserved in the appendix; do not teach it again here.
+% These INNER examples assume orders.customer_id is known not nullable and has
+% a suitable FK to customers.id. Swapping operands changes output column order,
+% not the direction of the foreign-key relationship.
+% Earlier spelling: FROM orders AS o JOIN customers AS c FOR KEY (id) <- o (customer_id).
+\begin{slide}{22}{The accepted syntax \textperiodcentered{} Two operand orders, the same reference}{The syntax we arrived at}{W30-027, pp. 2\textendash{}3; TAS-028R1, p. 2}{22 / 27}
+\pdfbookmark[0]{The syntax we arrived at}{slide-22}
+\codeat{18}{84}{23}{30}{\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
+\textcolor{blue}{\textbf{JOIN}} customers \textcolor{blue}{\textbf{AS}} c \textcolor{blue}{\textbf{FOR KEY}} o (customer\_id) -> c (id);\strut}
+\txt{18}{121}{364}{25}{31}{ink}{Name both sides. Put the lists in operand order.}
+\draw[rulecolor,line width=.7pt] (18,143) -- (382,143);
+\txt{18}{155}{364}{25}{31}{blue}{The arrow points from referencing to referenced.}
+\codeat{18}{179}{23}{30}{\textcolor{blue}{FROM} customers \textcolor{blue}{AS} c\strut \\
+\textcolor{blue}{JOIN} orders \textcolor{blue}{AS} o \textcolor{blue}{FOR KEY} c (id) <- o (customer\_id);\strut}
 \end{slide}
 
-
-% 31. What a key join guarantees
+% 23. What a key join guarantees
+% Rehearsal: 3:15; elapsed 29:30--32:45.
 % Presenter note: Recording 01:04:55–01:11:37. State the two result guarantees
 % explicitly. "And these guarantees must hold for each join. We must check its
 % complete inputs, including what earlier joins have done to them." A key join
@@ -878,7 +825,7 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % every possible dataset violates a condition. E0–E3 are not standardized codes.
 % Mention the improved diagnostics and Christoph Berg's enthusiastic reaction
 % as a recollection. The opening query's diagnostic appears on the next slide.
-% Diagram: after the story and retrospective, illustrate the completed feature. The displayed
+% Diagram: after acceptance and the final syntax, illustrate the completed feature. The displayed
 % LEFT JOIN preserves the referencing table's total cardinality: four rows enter
 % and four rows leave. Equal-height brackets exclude the headers. The blue arrows
 % show the stronger guarantee that each particular row survives exactly once.
@@ -897,8 +844,12 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % Equal total counts are guaranteed for accepted INNER joins in either direction,
 % LEFT JOIN ... ->, and RIGHT JOIN ... <-. FULL JOIN and outer joins that preserve
 % the referenced operand may produce additional referenced-only rows.
-\begin{slide}{31}{Row preservation and matching}{What a key join guarantees}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{31 / 34}
-\pdfbookmark[0]{What a key join guarantees}{slide-27}
+% Delivery: First follow the four referencing rows. Then follow Alice and
+% Bob to their shared room, and Carol to the NULL padding. The constraints
+% justify the proof; these rows only illustrate it. Leave the full outer-join
+% matrix for questions. Transition: Now return to the query we started with.
+\begin{slide}{23}{Row preservation and matching}{What a key join guarantees}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{23 / 27}
+\pdfbookmark[0]{What a key join guarantees}{slide-23}
 
 % Shared input/output colors identify which operand supplies each cell.
 \definecolor{referencingHeader}{HTML}{D8E8F5}
@@ -1075,8 +1026,8 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{315}{183}{67}{17}{21}{blue}{\texttt{FOR KEY} requires the DBMS to prove these guarantees before execution.}
 \end{slide}
 
-
-% 32. Catching the opening query’s bug
+% 24. Catching the opening query’s bug
+% Rehearsal: 3:15; elapsed 32:45--36:00.
 % Presenter note: Return to the opening query, now using the final syntax.
 % Remind the audience that orders.id is a primary key and both order_id columns
 % are NOT NULL foreign keys to it. The first join is a key join: each item finds
@@ -1093,12 +1044,31 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % joining them to orders. Both the ON and FOR KEY versions then return 100/100
 % for order 100. See examples/key-joins-fanout.tex for the complete example.
 % Source: Paul Jungwirth's pgsql-general question (2016), linked in slide 4 notes.
-\begin{slide}{32}{The opening query, written with FOR KEY}{Catching the opening query\textquoteright{}s bug}{Patched PostgreSQL \textperiodcentered{} psql session}{32 / 34}
-\pdfbookmark[0]{Catching the opening query\textquoteright{}s bug}{slide-fanout-payoff}
+% Delivery: Restore the task: item totals and payment totals for each order.
+% Two items and two payments produce four joined rows. Read the decisive DETAIL,
+% not the psql banner. Tests exercise selected data; this check uses the schema
+% and query structure. It proves the join guarantees, not all business logic.
+\begin{slide}{24}{The opening query, written with FOR KEY}{Catching the opening query\textquoteright{}s bug}{Patched PostgreSQL \textperiodcentered{} psql session}{24 / 27}
+\pdfbookmark[0]{Catching the opening query\textquoteright{}s bug}{slide-24}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,76) {\usebox{\fanoutTerminal}};
 \end{slide}
 
-% 33. Key Joins Implementations
+% 25. What we would do differently
+% Rehearsal: 1:00; elapsed 36:00--37:00.
+% Presenter note: Recording 01:37:40–01:39:54. The main lesson is collaboration across organizations and disciplines. Standards experts are not merely copyeditors; their questions can expose missing design decisions. Implementations and examples reveal issues the prose misses. Most contributors worked alongside other responsibilities, so five elapsed years are not five years of full-time coding.
+% Tie back to one candid mistake: hiding joins, relying on constraint names alone, leaving derivations implementation-defined, or the extra FILTER clause. Avoid implying all criticism was good or every delay useful.
+% Close after the technical payoff. Keep the three lessons to one minute,
+% then invite the audience to help with the PostgreSQL implementation.
+\begin{slide}{25}{Lessons from the journey}{What we would do differently}{Presenters\textquoteright{} retrospective}{25 / 27}
+\pdfbookmark[0]{What we would do differently}{slide-25}
+\txt{18}{78}{350}{29}{35.7}{ink}{Bring implementers and standards experts in earlier.}
+\txt{18}{115}{350}{29}{35.7}{ink}{Write queries, code and specification together.}
+\txt{18}{152}{350}{29}{35.7}{ink}{Treat criticism as a way to test the design.}
+\txt{18}{190}{350}{19}{23.4}{blue}{A useful feature can be very different from the idea that started it.}
+\end{slide}
+
+% 26. Key Joins Implementations
+% Rehearsal: 1:00; elapsed 37:00--38:00.
 % Presenter note: Credit Mimer as the Swedish SQL database vendor that implemented
 % the Key Joins specification. Do not imply a particular public release version.
 % Mimer logo: https://www.mimer.com/wp-content/uploads/logo-mimer-black.svg .
@@ -1107,38 +1077,130 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % realistic queries. Public demo: https://keyjoin.org/ .
 % Joel ported the patch to PGlite and launched the browser demo on
 % 28 March 2026 (recording 48:04--53:18 and presenters' development history).
-% A live demonstration is optional; the presentation works offline.
+% Reserve live demonstrations for questions. The prepared talk works offline.
 % Patch: https://www.postgresql.org/message-id/bd598b83-9371-4857-90e4-4d5ded4613b5%40malkut.net
-\begin{slide}{33}{October 2026 \textperiodcentered{} The next chapter is review and use}{Key Joins Implementations}{Presenters\textquoteright{} implementation report \textperiodcentered{} PostgreSQL patch under review}{33 / 34}
-\pdfbookmark[0]{Key Joins Implementations}{slide-35}
+\begin{slide}{26}{October 2026 \textperiodcentered{} The next chapter is review and use}{Key Joins Implementations}{Presenters\textquoteright{} implementation report \textperiodcentered{} PostgreSQL patch under review}{26 / 27}
+\pdfbookmark[0]{Key Joins Implementations}{slide-26}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,80) {\MimerLogo};
 \txt{211}{80}{171}{32}{39.4}{blue}{\textbf{PostgreSQL}}
 \txt{18}{124}{171}{25}{30.8}{ink}{Swedish SQL database vendor.}
 \txt{18}{151}{171}{25}{30.8}{ink}{Implemented the\\Key Joins specification.}
-\txt{211}{124}{171}{25}{30.8}{ink}{Patch under review.}
+\txt{211}{124}{171}{25}{30.8}{ink}{\href{https://www.postgresql.org/message-id/bd598b83-9371-4857-90e4-4d5ded4613b5@malkut.net}{Patch under review.}}
 \txt{211}{151}{171}{27}{33.2}{ink}{We\textquoteright{}re looking for collaborators\\to review and test the patch.}
 \txt{18}{195}{171}{22}{27.1}{teal}{\href{https://www.mimer.com/}{\texttt{mimer.com}}}
 \txt{211}{181}{171}{22}{27.1}{ink}{Browser demo via PGlite:}
 \txt{211}{195}{171}{22}{27.1}{blue}{\href{https://keyjoin.org/}{\texttt{keyjoin.org}}}
 \end{slide}
 
-% 34. Questions?
+% 27. Questions?
+% Rehearsal: 0:00; elapsed 38:00--38:00.
 % Presenter note: Stop the prepared talk here. Appendix slides follow for questions, not as extra scheduled content. The source and presenter notes are editable; the deck needs no network connection unless you choose to open the demo.
-\begin{slide}{34}{Thank you}{Questions?}{PGConf.EU 2026 \textperiodcentered{} Valencia}{34 / 34}
-\pdfbookmark[0]{Questions?}{slide-36}
-\txt{18}{85}{350}{46}{56.6}{blue}{What should the DBMS\\be able to prove for you?}
-\txt{18}{159}{350}{26}{32.0}{ink}{Andreas Karlsson  \textperiodcentered{}  Joel Jacobson}
-\txt{18}{191}{350}{25}{30.8}{teal}{\href{https://keyjoin.org/}{\texttt{keyjoin.org}}}
+% This closing slide omits the historical timeline and standard title block.
+\begingroup
+\renewcommand{\timeline}[1]{}
+\begin{slide}{27}{}{}{PGConf.EU 2026 \textperiodcentered{} Valencia}{27 / 27}
+\pdfbookmark[0]{Questions?}{slide-27}
+\node[anchor=center,inner sep=0pt,text=ink,
+  font=\fontsize{72}{86}\selectfont\bfseries] at (200,112.5) {Questions?};
+\node[anchor=center,inner sep=0pt,text=ink,
+  font=\fontsize{25}{31}\selectfont] at (135,147) {Andreas Karlsson};
+\node[anchor=center,inner sep=0pt,text=ink,
+  font=\fontsize{25}{31}\selectfont] at (265,147) {Joel Jacobson};
+\node[anchor=center,inner sep=0pt,text=muted,
+  font=\fontsize{21}{26}\selectfont] at (135,160)
+  {\href{mailto:andreas@proxel.se}{\texttt{andreas@proxel.se}}};
+\node[anchor=center,inner sep=0pt,text=muted,
+  font=\fontsize{21}{26}\selectfont] at (265,160)
+  {\href{mailto:joel@compiler.org}{\texttt{joel@compiler.org}}};
+\node[anchor=center,inner sep=0pt,text=teal,
+  font=\fontsize{25}{31}\selectfont] at (200,183)
+  {\href{https://keyjoin.org/}{\texttt{keyjoin.org}}};
+\end{slide}
+\endgroup
+
+% 28. Syntax bikeshedding
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Recording 13:02–14:36. Introduce Anders Granlund as an early coauthor. The keywords on screen are successive ideas, not an exhaustive chronological list and not all from a single paper. The first WITH is Vik's March suggestion; JOIN WITH is Joel's fully spelled-out December 28 proposal; FOREIGN KEY is the January 2022 draft with one referencing-column list; KEY FROM is the later two-list form. Table and constraint names are adapted consistently. Avoid spending the talk arguing which keyword is prettiest.
+\begin{slide}{28}{Appendix \textperiodcentered{} March 2021\textendash{}May 2022 \textperiodcentered{} With Anders Granlund, the mailing list and Hacker News}{Syntax bikeshedding}{Historical forms, with names adapted \textperiodcentered{} March and December 2021 correspondence; January and May 2022 drafts}{A1}
+\pdfbookmark[0]{Syntax bikeshedding}{slide-28}
+\txt{18}{74}{364}{13}{16}{muted}{MARCH 2021}
+\codeat{18}{85}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{WITH}} employees\_dept\_id\_fkey\strut}
+\txt{18}{106}{364}{13}{16}{muted}{DECEMBER 2021}
+\codeat{18}{117}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} \textcolor{blue}{\textbf{WITH}} e.employees\_dept\_id\_fkey d\strut}
+\txt{18}{138}{364}{13}{16}{muted}{JANUARY 2022}
+\codeat{18}{149}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{FOREIGN}} \textcolor{blue}{\textbf{KEY}} (dept\_id) \textcolor{blue}{\textbf{FROM}} e\strut}
+\txt{18}{170}{364}{13}{16}{muted}{TWO COLUMN LISTS}
+\codeat{18}{181}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{KEY}} (id) \textcolor{blue}{\textbf{FROM}} e (dept\_id)\strut}
 \end{slide}
 
+% 29. Sidetrack: the MATCH predicate
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Recording 19:15–22:01. The MATCH predicate is distinct from a foreign key’s MATCH type. The idea was to build on it to simplify the change proposal, but it did not settle the intended null behavior. This was an internal exploration, not a released implementation. Ordinary equality does not match a null component. This connects to the nullability breakthrough explained in the main talk. No need to teach MATCH PARTIAL here or claim no DBMS has ever implemented the predicate.
+% Suggested narration: We already knew how an ordinary equality join behaves.
+% Keeping that behaviour made the feature much easier to reason about.
+% A NULL in any compared column prevents a match, even against another NULL.
+% The breakthrough in the main talk explains the separate preservation question:
+% taking the join type into account made the extra NULLS keyword unnecessary.
+\begin{slide}{29}{Appendix \textperiodcentered{} Late 2023\textendash{}2024 (approx.) \textperiodcentered{} A shortcut that did not simplify the design}{Sidetrack: the MATCH predicate}{Presenters\textquoteright{} design recollection \textperiodcentered{} recording 19:15\textendash{}22:01}{A2}
+\pdfbookmark[0]{Sidetrack: the MATCH predicate}{slide-29}
+\txt{18}{80}{165}{29}{35.7}{blue}{The hope}
+\txt{18}{104}{165}{25}{30.8}{ink}{Build on the MATCH predicate\\to make the proposal smaller.}
+\txt{211}{80}{170}{29}{35.7}{orange}{The complication}
+\txt{211}{104}{170}{25}{30.8}{ink}{What should happen when some\\referencing values are NULL?}
+\draw[rulecolor,line width=1pt] (18,153) -- (382,153);
+\txt{18}{163}{364}{23}{28}{blue}{The insight}
+\txt{18}{180}{364}{26}{32}{ink}{Transform to an ordinary equijoin.\\A NULL in any compared column means no match.}
+\end{slide}
 
+% 30. New arrow syntax
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Recording 24:37–26:27. The old FROM keyword competed visually with the FROM clause. The 6 October 2024 patch changed KEY FROM/TO to arrows. At this stage the unqualified list refers to the newly joined right operand. The left column joins customers to orders, replacing FROM by <-; the right column joins orders to customers, replacing TO by ->. Both retain the right operand's column list first. FOR had not yet been added. Do not silently present this as today’s syntax.
+% Source: 2024-10-06T23-38-32.100_00_0002-Use-arrow-syntax-and-for-Foreign-Key-Joins.patch.
+\begin{slide}{30}{Appendix \textperiodcentered{} 6 October 2024 \textperiodcentered{} Fewer competing meanings for FROM}{New arrow syntax}{Prototype patch, 6 October 2024 \textperiodcentered{} historical syntax}{A3}
+\pdfbookmark[0]{New arrow syntax}{slide-30}
+\txt{18}{77}{364}{14.5}{18}{blue}{\textbf{BEFORE}}
+\codeat{18}{94}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (id) \textcolor{blue}{\textbf{FROM}} o (customer\_id)\strut}
+\codeat{211}{94}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (customer\_id) \textcolor{blue}{\textbf{TO}} c (id)\strut}
+\draw[rulecolor,line width=.5pt] (18,123) -- (382,123);
+\txt{18}{138}{364}{14.5}{18}{blue}{\textbf{AFTER}}
+\codeat{18}{155}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (id) <- o (customer\_id)\strut}
+\codeat{211}{155}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (customer\_id) -> c (id)\strut}
+\txt{18}{191}{364}{18}{22}{muted}{The historical column-list order was still right operand first.}
+\end{slide}
 
+% 31. FILTER (WHERE …)
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Recording 43:40–45:42. Karl Schendel asks for extra join conditions; Vik suggests FILTER (WHERE ...), recorded in the W30 minutes. The displayed syntax is the actual BMA stage (June 2026), with an illustrative active predicate. It is not current syntax.
+% BMA-015R1 already promises non-null enrichment on p.5 while retaining supplemental FILTER on pp.9–11 and SC AND FSC on p.43. This is an inconsistency in that stage, recognized later, not a conflict created only by a later promise. TAS-028 removed the supplemental clause; R1 explains why its role was confusing. Some users expected a predicate to help prove a key join; others expected it merely to restrict the ON condition. The PostgreSQL prototype can separately reason about some operand filter conjuncts; do not confuse those with the removed supplemental clause.
+% Source: GRU-001R1 item 9.4.5; BMA-015R1 pp.5,9–11,43; TAS-028R1 p.2.
+\begin{slide}{31}{Appendix \textperiodcentered{} December 2025 \textperiodcentered{} A requested feature that we later removed}{FILTER (WHERE \textellipsis{})}{W30 request; BMA-015R1 syntax shown; supplemental FILTER removed in TAS}{A4}
+\pdfbookmark[0]{FILTER (WHERE \textellipsis{})}{slide-31}
+\codeat{18}{76}{23}{29.9}{\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
+\textcolor{blue}{\textbf{LEFT}} \textcolor{blue}{\textbf{JOIN}} customers \textcolor{blue}{\textbf{AS}} c\strut \\
+\hspace*{2.100em}\textcolor{blue}{\textbf{FOR}} \textcolor{blue}{\textbf{KEY}} (id) <- o (customer\_id)\strut \\
+\hspace*{2.100em}\textcolor{blue}{\textbf{FILTER}} (\textcolor{blue}{\textbf{WHERE}} c.active)\strut}
+\end{slide}
 
-% 35. The questions predate our proposal
+% 32. A puzzling objection
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Recording 45:38–48:04. The visible testing objection is an anonymous paraphrase of W30-028, sections 1.1 (p.2) and 1.10 (p.5), not a quotation. The other objections below remain background for questions. First, section 1.15 (p.6) treats an equality predicate as verification of set containment. It selects matching row pairs, but does not establish that a matching referenced row exists for every non-null reference: referencing values {1,2} versus referenced values {1} give a counterexample.
+% Second, section 1.5 (p.3) infers that a compile-time check has a hole because values are only available at run time. Suitable schema constraints can support static proof without inspecting rows. Acknowledge the valid part of the criticism: the contemporary draft needed qualifications for nulls, deferred constraints, and NOT ENFORCED constraints. Merely finding a constraint declaration does not justify an unconditional claim about current data. W30-030 clarified the metadata-check intention, but did not erase that distinction.
+% Third, sections 1.1 (p.2) and 1.10 (p.5) frame the feature as compensation for inadequate testing or user mistakes. Tests and declarative checks address different risks. JOIN TO ONE later made subtle query mistakes a central motivation (BMA-038 and BMA-038R1, section 1.1, p.2). Describe this as a contrast in emphasis, not proof of dishonesty or a reversal on runtime checks: W30-028 already advocated a runtime alternative in sections 1.7 and 1.15.
+% The contemporary proposal also had genuine gaps in its view, derivation and schema-change rules; do not present those criticisms as errors simply because later versions addressed them. Keep names and paper numbers off the visible slide, with the precise sources here for questions. Do not claim a formal rejection or hidden corporate motives.
+\begin{slide}{32}{Appendix \textperiodcentered{} December 2025 \textperiodcentered{} Testing and compile-time proof}{A puzzling objection}{Objection paraphrased \textperiodcentered{} Sources and qualifications in presenter notes}{A5}
+\pdfbookmark[0]{A puzzling objection}{slide-32}
+\txt{18}{84}{172}{16}{20}{orange}{\textbf{OBJECTION (PARAPHRASED)}}
+\txt{211}{84}{171}{16}{20}{blue}{\textbf{OUR RESPONSE}}
+\txt{18}{103}{172}{30}{38}{ink}{\textit{Application testing should catch these mistakes; they do not justify new SQL syntax.}}
+\txt{211}{103}{171}{30}{38}{ink}{Buggy queries can pass tests on the chosen data.\\[5mm]\texttt{FOR KEY} requires a proof from the schema and query structure.}
+\end{slide}
+
+% 33. The questions predate our proposal
+% Appendix: only for questions; no time in the prepared 38-minute talk.
 % Presenter note: Source: historical review reproduced in UTC-107 pp.23–31 and CMN-023R3 pp.29–35. REN-025 (Mike Sykes, 1986) proposes links; FIR-078 (Hugh Darwen, 1989) raises views, filtered targets and related issues; SLC-035 (Ken Jacobs, 1990) discusses adding a second FK. These are antecedents, not identical versions of the present design.
 % CMN-023R2/R3 compare SQL Anywhere’s inferred KEY JOIN to explicit column lists. The goal here is stable selection of the relationship plus proof through the actual operands. Avoid claiming to have invented every element of FK-based join notation.
-\begin{slide}{35}{Appendix \textperiodcentered{} 1986\textendash{}1990 \textperiodcentered{} Earlier work}{The questions predate our proposal}{Historical review in UTC-107 / CMN-023R3; SQL Anywhere comparison in CMN-023R2/R3}{A1}
-\pdfbookmark[0]{The questions predate our proposal}{slide-40}
+\begin{slide}{33}{Appendix \textperiodcentered{} 1986\textendash{}1990 \textperiodcentered{} Earlier work}{The questions predate our proposal}{Historical review in UTC-107 / CMN-023R3; SQL Anywhere comparison in CMN-023R2/R3}{A6}
+\pdfbookmark[0]{The questions predate our proposal}{slide-33}
 \txt{18}{78}{350}{14.5}{17.8}{blue}{\textbf{SQL STANDARD WORK}}
 \txt{18}{96}{170}{25}{30.8}{ink}{1986: schema links\\1989: join shorthand objections\\1990: added-FK ambiguity}
 \txt{211}{78}{350}{14.5}{17.8}{blue}{\textbf{SQL ANYWHERE}}
