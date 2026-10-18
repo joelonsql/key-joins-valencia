@@ -2,6 +2,10 @@
 
 Andreas Karlsson and Joel Jacobson · 20 October 2026
 
+Session: [Designing a new SQL language feature: Key joins][session].
+
+[session]: https://www.postgresql.eu/events/pgconfeu2026/schedule/session/8343-designing-a-new-sql-language-feature-key-joins/
+
 ## Build
 
 Install [Tectonic](https://tectonic-typesetting.github.io/), then run:
@@ -51,6 +55,3 @@ source versions under `examples/`.
 
 The deck uses external assets, so build it with `make`. A LaTeX editor that only
 accepts a single standalone source file cannot compile this project directly.
-
-The deck currently produces duplicate `@lstlisting`/`@lstnumber` anchor warnings
-because the fanout slides reuse saved listings. These do not prevent PDF output.

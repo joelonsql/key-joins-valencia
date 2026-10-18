@@ -79,16 +79,15 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
 \TimelineRegister{20}{2}{2025-10-21}{2025-10-24}{}
 \TimelineRegister{21}{2}{2025-12-09}{2025-12-11}{W30-020}
 \TimelineRegister{22}{2}{2025-12-08}{2025-12-11}{W30-020}
-\TimelineRegister{23}{2}{2026-03-12}{2026-05-28}{}
-\TimelineRegister{24}{2}{2026-04-02}{2026-04-21}{}
-\TimelineRegister{25}{1}{2026-04-04}{2026-04-04}{}
-\TimelineRegister{26}{1}{2026-04-21}{2026-04-21}{}
-\TimelineRegister{27}{1}{2026-05-28}{2026-05-28}{}
-\TimelineRegister{28}{2}{2026-06-15}{2026-06-19}{BMA-015}
-\TimelineRegister{29}{2}{2026-06-15}{2026-09-30}{W32-024}
-\TimelineRegister{30}{2}{2026-08-18}{2026-09-20}{TAS-028}
-\TimelineRegister{31}{1}{2026-10-12}{2026-10-12}{TAS-028}
-
+\TimelineRegister{23}{2}{2026-04-02}{2026-04-21}{}
+\TimelineRegister{24}{1}{2026-04-04}{2026-04-04}{}
+\TimelineRegister{25}{2}{2026-03-12}{2026-05-28}{}
+\TimelineRegister{26}{2}{2026-06-15}{2026-06-19}{BMA-015}
+\TimelineRegister{27}{2}{2026-06-15}{2026-09-30}{W32-024}
+\TimelineRegister{28}{2}{2026-08-18}{2026-09-20}{TAS-028}
+\TimelineRegister{29}{1}{2026-10-12}{2026-10-12}{TAS-028}
+\TimelineRegister{30}{0}{}{}{}
+\TimelineRegister{31}{0}{}{}{}
 \TimelineRegister{32}{0}{}{}{}
 \TimelineRegister{33}{0}{}{}{}
 \TimelineRegister{34}{0}{}{}{}
@@ -189,8 +188,8 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
 \node[anchor=north east,inner sep=0pt,text=muted,font=\fontsize{11}{13}\selectfont] at (382,215) {#5};
 }{\end{scope}\end{tikzpicture}}
 
-% The opening fanout example uses fixed-pitch SQL, ASCII results and diagnostics.
-% These styles are local to its listings; the rest of the deck is unchanged.
+% Fixed-pitch SQL and diagnostics for the opening and its later payoff.
+% The composability example also uses the base monospace style.
 \lstdefinestyle{fanout-mono}{
   language={},
   basicstyle=\ttfamily\fontsize{12}{16}\selectfont\color{ink},
@@ -202,35 +201,30 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
   xleftmargin=0pt,xrightmargin=0pt
 }
 \lstdefinestyle{fanout-sql}{
-  style=fanout-mono,language=SQL,morekeywords={KEY},
+  style=fanout-mono,language=SQL,morekeywords={FOR,KEY},
   keywordstyle=\color{blue}
 }
-\lstdefinestyle{fanout-diagnostic}{
-  style=fanout-mono,
-  basicstyle=\ttfamily\fontsize{11}{15}\selectfont\color{ink}
+\lstdefinestyle{teaser-sql}{
+  style=fanout-sql,
+  basicstyle=\ttfamily\fontsize{22}{29}\selectfont\color{ink}
 }
-\newsavebox{\fanoutOrders}
-\newsavebox{\fanoutItems}
-\newsavebox{\fanoutPayments}
-\newsavebox{\fanoutRawOn}
-\newsavebox{\fanoutRawKey}
-\newsavebox{\fanoutGroupedOn}
-\newsavebox{\fanoutGroupedKey}
+\lstdefinestyle{complex-sql}{
+  style=fanout-sql,
+  basicstyle=\ttfamily\fontsize{17}{18}\selectfont\color{ink}
+}
+\lstdefinestyle{terminal-session}{
+  style=fanout-mono,
+  basicstyle=\ttfamily\fontsize{15.5}{21}\selectfont\color{black},
+  escapeinside={(*@}{@*)}
+}
+\newsavebox{\openingFanout}
+\newsavebox{\complexOn}
+\newsavebox{\fanoutTerminal}
 \newcommand{\FanoutCheckHeight}[3]{%
   \ifdim\dimexpr\ht#1+\dp#1\relax>#2\relax
     \PackageError{fanout-layout}{#3 exceeds its vertical allocation}%
       {Adjust the terminal line spacing or the box position.}%
   \fi
-}
-% Identical table positions on both pages make only the query changes visible.
-\newcommand{\FanoutBody}[2]{%
-  \begin{scope}[every node/.style={anchor=north west,inner sep=0pt,outer sep=0pt}]
-    \node at (18,80) {\usebox{\fanoutOrders}};
-    \node at (18,119) {\usebox{\fanoutItems}};
-    \node at (18,163) {\usebox{\fanoutPayments}};
-    \node at (104,80) {\usebox{#1}};
-    \node at (239,80) {\usebox{#2}};
-  \end{scope}
 }
 
 % Photographs in assets/key-joins-valencia/ retain the embedded originals'
@@ -317,47 +311,8 @@ No error. Query compiles and runs.
 \FanoutCheckHeight{\composabilityInline}{33mm}{Composability inline SQL}
 \FanoutCheckHeight{\composabilityError}{22mm}{Composability error message}
 
-\begin{lrbox}{\fanoutOrders}\begin{minipage}{7.2cm}
-\begin{lstlisting}[style=fanout-sql]
-SELECT * FROM orders;
-\end{lstlisting}
-\begin{lstlisting}[style=fanout-mono]
- id
------
- 100
- 101
-(2 rows)
-\end{lstlisting}
-\end{minipage}\end{lrbox}
-\begin{lrbox}{\fanoutItems}\begin{minipage}{7.2cm}
-\begin{lstlisting}[style=fanout-sql]
-SELECT * FROM order_items;
-\end{lstlisting}
-\begin{lstlisting}[style=fanout-mono]
- id | order_id | amount
-----+----------+--------
-  1 |      100 |  25.00
-  2 |      100 |  75.00
-  3 |      101 |  30.00
-(3 rows)
-\end{lstlisting}
-\end{minipage}\end{lrbox}
-\begin{lrbox}{\fanoutPayments}\begin{minipage}{7.2cm}
-\begin{lstlisting}[style=fanout-sql]
-SELECT * FROM payments;
-\end{lstlisting}
-\begin{lstlisting}[style=fanout-mono]
- id | order_id | amount
-----+----------+--------
-  1 |      100 |  40.00
-  2 |      100 |  60.00
-  3 |      101 |  30.00
-(3 rows)
-\end{lstlisting}
-\end{minipage}\end{lrbox}
-
-\begin{lrbox}{\fanoutRawOn}\begin{minipage}{11.9cm}
-\begin{lstlisting}[style=fanout-sql]
+\begin{lrbox}{\openingFanout}\begin{minipage}{344mm}
+\begin{lstlisting}[style=teaser-sql]
 SELECT o.id,
        SUM(oi.amount) AS item_total,
        SUM(p.amount)  AS payment_total
@@ -366,100 +321,55 @@ LEFT JOIN order_items AS oi ON oi.order_id = o.id
 LEFT JOIN payments    AS p  ON p.order_id  = o.id
 GROUP BY o.id;
 \end{lstlisting}
-\vspace{.25cm}
-\begin{lstlisting}[style=fanout-mono]
- id  | item_total | payment_total
------+------------+---------------
- 100 |     200.00 |        200.00
- 101 |      30.00 |         30.00
-(2 rows)
+\end{minipage}\end{lrbox}
+
+\begin{lrbox}{\complexOn}\begin{minipage}{344mm}
+\begin{lstlisting}[style=complex-sql]
+SELECT o.id, o.order_date, oi.amount,
+       c.name AS customer, co.country_name,
+       os.status_name, sm.method_name AS shipping,
+       pm.method_name AS payment, cur.currency_code,
+       op.priority_name, tc.code_name AS tax_code,
+       dt.type_name AS discount
+FROM customers           AS c
+JOIN countries           AS co  ON co.id  = c.country_id
+JOIN customer_types      AS ct  ON ct.id  = c.customer_type_id
+JOIN orders              AS o   ON c.id   = o.customer_id
+JOIN order_statuses      AS os  ON os.id  = o.order_status_id
+LEFT JOIN discount_types AS dt  ON dt.id  = o.discount_type_id
+JOIN shipping_methods    AS sm  ON sm.id  = o.shipping_method_id
+JOIN payment_methods     AS pm  ON pm.id  = o.payment_method_id
+JOIN order_items         AS oi  ON o.id   = oi.order_id
+JOIN currencies          AS cur ON cur.id = o.currency_id
+JOIN order_priorities    AS op  ON op.id  = o.order_priority_id
+JOIN tax_codes           AS tc  ON tc.id  = o.tax_code_id
+WHERE o.id = 100;
 \end{lstlisting}
 \end{minipage}\end{lrbox}
 
-\begin{lrbox}{\fanoutRawKey}\begin{minipage}{13.8cm}
-\begin{lstlisting}[style=fanout-sql]
-SELECT o.id,
+\begin{lrbox}{\fanoutTerminal}\begin{minipage}{364mm}
+\begin{lstlisting}[style=terminal-session]
+% psql postgres
+psql (20devel)
+Type "help" for help.
+
+postgres=# SELECT o.id,
        SUM(oi.amount) AS item_total,
        SUM(p.amount)  AS payment_total
 FROM orders AS o
 LEFT JOIN order_items AS oi FOR KEY o (id) <- oi (order_id)
 LEFT JOIN payments    AS p  FOR KEY o (id) <- p (order_id)
 GROUP BY o.id;
-\end{lstlisting}
-\vspace{.25cm}
-\begin{lstlisting}[style=fanout-diagnostic]
-ERROR:  key join from referencing relation p to
-        referenced relation o cannot be proven
+ERROR:  key join from referencing relation p to referenced relation o cannot be proven
 LINE 6: LEFT JOIN payments    AS p  FOR KEY o (id) <- p (order_id)
                                     ^
-DETAIL:  Referenced columns o (id) are not proven unique.
-         A preceding join may duplicate rows from
-         referenced relation o.
+DETAIL:  Referenced columns o (id) are not proven unique. A preceding join may duplicate rows from referenced relation o.
+postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \end{lstlisting}
 \end{minipage}\end{lrbox}
-
-\begin{lrbox}{\fanoutGroupedOn}\begin{minipage}{11.9cm}
-\begin{lstlisting}[style=fanout-sql]
-SELECT o.id,
-       oi.item_total,
-       p.payment_total
-FROM orders AS o
-LEFT JOIN (
-    SELECT order_id, SUM(amount) AS item_total
-    FROM order_items
-    GROUP BY order_id
-) AS oi ON o.id = oi.order_id
-LEFT JOIN (
-    SELECT order_id, SUM(amount) AS payment_total
-    FROM payments
-    GROUP BY order_id
-) AS p ON o.id = p.order_id;
-\end{lstlisting}
-\vspace{.25cm}
-\begin{lstlisting}[style=fanout-mono]
- id  | item_total | payment_total
------+------------+---------------
- 100 |     100.00 |        100.00
- 101 |      30.00 |         30.00
-(2 rows)
-\end{lstlisting}
-\end{minipage}\end{lrbox}
-
-\begin{lrbox}{\fanoutGroupedKey}\begin{minipage}{13.8cm}
-\begin{lstlisting}[style=fanout-sql]
-SELECT o.id,
-       oi.item_total,
-       p.payment_total
-FROM orders AS o
-LEFT JOIN (
-    SELECT order_id, SUM(amount) AS item_total
-    FROM order_items
-    GROUP BY order_id
-) AS oi FOR KEY o (id) <- oi (order_id)
-LEFT JOIN (
-    SELECT order_id, SUM(amount) AS payment_total
-    FROM payments
-    GROUP BY order_id
-) AS p FOR KEY o (id) <- p (order_id);
-\end{lstlisting}
-\vspace{.25cm}
-\begin{lstlisting}[style=fanout-mono]
- id  | item_total | payment_total
------+------------+---------------
- 100 |     100.00 |        100.00
- 101 |      30.00 |         30.00
-(2 rows)
-\end{lstlisting}
-\end{minipage}\end{lrbox}
-\FanoutCheckHeight{\fanoutOrders}{35mm}{Orders data}
-\FanoutCheckHeight{\fanoutItems}{40mm}{Order items data}
-\FanoutCheckHeight{\fanoutPayments}{40mm}{Payments data}
-\FanoutCheckHeight{\fanoutRawOn}{124mm}{Original ON query}
-\FanoutCheckHeight{\fanoutRawKey}{124mm}{Original FOR KEY query}
-\FanoutCheckHeight{\fanoutGroupedOn}{124mm}{Corrected ON query}
-\FanoutCheckHeight{\fanoutGroupedKey}{124mm}{Corrected FOR KEY query}
-
-
+\FanoutCheckHeight{\openingFanout}{78mm}{Opening ON query}
+\FanoutCheckHeight{\complexOn}{122mm}{Complex ON query}
+\FanoutCheckHeight{\fanoutTerminal}{125mm}{Fanout psql session}
 
 % 1. Designing a new SQL language feature
 % Presenter note: Open with the outcome: WG3 agreed to accept the proposal in Tashkent. This talk is the story of how the feature changed, not a tutorial on every rule.
@@ -499,20 +409,46 @@ LEFT JOIN (
 \draw[blue,line width=1.5pt,-{Stealth[length=3mm]}] (255,103) -- (272,103);
 \end{slide}
 
-% 4. What are key joins?
-% Presenter note: Replaces the introductory employees/departments example (recording 03:11–06:17) with the fanout example. Assume orders.id is a primary key and both order_id columns are NOT NULL foreign keys to it, with enforced, non-deferrable constraints. The ON query repeats each item for each payment, and each payment for each item: order 100 has four intermediate rows, so both sums are 200 instead of 100. The first FOR KEY join is valid: every referencing item has one matching order. The second is rejected because o.id is no longer unique in the complete left operand. FOR KEY does not repair the query or prove the whole query correct.
-% Omit the tentative BEAVER percentages from the recording: they were explicitly awaiting verification.
-% ERROR and DETAIL are wrapped without changing their wording. LINE 6 matches the displayed query; its diagnostic caret has 36 leading spaces. Displayed row order is illustrative, since the queries have no ORDER BY.
-\begin{slide}{4}{Double-counting from join fanout}{What are key joins?}{Example inspired by Paul Jungwirth: \href{https://www.postgresql.org/message-id/flat/86b9ec78-925c-1935-bc9d-6bad4ceb1f40@illuminatedcomputing.com}{\textcolor{blue}{Avoiding double-counting in aggregates with more than one join?}} \textperiodcentered{} pgsql-general, 2016}{4 / 34}
-\pdfbookmark[0]{What are key joins? -- Double-counting from join fanout}{slide-4}
-\FanoutBody{\fanoutRawOn}{\fanoutRawKey}
+% 4. It runs. Is it right?
+% Presenter note: Establish the purpose without explaining the fanout or revealing
+% FOR KEY syntax and diagnostics yet. "Key Joins are about writing joins whose
+% intent is easier to read, and letting the database check that intent. That
+% helps us catch query bugs during development." Invite the audience to consider
+% the query, then continue the story. Return to it after acceptance and the retrospective.
+% Source attribution stays in notes because the thread title reveals the problem:
+% Paul Jungwirth, "Avoiding double-counting in aggregates with more than one join?"
+% https://www.postgresql.org/message-id/flat/86b9ec78-925c-1935-bc9d-6bad4ceb1f40@illuminatedcomputing.com
+% Schema assumptions: orders.id is a primary key; both order_id columns are
+% NOT NULL foreign keys to it, with enforced, non-deferrable constraints.
+% For order 100, two items (25, 75) and two payments (40, 60) produce four
+% intermediate rows. Both sums are 200 instead of the intended 100.
+% The first FOR KEY join is valid. The second fails because o.id is no longer
+% unique in the complete left operand. FOR KEY does not repair a query or prove
+% the whole query correct. The standalone examples/key-joins-fanout.tex retains
+% the input rows, complete diagnostic, and corrected aggregation queries.
+% Omit the tentative BEAVER percentages from the recording: they awaited verification.
+\begin{slide}{4}{}{It runs. Is it right?}{}{4 / 34}
+\pdfbookmark[0]{It runs. Is it right?}{slide-4}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,85) {\usebox{\openingFanout}};
+\txt{18}{188}{364}{26}{32}{blue}{Make join intent explicit. Catch mistakes before execution.}
 \end{slide}
 
-% 5. What are key joins?
-% Presenter note: Aggregate each many side by order_id before joining it to orders. Each grouped result has at most one row per order, so the first join leaves o.id unique for the second join. The same NOT NULL foreign keys supply the relationship and coverage facts through the grouping. Both ON and FOR KEY return 100/100 for order 100 and 30/30 for order 101. FOR KEY makes the DBMS check each join; the query author still chooses where to aggregate. The table contents stay in exactly the same positions as on the preceding page.
-\begin{slide}{5}{Aggregating before joining}{What are key joins?}{Example inspired by Paul Jungwirth: \href{https://www.postgresql.org/message-id/flat/86b9ec78-925c-1935-bc9d-6bad4ceb1f40@illuminatedcomputing.com}{\textcolor{blue}{Avoiding double-counting in aggregates with more than one join?}} \textperiodcentered{} pgsql-general, 2016}{5 / 34}
-\pdfbookmark[0]{What are key joins? -- Aggregating before joining}{slide-4-corrected}
-\FanoutBody{\fanoutGroupedOn}{\fanoutGroupedKey}
+% 5. More joins. More to check.
+% Presenter note: This is an example of complexity, not a claim that this query
+% contains a bug. "For each join, we need to understand the relevant constraints
+% and what the preceding query does to the rows. As queries grow, that becomes
+% harder to check by hand, and more valuable to have the database check for us."
+% These names could also denote views built on other views; CTEs add more layers.
+% Transition: "We wanted the database to help us check these assumptions.
+% But that wasn't where the idea started."
+% The grouped version of the earlier fanout example remains in the standalone
+% example: aggregate each many side by order_id before joining it to orders.
+% This leaves o.id unique for the next join and returns the intended 100/100.
+% The query author chooses where to aggregate; FOR KEY verifies each join.
+\begin{slide}{5}{}{More joins. More to check.}{}{5 / 34}
+\pdfbookmark[0]{More joins. More to check.}{slide-4-corrected}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexOn}};
+\txt{18}{198}{364}{21}{26}{blue}{Now imagine these names refer to views built on other views.}
 \end{slide}
 
 % 6. Joel’s first idea
@@ -611,14 +547,20 @@ LEFT JOIN (
 
 % 13. Sidetrack: the MATCH predicate
 % Presenter note: Recording 19:15–22:01. The MATCH predicate is distinct from a foreign key’s MATCH type. The idea was to build on it to simplify the change proposal, but it did not settle the intended null behavior. This was an internal exploration, not a released implementation. Ordinary equality does not match a null component. We return to the nullability breakthrough later. No need to teach MATCH PARTIAL here or claim no DBMS has ever implemented the predicate.
+% Suggested narration: We already knew how an ordinary equality join behaves.
+% Keeping that behaviour made the feature much easier to reason about.
+% A NULL in any compared column prevents a match, even against another NULL.
+% Leave the separate question of preserving unmatched rows for The breakthrough,
+% where taking the join type into account becomes the next discovery.
 \begin{slide}{13}{Late 2023\textendash{}2024 (approx.) \textperiodcentered{} A shortcut that did not simplify the design}{Sidetrack: the MATCH predicate}{Presenters\textquoteright{} design recollection \textperiodcentered{} recording 19:15\textendash{}22:01}{13 / 34}
 \pdfbookmark[0]{Sidetrack: the MATCH predicate}{slide-12}
 \txt{18}{80}{165}{29}{35.7}{blue}{The hope}
-\txt{18}{104}{165}{25}{30.8}{ink}{Reuse existing SQL rules\\to get a smaller proposal.}
-\txt{211}{80}{170}{29}{35.7}{orange}{The problem}
-\txt{211}{104}{170}{25}{30.8}{ink}{We had not settled\\what nulls should mean.}
+\txt{18}{104}{165}{25}{30.8}{ink}{Build on the MATCH predicate\\to make the proposal smaller.}
+\txt{211}{80}{170}{29}{35.7}{orange}{The complication}
+\txt{211}{104}{170}{25}{30.8}{ink}{What should happen when some\\referencing values are NULL?}
 \draw[rulecolor,line width=1pt] (18,153) -- (382,153);
-\txt{18}{167}{350}{29}{35.7}{ink}{An ordinary equality join was much easier to explain.}
+\txt{18}{163}{364}{23}{28}{blue}{The insight}
+\txt{18}{180}{364}{26}{32}{ink}{Transform to an ordinary equijoin.\\A NULL in any compared column means no match.}
 \end{slide}
 
 % 14. Pitching it to the PostgreSQL community
@@ -731,26 +673,13 @@ LEFT JOIN (
 \txt{211}{103}{171}{30}{38}{ink}{Buggy queries can pass tests on the chosen data.\\[5mm]\texttt{FOR KEY} requires a proof from the schema and query structure.}
 \end{slide}
 
-% 23. Completing the patch
-% Presenter note: Recording 48:04–53:18. Arne became central to making the implementation robust. Joel ported it to PGlite, launched the browser demo on 28 March 2026, and used coverage-oriented LLM review loops to generate cases. The goal included Modified Condition/Decision Coverage (MC/DC); do not claim a verified 100% result. Experienced developers still had to reason through the difficult fixes.
-% The public demo is https://keyjoin.org/. A demonstration is optional: use it if the network and browser are ready, not as a prerequisite for finishing the talk. The deck works offline.
-\begin{slide}{23}{March\textendash{}May 2026 \textperiodcentered{} A deadline: the Stockholm meeting}{Completing the patch}{Presenters\textquoteright{} development history, March\textendash{}May 2026 \textperiodcentered{} keyjoin.org}{23 / 34}
-\pdfbookmark[0]{Completing the patch}{slide-24}
-\txt{18}{78}{350}{14.5}{17.8}{blue}{\textbf{IMPLEMENTATION}}
-\txt{18}{94}{171}{27}{33.2}{ink}{Arne tackles the\\hard PostgreSQL work.}
-\txt{211}{78}{350}{14.5}{17.8}{blue}{\textbf{SOMETHING PEOPLE CAN TRY}}
-\txt{211}{94}{171}{27}{33.2}{ink}{PGlite brings the patch\\to keyjoin.org.}
-\draw[rulecolor,line width=1pt] (18,141) -- (382,141);
-\txt{18}{157}{352}{26}{32.0}{ink}{Views and dependencies. Cache invalidation. Concurrency.\\A growing collection of tests and reproducers.}
-\end{slide}
-
-% 24. The breakthrough
+% 23. The breakthrough
 % Presenter note: Clean transcript section 25, recording 53:18–01:09:20; section 26 supplies the intervening validation-scope discussion at 59:00–01:01:40. Tell the story in this order. In the middle of the implementation push, Vik sends Joel a message about a CD ballot comment that hints a similar join feature will probably be proposed soon. A CD is a Committee Draft; the comment is formal feedback on that draft, not the feature proposal itself. Joel starts asking what Key Joins can promise about their result, rather than concentrating only on the input checks. A non-null foreign key to a primary key gives the simple starting example: each referencing row contributes exactly one output row.
 % CD terminology: https://committee.iso.org/sites/tc5sc2/home/about/content-left-area/iso-stages-developpement/committee-draft-cd.html
 % The prospect of another proposal is both unsettling and stimulating. Joel sees an opportunity to establish the result guarantee at compile time. The transcript describes a runtime interpretation of the ballot comment; do not present that interpretation as an independently established requirement of the other proposal, or infer motives. The visible wording is a paraphrase, not a quotation from the ballot.
 % The result question exposes two design problems. A later join can multiply rows, so proof must apply to the complete operands of each binary join. Nullable references can disappear in an inner join. Joel first considers a NULLS suffix, then rejects it on the flight to PGConf.DE: taking the ordinary join type into account in the proof makes the extra NULLS keyword unnecessary. Peter Eisentraut has agreed to meet them there; Andreas is also attending to give a talk.
-% Continue with validation scope on the next slide and the mathematical conditions after that. The result guarantee is local to each join; outer joins can additionally emit referenced-only rows, so do not promise equal total row counts for every key join. Earlier drafts already had nullability logic; the breakthrough was the clear result contract and a composable proof. Keep the extent of the resulting rewrite qualitative: the speakers differ on how much code versus standard text changed.
-\begin{slide}{24}{2\textendash{}21 April 2026 \textperiodcentered{} A message from Vik changes the question}{The breakthrough}{Presenters\textquoteright{} recollection \textperiodcentered{} Key Joins Valencia recording, 53:18\textendash{}1:09:20}{24 / 34}
+% Continue with validation scope on the next slide; return to the two result guarantees after acceptance and the retrospective. The result guarantee is local to each join; outer joins can additionally emit referenced-only rows, so do not promise equal total row counts for every key join. Earlier drafts already had nullability logic; the breakthrough was the clear result contract and a composable proof. Keep the extent of the resulting rewrite qualitative: the speakers differ on how much code versus standard text changed.
+\begin{slide}{23}{2\textendash{}21 April 2026 \textperiodcentered{} A message from Vik changes the question}{The breakthrough}{Presenters\textquoteright{} recollection \textperiodcentered{} Key Joins Valencia recording, 53:18\textendash{}1:09:20}{23 / 34}
 \pdfbookmark[0]{The breakthrough}{slide-25}
 \txt{18}{75}{364}{24}{29}{ink}{\textbf{Vik spots a CD ballot comment}: feedback on a Committee Draft\\of the SQL standard. It suggests a similar feature will probably\\be proposed soon.}
 \txt{18}{114}{364}{28}{35}{blue}{Joel starts thinking: what can Key Joins guarantee\\about their result?}
@@ -758,13 +687,13 @@ LEFT JOIN (
 \txt{18}{181}{364}{24}{30}{ink}{On the flight to PGConf.DE, Joel realizes we can drop the proposed\\\texttt{NULLS} keyword if we take the join type into account.}
 \end{slide}
 
-% 25. The Composability Bug
+% 24. The Composability Bug
 % Presenter note: Clean transcript section 26, recording 59:00–01:01:40 and 01:07:10–01:07:44. The two panels are reconstructed as vector text from section 2 of /Users/joel/src/wg3-papers/papers/key-joins/proposal-validation-scope.html, the presenters' discussion document shared with the Key Joins group on 4 April 2026. SQL is extracted verbatim; diagnostics retain all words with layout line wrapping. The screenshot asset is no longer used.
 % Tell the surprising part first: moving the first join into a view changed whether the payments join was accepted. These are our historical validation and syntax. At that time the first column list described the right operand and had no table reference. Do not read the arrows using the later left-to-right list order.
 % Inline validation found orders' base-table primary key; view validation saw the repeated order IDs. The order_items/orders result can contain several rows for one order, so a payment can match several rows in that operand. The original INNER JOIN can also lose coverage of orders; the reported error highlights uniqueness. The two SELECT * queries expose different output column sets, so describe the same join structure and relevant values, not identical result schemas.
 % The fix checks the complete operands of each binary join. Derive their facts, prove the join, then pass facts about its result upward. Both forms of this example must be rejected when the referenced columns are not proven unique. This makes the reasoning recursive and composable. Link back to the earlier whiteboard photographs: the result contract clarified what each proof step had to establish.
 % The closing sentence is quoted from the discussion document. Apply it to the refactoring illustrated here, not as a claim about every possible view rewrite. Keep the guarantee local to each join. These diagnostics are historical illustrations, not standardized error wording.
-\begin{slide}{25}{4 April 2026 \textperiodcentered{} Syntax used at the time}{The Composability Bug}{From the validation-scope discussion shared with the Key Joins group, 4 April 2026}{25 / 34}
+\begin{slide}{24}{4 April 2026 \textperiodcentered{} Syntax used at the time}{The Composability Bug}{From the validation-scope discussion shared with the Key Joins group, 4 April 2026}{24 / 34}
 \pdfbookmark[0]{The Composability Bug}{slide-26}
 % Two panels reproduce the original comparison with editable PDF text.
 \path[draw=compoBorder,fill=white,line width=.6pt,rounded corners=2.5mm] (18,66) rectangle (194,190);
@@ -786,31 +715,69 @@ LEFT JOIN (
 \txt{18}{198}{364}{23}{28}{ink}{Refactoring joins into a view should not change whether a query compiles.}
 \end{slide}
 
-% 26. Three conditions give a useful contract
-% Presenter note: Recording 01:04:55–01:11:37. The declared FK supplies the relationship; these are the three mathematical obligations on the current operands. Together they give exactly one output occurrence for every incoming referencing row, plus the unique referenced row for every all-non-null reference. An outer join may also emit referenced-only rows, so do not equate this with equal total row counts for every join type.
-% Errors can explain which fact is missing: relationship, uniqueness, match existence, or null preservation. Avoid presenting E0–E3 as standardized codes. Rejection means the specified conservative proof did not succeed, not necessarily that every possible dataset violates the condition.
-% Mention the improved diagnostics and Christoph Berg’s enthusiastic reaction as a recollection; there is no need for a fabricated terminal screenshot.
-\begin{slide}{26}{21 April 2026 \textperiodcentered{} The DBMS must prove them, or report an error}{Three conditions give a useful contract}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9 \textperiodcentered{} mathematical conditions on complete operands}{26 / 34}
-\pdfbookmark[0]{Three conditions give a useful contract}{slide-27}
-\txt{18}{77}{17}{35}{43.0}{blue}{1}
-\txt{43}{79}{337}{26}{32.0}{ink}{Referenced values are unique when all are non-null.}
-\txt{18}{115}{17}{35}{43.0}{blue}{2}
-\txt{43}{117}{337}{26}{32.0}{ink}{Every all-non-null reference has a match.}
-\txt{18}{153}{17}{35}{43.0}{blue}{3}
-\txt{43}{155}{337}{26}{32.0}{ink}{Referencing values are non-null,\\or the join type preserves that operand.}
+% 25. The road to the first patch
+% Presenter note: Recording 48:04--53:18 and 01:12:58--01:14:27. This expands
+% March--May on the main timeline. The goal was a working implementation before
+% the June WG3 meeting in Stockholm. Joel invited Arne to help on 12 March.
+% Arne strengthens the earlier implementation and reworks view revalidation:
+% the April snapshot copies and checks the stored query tree instead of
+% deparsing a view to SQL and reparsing it. It still uses the earlier proof model.
+% Joel's 98ddd44f2b (10 April) checks the complete intermediate operand. The
+% May rewrite d2156d3b53 has author date 4 May and commit date 6 May, both Joel:
+% each RTE exposes non-null, uniqueness, FK and coverage facts about its columns.
+% Dates in rebased/imported snapshots do not establish when every change was
+% first written. The Arne import 760cab9ac0 is dated 27--28 April; the visible
+% interval describes the work rather than treating the import as the contribution.
+% The recording credits Arne with the difficult concurrency fixes. Joel,
+% Andreas and Arne develop tests and resolve view, dependency and integration
+% issues. These were overlapping efforts, not a precisely dated handover.
+% Background from recording 48:04--53:18: Joel also used coverage-oriented
+% LLM review loops to generate cases, with MC/DC as a goal, not a verified
+% 100% result. Experienced developers still had to reason through the fixes.
+% First public posting verified: 28 May 2026,
+% https://www.postgresql.org/message-id/00c30670-64e1-4c30-a349-784426d333df@app.fastmail.com
+% After submission, Tomas Vondra asks for smaller reviewable pieces. Keep this
+% earlier presenter context available for questions: a working prototype still
+% needs a patch series whose individual changes reviewers can understand.
+\begin{slide}{25}{March\textendash{}May 2026}{The road to the first patch}{Implementation history and presenters\textquoteright{} account \textperiodcentered{} \href{https://www.postgresql.org/message-id/00c30670-64e1-4c30-a349-784426d333df@app.fastmail.com}{First public patch: 28 May 2026}}{25 / 34}
+\pdfbookmark[0]{The road to the first patch}{slide-28}
+% A detailed chronology beneath the deck's calendar timeline. The milestones
+% have equal spacing for readability; date labels retain the available precision.
+\draw[rulecolor,line width=1.4pt] (76,79) -- (76,179);
+\foreach \y in {79,99,119,139,159}{%
+  \filldraw[fill=blue,draw=white,line width=.5mm] (76,\y) circle[radius=1.7mm];
+}
+\filldraw[fill=teal,draw=white,line width=.5mm] (76,179) circle[radius=2.2mm];
+
+\txt{18}{75}{51}{19}{23}{muted}{March\textendash{}April}
+\txt{86}{75}{68}{22}{27}{ink}{\textbf{Arne}}
+\txt{160}{72}{222}{22}{27}{ink}{Strengthens query analysis and reworks\\view revalidation.}
+
+\txt{18}{95}{51}{19}{23}{muted}{10 April}
+\txt{86}{95}{68}{22}{27}{ink}{\textbf{Joel}}
+\txt{160}{92}{222}{22}{27}{ink}{Fixes the composability bug:\\check the complete intermediate result.}
+
+\txt{18}{115}{51}{19}{23}{muted}{Early May}
+\txt{86}{115}{68}{22}{27}{ink}{\textbf{Joel}}
+\txt{160}{112}{222}{22}{27}{ink}{Rewrites the proof engine around\\facts on each intermediate result.}
+
+\txt{18}{135}{51}{19}{23}{muted}{May}
+\txt{86}{135}{68}{22}{27}{ink}{\textbf{Arne}}
+\txt{160}{135}{222}{22}{27}{ink}{Tackles the difficult concurrency fixes.}
+
+\txt{18}{155}{51}{19}{23}{muted}{May}
+\txt{86}{152}{68}{20}{25}{ink}{\textbf{Joel, Andreas\\and Arne}}
+\txt{160}{152}{222}{22}{27}{ink}{Add tests and fix bugs in view\\and dependency handling.}
+
+\txt{18}{175}{51}{19}{23}{teal}{\textbf{28 May}}
+\txt{86}{175}{68}{22}{27}{ink}{\textbf{Joel}}
+\txt{160}{175}{222}{22}{27}{ink}{Posts the first patch to \texttt{pgsql-hackers}.}
+
+\draw[rulecolor,line width=.7pt] (18,191) -- (382,191);
+\txt{18}{198}{364}{22}{27}{blue}{A working implementation before the June WG3 meeting in Stockholm.}
 \end{slide}
 
-% 27. The first patch to -hackers
-% Presenter note: Recording 01:12:58–01:14:27. The team gets the implementation out before the Stockholm meeting. Tomáš Vondra asks for the patch to be broken into smaller pieces. This is not just administrative cleanup: reviewers need to follow each change and verify its assumptions.
-% First public posting verified: 28 May 2026, https://www.postgresql.org/message-id/00c30670-64e1-4c30-a349-784426d333df@app.fastmail.com . Contrast a complete working prototype with a patch series ready for core review.
-\begin{slide}{27}{28 May 2026 \textperiodcentered{} A working feature still has to be reviewable}{The first patch to -hackers}{Presenters\textquoteright{} account of the first review and Tomá\v{s} Vondra\textquoteright{}s feedback}{27 / 34}
-\pdfbookmark[0]{The first patch to -hackers}{slide-28}
-\txt{18}{80}{354}{33}{40.6}{blue}{Code, tests and a public review.}
-\txt{18}{122}{350}{27}{33.2}{ink}{The tests exposed assumptions that the prose had hidden.}
-\txt{18}{164}{350}{27}{33.2}{ink}{The review exposed another problem:\\the patch needed smaller, reviewable pieces.}
-\end{slide}
-
-% 28. Stockholm: two proposals, more collaborators
+% 26. Stockholm: two proposals, more collaborators
 % Presenter note: Recording 01:14:40–01:22:19. Joel hosts the meeting; Andreas attends as a guest. The amended JOIN TO ONE proposal requires explicit INNER or LEFT. LEFT can preserve the left row count; INNER may filter unmatched rows. Neither requires that the selected columns follow a declared FK. Its runtime error on multiple matches and our compile-time proof are different mechanisms.
 % Do not repeat the background claim that any filtering contradicts the original cardinality-preserving-table comment: the quoted comment says “subset.” The BMA minutes record JTO acceptance and request that Key Joins be revised and brought back. Karl volunteers to help. Bengt engages as an implementer; Leonid asks about how restrictive the proof rules should be.
 % Sources: BMA-038R1 pp.2–4; W32-001R1 items 9.4.2 and 9.4.11.
@@ -818,7 +785,7 @@ LEFT JOIN (
 % feature and volunteered to see the Change Proposal through. Mention Karl's
 % crucial contribution verbally. Feature support is distinct from accepting
 % the Change Proposal.
-\begin{slide}{28}{15\textendash{}19 June 2026 \textperiodcentered{} BMA}{Stockholm: two proposals, more collaborators}{BMA-038R1; W32-001R1, pp. 11\textendash{}14; presenters\textquoteright{} account}{28 / 34}
+\begin{slide}{26}{15\textendash{}19 June 2026 \textperiodcentered{} BMA}{Stockholm: two proposals, more collaborators}{BMA-038R1; W32-001R1, pp. 11\textendash{}14; presenters\textquoteright{} account}{26 / 34}
 \pdfbookmark[0]{Stockholm: two proposals, more collaborators}{slide-29}
 \txt{18}{77}{184}{14.5}{17.8}{blue}{\textbf{JOIN TO ONE}}
 \txt{18}{90}{184}{24}{29.5}{ink}{Check at runtime that each left row\\has at most one match.}
@@ -831,11 +798,11 @@ LEFT JOIN (
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (214,74) {\KeyJoinsStockholmPhoto};
 \end{slide}
 
-% 29. Standardese experts
+% 27. Standardese experts
 % Presenter note: Recording 01:22:20–01:30:04. Karl’s offer at Stockholm matters enormously. Work at the editors’ meeting in Åland, then with Jörn and Fred, improves the feature as well as the words. All six names appear among TAS-028R1’s coauthors alongside the original developers. Do not imply all held the same editorial office or add current employer claims.
 % The displayed sentence quotes the first sentence of TAS-028R1 p.5, proposed 7.10 SR4.1)a)iii). The term “simply contain” denotes a defined syntactic relationship. Likewise immediately, generally and broadly are technical modifiers, not ordinary conversational emphasis. The example illustrates why experienced standard authors matter.
 % W32 in August still did not accept the proposal. That is different from the October TAS outcome. The lesson is to collaborate with the relevant experts earlier, not send them a finished design to rubber-stamp.
-\begin{slide}{29}{June\textendash{}September 2026 \textperiodcentered{} A shared design effort, not just proofreading}{Standardese experts}{TAS-028R1, pp. 1, 5 (7.10 SR 4.1)a)iii)); presenters\textquoteright{} account}{29 / 34}
+\begin{slide}{27}{June\textendash{}September 2026 \textperiodcentered{} A shared design effort, not just proofreading}{Standardese experts}{TAS-028R1, pp. 1, 5 (7.10 SR 4.1)a)iii)); presenters\textquoteright{} account}{27 / 34}
 \pdfbookmark[0]{Standardese experts}{slide-30}
 \txt{18}{78}{240}{27}{33.2}{ink}{Vik Fearing \textperiodcentered{} Jim Melton\\Karl Schendel \textperiodcentered{} Stephen Cannan\\Jörn Bartels \textperiodcentered{} Fred Zemke}
 \draw[rulecolor,line width=1pt] (18,128) -- (258,128);
@@ -844,11 +811,11 @@ LEFT JOIN (
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (277,65) {\KeyJoinsStandardesePhoto};
 \end{slide}
 
-% 30. The final syntax changes
+% 28. The final syntax changes
 % Presenter note: Recording 01:30:04–01:33:17. Peter Eisentraut kept pressing on the syntax. Gerald Venzl had also made related order/name objections in W30-027. Credit the useful criticism wherever it came from.
 % The arrow direction did not change its meaning: it still points from referencing to referenced columns. The two lists changed order, and both references became mandatory. This also resolves naming when either operand is itself a joined table. Both table references are chosen from names exposed by their corresponding complete operand.
 % The TAS work also repairs dependency handling, including SQL/PGQ interactions; do not say all the changes were cosmetic.
-\begin{slide}{30}{August\textendash{}September 2026 \textperiodcentered{} Put the column lists in the order of the join operands}{The final syntax changes}{W30-027, pp. 2\textendash{}3; TAS-028R1, p. 2}{30 / 34}
+\begin{slide}{28}{August\textendash{}September 2026 \textperiodcentered{} Put the column lists in the order of the join operands}{The final syntax changes}{W30-027, pp. 2\textendash{}3; TAS-028R1, p. 2}{28 / 34}
 \pdfbookmark[0]{The final syntax changes}{slide-31}
 \txt{18}{76}{350}{14.5}{17.8}{blue}{\textbf{EARLIER}}
 \codeat{18}{91}{23}{29.9}{\textcolor{blue}{\textbf{FROM}} orders \textcolor{blue}{\textbf{AS}} o\strut \\
@@ -859,12 +826,12 @@ LEFT JOIN (
 \txt{18}{191}{350}{20}{24.6}{teal}{Name both sides. Read left to right. Follow the same foreign key.}
 \end{slide}
 
-% 31. Acceptance in Tashkent
+% 29. Acceptance in Tashkent
 % Presenter note: Recording 01:33:17–01:36:48. The presenters explicitly decided this should be a celebration slide. Their account is that the meeting reached consensus to accept the proposal, with wording cleanup still to follow. Keep the distinction between a WG3 decision, incorporation into an IWD, and a published ISO edition. No official TAS minutes are available in the archive snapshot; TAS-001R1 is the previous W32 meeting’s minutes, not this decision.
 % Do not replay the personal arguments from the meeting or claim the feature is already committed to PostgreSQL.
 % Credits verified against the author list on TAS-028R1, page 1, in cover order.
 % Joel uses Jacobson here, his requested PostgreSQL-community spelling.
-\begin{slide}{31}{12 October 2026 \textperiodcentered{} TAS}{Acceptance in Tashkent}{TAS-028R1, p. 1; presenters\textquoteright{} first-hand account of the TAS decision}{31 / 34}
+\begin{slide}{29}{12 October 2026 \textperiodcentered{} TAS}{Acceptance in Tashkent}{TAS-028R1, p. 1; presenters\textquoteright{} first-hand account of the TAS decision}{29 / 34}
 \pdfbookmark[0]{Acceptance in Tashkent}{slide-32}
 \txt{18}{75}{184}{18}{22.1}{ink}{ISO/IEC JTC 1/SC 32/WG 3}
 \txt{18}{89}{184}{31}{38.1}{teal}{Reached consensus to accept\\TAS-028R1 \textemdash{} Key Joins: The Proposal}
@@ -876,10 +843,12 @@ LEFT JOIN (
 \end{slide}
 
 
-% 32. What we would do differently
+% 30. What we would do differently
 % Presenter note: Recording 01:37:40–01:39:54. The main lesson is collaboration across organizations and disciplines. Standards experts are not merely copyeditors; their questions can expose missing design decisions. Implementations and examples reveal issues the prose misses. Most contributors worked alongside other responsibilities, so five elapsed years are not five years of full-time coding.
 % Tie back to one candid mistake: hiding joins, relying on constraint names alone, leaving derivations implementation-defined, or the extra FILTER clause. Avoid implying all criticism was good or every delay useful.
-\begin{slide}{32}{Lessons from the journey}{What we would do differently}{Presenters\textquoteright{} retrospective}{32 / 34}
+% Close the retrospective, then introduce the technical examples:
+% "So, what did all that work give us?"
+\begin{slide}{30}{Lessons from the journey}{What we would do differently}{Presenters\textquoteright{} retrospective}{30 / 34}
 \pdfbookmark[0]{What we would do differently}{slide-34}
 \txt{18}{78}{350}{29}{35.7}{ink}{Bring implementers and standards experts in earlier.}
 \txt{18}{115}{350}{29}{35.7}{ink}{Write queries, code and specification together.}
@@ -888,6 +857,247 @@ LEFT JOIN (
 \end{slide}
 
 
+% 31. What a key join guarantees
+% Presenter note: Recording 01:04:55–01:11:37. State the two result guarantees
+% explicitly. "And these guarantees must hold for each join. We must check its
+% complete inputs, including what earlier joins have done to them." A key join
+% may be written with ON; FOR KEY requires the DBMS to verify the guarantees.
+% The declared FK supplies the relationship. The three mathematical obligations
+% on the complete operands remain useful background for questions:
+% 1. All-non-null combinations of referenced-column values are unique.
+% 2. Every all-non-null referencing-column combination has a matching referenced row.
+% 3. The referencing columns are known not nullable, or the join type preserves
+%    the referencing operand.
+% Together they give exactly one output occurrence for every incoming referencing
+% row, plus its unique matching referenced row for every all-non-null reference.
+% An outer join may also emit referenced-only rows; do not promise equal total
+% row counts for every join type. These guarantees concern the immediate result
+% of each join, not a whole query's final SELECT, WHERE, or aggregation.
+% Errors identify a missing relationship, uniqueness, match existence, or null
+% preservation. Rejection means the conservative proof did not succeed, not that
+% every possible dataset violates a condition. E0–E3 are not standardized codes.
+% Mention the improved diagnostics and Christoph Berg's enthusiastic reaction
+% as a recollection. The opening query's diagnostic appears on the next slide.
+% Diagram: after the story and retrospective, illustrate the completed feature. The displayed
+% LEFT JOIN preserves the referencing table's total cardinality: four rows enter
+% and four rows leave. Equal-height brackets exclude the headers. The blue arrows
+% show the stronger guarantee that each particular row survives exactly once.
+% Alice and Bob both acquire room (10,100); David acquires room (20,100).
+% Carol has reserved at hotel 20 but has not yet been assigned a room.
+% Her (20,NULL) finds no equality match; LEFT JOIN retains her reservation
+% with NULLs in all ro.* columns. Room (10,101) contributes no result row.
+% Schema assumptions for acceptance: rooms(hotel_id,room_number) is a primary
+% key, and reservations(hotel_id,room_number) is an enforced, non-deferrable
+% MATCH SIMPLE foreign key to it. Referencing columns may be nullable.
+% The data illustrates the guarantees; the DBMS proves them from the schema and
+% the complete operands, rather than inspecting these particular example rows.
+% Display order is illustrative because the shown query has no ORDER BY.
+% This is the CPT result plus matched row extension. LEFT JOIN ... ON FALSE
+% would preserve the count but would supply no matching room information.
+% Equal total counts are guaranteed for accepted INNER joins in either direction,
+% LEFT JOIN ... ->, and RIGHT JOIN ... <-. FULL JOIN and outer joins that preserve
+% the referenced operand may produce additional referenced-only rows.
+\begin{slide}{31}{Row preservation and matching}{What a key join guarantees}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{31 / 34}
+\pdfbookmark[0]{What a key join guarantees}{slide-27}
+
+% Shared input/output colors identify which operand supplies each cell.
+\definecolor{referencingHeader}{HTML}{D8E8F5}
+\definecolor{referencingFill}{HTML}{EAF3FB}
+\definecolor{referencedHeader}{HTML}{F4DEB6}
+\definecolor{referencedFill}{HTML}{FBEDDA}
+\definecolor{referencedAccent}{HTML}{A56A20}
+\definecolor{nullPaddingFill}{HTML}{EEEEEE}
+\definecolor{nullPaddingText}{HTML}{565656}
+\definecolor{queryFill}{HTML}{F2F2F2}
+
+% Result: the referencing columns retain all four rows; room columns hold matches
+% for Alice, Bob and David, and NULL padding for Carol.
+\node[anchor=south,inner sep=0pt,text=ink,font=\fontsize{19}{23}\selectfont\bfseries]
+  at (167.5,65) {Join result};
+\path[fill=referencingHeader] (55,68) rectangle (180,76);
+\path[fill=referencedHeader] (180,68) rectangle (280,76);
+\path[fill=referencingFill] (55,76) rectangle (180,84);
+\path[fill=referencedFill] (180,76) rectangle (280,84);
+\path[fill=referencingFill] (55,84) rectangle (180,92);
+\path[fill=referencedFill] (180,84) rectangle (280,92);
+\path[fill=referencingFill] (55,92) rectangle (180,100);
+\path[fill=nullPaddingFill] (180,92) rectangle (280,100);
+\path[fill=referencingFill] (55,100) rectangle (180,108);
+\path[fill=referencedFill] (180,100) rectangle (280,108);
+\draw[ink!55,line width=.65pt] (55,68) rectangle (280,108);
+\draw[ink!40,line width=.4pt] (74,68) -- (74,108);
+\draw[ink!40,line width=.4pt] (105,68) -- (105,108);
+\draw[ink!40,line width=.4pt] (143,68) -- (143,108);
+\draw[ink!40,line width=.9pt] (180,68) -- (180,108);
+\draw[ink!40,line width=.4pt] (211,68) -- (211,108);
+\draw[ink!40,line width=.4pt] (249,68) -- (249,108);
+\draw[ink!35,line width=.4pt] (55,76) -- (280,76);
+\draw[ink!35,line width=.4pt] (55,84) -- (280,84);
+\draw[ink!35,line width=.4pt] (55,92) -- (280,92);
+\draw[ink!35,line width=.4pt] (55,100) -- (280,100);
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (64.5,72) {re.id};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (89.5,72) {re.hotel\_id};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (124,72) {re.room\_number};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (161.5,72) {re.guest\_name};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (195.5,72) {ro.hotel\_id};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (230,72) {ro.room\_number};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (264.5,72) {ro.price};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (71,80) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (102,80) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (140,80) {100};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (146,80) {Alice};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (208,80) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (246,80) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (277,80) {1250};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (71,88) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (102,88) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (140,88) {100};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (146,88) {Bob};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (208,88) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (246,88) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (277,88) {1250};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (71,96) {3};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (102,96) {20};
+\node[anchor=east,inner sep=0pt,text=muted,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (140,96) {NULL};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (146,96) {Carol};
+\node[anchor=east,inner sep=0pt,text=nullPaddingText,font=\ttfamily\fontsize{15.5}{19}\selectfont\itshape] at (208,96) {NULL};
+\node[anchor=east,inner sep=0pt,text=nullPaddingText,font=\ttfamily\fontsize{15.5}{19}\selectfont\itshape] at (246,96) {NULL};
+\node[anchor=east,inner sep=0pt,text=nullPaddingText,font=\ttfamily\fontsize{15.5}{19}\selectfont\itshape] at (277,96) {NULL};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (71,104) {4};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (102,104) {20};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (140,104) {100};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (146,104) {David};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (208,104) {20};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (246,104) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (277,104) {1890};
+
+% Every individual referencing row connects to exactly one result row.
+\begin{scope}[blue!75,line width=.65pt,-{Stealth[length=1.7mm,width=1.2mm]}]
+\draw (39,172) .. controls (32,172) and (32,80) .. (54,80);
+\draw (39,180) .. controls (32,180) and (32,88) .. (54,88);
+\draw (39,188) .. controls (32,188) and (32,96) .. (54,96);
+\draw (39,196) .. controls (32,196) and (32,104) .. (54,104);
+\end{scope}
+
+% The same referenced row supplies Alice and Bob; David gets a different room.
+% No match arrow goes to Carol or comes from the unused room.
+\begin{scope}[referencedAccent!85,line width=.65pt,-{Stealth[length=1.7mm,width=1.2mm]}]
+\draw (295,172) .. controls (300,172) and (300,80) .. (281,80);
+\draw (295,172) .. controls (303,172) and (303,88) .. (281,88);
+\draw (295,188) .. controls (300,188) and (300,104) .. (281,104);
+\end{scope}
+
+% Identical measurements of the data bodies; column headers are excluded.
+\draw[blue,line width=.9pt] (31,76) -- (28,76) -- (28,108) -- (31,108);
+\draw[blue,line width=.9pt] (31,168) -- (28,168) -- (28,200) -- (31,200);
+\node[rotate=90,inner sep=0pt,text=blue,font=\fontsize{15.5}{19}\selectfont] at (22,92) {4 rows};
+\node[rotate=90,inner sep=0pt,text=blue,font=\fontsize{15.5}{19}\selectfont] at (22,184) {4 rows};
+
+% Accepted key join specification, positioned as a binary operator.
+\draw[muted,line width=1pt,-{Stealth[length=2mm]}] (167.5,116) -- (167.5,110);
+\path[fill=queryFill,draw=ink!55,line width=.7pt] (52,116) rectangle (286,145);
+\codeat{58}{118}{15.5}{18.5}{\textcolor{blue}{SELECT} re.*, ro.*\strut \\
+\textcolor{blue}{FROM} reservations \textcolor{blue}{AS} re\strut \\
+\textcolor{blue}{LEFT JOIN} rooms \textcolor{blue}{AS} ro\strut \\
+\phantom{MMMM}\textcolor{blue}{FOR KEY} re (hotel\_id, room\_number) -> ro (hotel\_id, room\_number);\strut}
+\draw[muted,line width=1pt,-{Stealth[length=2mm]}] (102.5,150) -- (119,146);
+\draw[muted,line width=1pt,-{Stealth[length=2mm]}] (244,150) -- (227.5,146);
+
+% Input names above the tables; smaller role labels below them.
+% Correlation names are introduced by the query.
+\node[anchor=south,inner sep=0pt,text=black,font=\fontsize{18}{22}\selectfont]
+  at (102.5,157) {\textbf{reservations}};
+\node[anchor=south,inner sep=0pt,text=black,font=\fontsize{18}{22}\selectfont]
+  at (244,157) {\textbf{rooms}};
+\node[anchor=north,inner sep=0pt,text=black,font=\fontsize{13.5}{17}\selectfont\itshape]
+  at (102.5,203) {referencing table};
+\node[anchor=north,inner sep=0pt,text=black,font=\fontsize{13.5}{17}\selectfont\itshape]
+  at (244,195) {referenced table};
+\path[fill=referencingHeader] (40,160) rectangle (165,168);
+\path[fill=referencingFill] (40,168) rectangle (165,200);
+\draw[ink!55,line width=.65pt] (40,160) rectangle (165,200);
+\draw[ink!40,line width=.4pt] (59,160) -- (59,200);
+\draw[ink!40,line width=.4pt] (90,160) -- (90,200);
+\draw[ink!40,line width=.4pt] (128,160) -- (128,200);
+\draw[ink!35,line width=.4pt] (40,168) -- (165,168);
+\draw[ink!35,line width=.4pt] (40,176) -- (165,176);
+\draw[ink!35,line width=.4pt] (40,184) -- (165,184);
+\draw[ink!35,line width=.4pt] (40,192) -- (165,192);
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (49.5,164) {id};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (74.5,164) {hotel\_id};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (109,164) {room\_number};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (146.5,164) {guest\_name};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (56,172) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (87,172) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (125,172) {100};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (131,172) {Alice};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (56,180) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (87,180) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (125,180) {100};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (131,180) {Bob};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (56,188) {3};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (87,188) {20};
+\node[anchor=east,inner sep=0pt,text=muted,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (125,188) {NULL};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (131,188) {Carol};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (56,196) {4};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (87,196) {20};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (125,196) {100};
+\node[anchor=west,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (131,196) {David};
+\path[fill=referencedHeader] (194,160) rectangle (294,168);
+\path[fill=referencedFill] (194,168) rectangle (294,192);
+\draw[ink!55,line width=.65pt] (194,160) rectangle (294,192);
+\draw[ink!40,line width=.4pt] (225,160) -- (225,192);
+\draw[ink!40,line width=.4pt] (263,160) -- (263,192);
+\draw[ink!35,line width=.4pt] (194,168) -- (294,168);
+\draw[ink!35,line width=.4pt] (194,176) -- (294,176);
+\draw[ink!35,line width=.4pt] (194,184) -- (294,184);
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (209.5,164) {hotel\_id};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (244,164) {room\_number};
+\node[anchor=center,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{19}\selectfont] at (278.5,164) {price};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (222,172) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (260,172) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (291,172) {1250};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (222,180) {10};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (260,180) {101};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (291,180) {2475};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (222,188) {20};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (260,188) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{15.5}{19}\selectfont] at (291,188) {1890};
+
+% Both general guarantees, with the non-null qualification on match existence.
+\draw[rulecolor,line width=.7pt] (308,68) -- (308,203);
+\txt{315}{69}{67}{14.5}{18}{muted}{\textbf{GUARANTEES}}
+\txt{314}{83}{8}{24}{28}{blue}{1}
+\txt{325}{84}{57}{20}{25}{ink}{Every referencing row appears exactly once.}
+\txt{314}{119}{8}{24}{28}{referencedAccent}{2}
+\txt{325}{120}{57}{20}{25}{ink}{Rows with non-null values in all referencing columns find their unique matching referenced row.}
+\draw[rulecolor,line width=.6pt] (315,176) -- (382,176);
+\txt{315}{183}{67}{17}{21}{blue}{\texttt{FOR KEY} requires the DBMS to prove these guarantees before execution.}
+\end{slide}
+
+
+% 32. Catching the opening query’s bug
+% Presenter note: Return to the opening query, now using the final syntax.
+% Remind the audience that orders.id is a primary key and both order_id columns
+% are NOT NULL foreign keys to it. The first join is a key join: each item finds
+% exactly one order. But several items can repeat that order in the intermediate
+% result, so the second join would multiply payments. The DBMS must check the
+% complete operand rather than rely on the original orders primary key.
+% "The first join can repeat an order. The next join must prove uniqueness in
+% that intermediate result, not just find a primary key on the original table."
+% Terminal session transcribed from Joel's supplied PostgreSQL screenshot.
+% Only the shell prompt is shortened to '% psql postgres'; the query, diagnostic,
+% psql banner and prompts retain the screenshot's wording and line breaks.
+% The final block is the terminal cursor. This is implementation diagnostic wording.
+% If asked how to fix the query, aggregate items and payments by order_id before
+% joining them to orders. Both the ON and FOR KEY versions then return 100/100
+% for order 100. See examples/key-joins-fanout.tex for the complete example.
+% Source: Paul Jungwirth's pgsql-general question (2016), linked in slide 4 notes.
+\begin{slide}{32}{The opening query, written with FOR KEY}{Catching the opening query\textquoteright{}s bug}{Patched PostgreSQL \textperiodcentered{} psql session}{32 / 34}
+\pdfbookmark[0]{Catching the opening query\textquoteright{}s bug}{slide-fanout-payoff}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,76) {\usebox{\fanoutTerminal}};
+\end{slide}
+
 % 33. Key Joins Implementations
 % Presenter note: Credit Mimer as the Swedish SQL database vendor that implemented
 % the Key Joins specification. Do not imply a particular public release version.
@@ -895,6 +1105,9 @@ LEFT JOIN (
 % Joel confirmed permission to use the logo. Both the logo and URL link to Mimer.
 % PostgreSQL is a patch under review. Invite collaborators to review it and test
 % realistic queries. Public demo: https://keyjoin.org/ .
+% Joel ported the patch to PGlite and launched the browser demo on
+% 28 March 2026 (recording 48:04--53:18 and presenters' development history).
+% A live demonstration is optional; the presentation works offline.
 % Patch: https://www.postgresql.org/message-id/bd598b83-9371-4857-90e4-4d5ded4613b5%40malkut.net
 \begin{slide}{33}{October 2026 \textperiodcentered{} The next chapter is review and use}{Key Joins Implementations}{Presenters\textquoteright{} implementation report \textperiodcentered{} PostgreSQL patch under review}{33 / 34}
 \pdfbookmark[0]{Key Joins Implementations}{slide-35}
@@ -904,8 +1117,9 @@ LEFT JOIN (
 \txt{18}{151}{171}{25}{30.8}{ink}{Implemented the\\Key Joins specification.}
 \txt{211}{124}{171}{25}{30.8}{ink}{Patch under review.}
 \txt{211}{151}{171}{27}{33.2}{ink}{We\textquoteright{}re looking for collaborators\\to review and test the patch.}
-\txt{18}{187}{171}{22}{27.1}{teal}{\href{https://www.mimer.com/}{\texttt{mimer.com}}}
-\txt{211}{187}{171}{22}{27.1}{blue}{\href{https://keyjoin.org/}{\texttt{keyjoin.org}}}
+\txt{18}{195}{171}{22}{27.1}{teal}{\href{https://www.mimer.com/}{\texttt{mimer.com}}}
+\txt{211}{181}{171}{22}{27.1}{ink}{Browser demo via PGlite:}
+\txt{211}{195}{171}{22}{27.1}{blue}{\href{https://keyjoin.org/}{\texttt{keyjoin.org}}}
 \end{slide}
 
 % 34. Questions?
