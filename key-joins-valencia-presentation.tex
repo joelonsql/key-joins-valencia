@@ -228,20 +228,20 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
 % Photographs in assets/key-joins-valencia/ retain the embedded originals'
 % exact JPEG bytes, pixel dimensions and proportions; no resizing or cropping.
 \usepackage{graphicx}
-\newcommand{\KeyJoinsPhotoOne}{\includegraphics[height=130mm]{assets/key-joins-valencia/derived-tables-workshop.jpg}}
-\newcommand{\KeyJoinsPhotoTwo}{\includegraphics[height=130mm]{assets/key-joins-valencia/derived-tables-whiteboard.jpg}}
+\newcommand{\KeyJoinsPhotoOne}{\includegraphics[height=122mm]{assets/key-joins-valencia/derived-tables-workshop.jpg}}
+\newcommand{\KeyJoinsPhotoTwo}{\includegraphics[height=122mm]{assets/key-joins-valencia/derived-tables-whiteboard.jpg}}
 % Stockholm group photograph, supplied as IMG_5187.HEIC.
 % Full original dimensions and proportions; no crop.
-\newcommand{\KeyJoinsStockholmPhoto}{\includegraphics[width=168mm]{assets/key-joins-valencia/stockholm.jpg}}
+\newcommand{\KeyJoinsStockholmPhoto}{\includegraphics[width=152mm]{assets/key-joins-valencia/stockholm.jpg}}
 % Standardese group photograph supplied by the presenter.
 % Original JPEG bytes and proportions retained; no crop.
-\newcommand{\KeyJoinsStandardesePhoto}{\includegraphics[width=105mm]{assets/key-joins-valencia/standardese-experts.jpg}}
+\newcommand{\KeyJoinsStandardesePhoto}{\includegraphics[width=91mm]{assets/key-joins-valencia/standardese-experts.jpg}}
 % Photograph supplied for Restarting work with ISO.
 % Original dimensions and proportions retained; no crop.
-\newcommand{\KeyJoinsISORestartPhoto}{\includegraphics[width=105mm]{assets/key-joins-valencia/restarting-iso.jpg}}
+\newcommand{\KeyJoinsISORestartPhoto}{\includegraphics[width=93mm]{assets/key-joins-valencia/restarting-iso.jpg}}
 % Acceptance-day photograph: IMG_7395.HEIC, 12 October 2026, confirmed by Joel.
 % Full pixel dimensions; camera orientation applied; no crop or resize.
-\newcommand{\KeyJoinsAcceptancePhoto}{\includegraphics[width=164mm]{assets/key-joins-valencia/tashkent-acceptance.jpg}}
+\newcommand{\KeyJoinsAcceptancePhoto}{\includegraphics[width=152mm]{assets/key-joins-valencia/tashkent-acceptance.jpg}}
 
 % Mimer logo (vector PDF)
 % Official SVG: https://www.mimer.com/wp-content/uploads/logo-mimer-black.svg
@@ -558,36 +558,71 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{165}{350}{27}{33.2}{ink}{The first implementation only handled base tables.}
 \end{slide}
 
-% 12. Derived tables need common rules
+% 12. Derived tables could not wait
 % Rehearsal: 1:15; elapsed 11:45--13:00.
-% Presenter note: Recording 26:27–28:04. This is a paraphrase, not a direct Peter quote. Joel’s email of 23 October 2024 thanks Peter for changing his view: one implementation accepting what another rejects would be a portability problem. Andreas also recalls changing his mind. We wanted a specified conservative proof, not arbitrary implementation guesses.
-% Primary correspondence: /Users/joel/Downloads/Foreign key joins.eml, Joel to Peter Geoghegan, 23 October 2024.
-\begin{slide}{12}{23 October 2024 \textperiodcentered{} Peter Geoghegan \textperiodcentered{} Athens}{Derived tables need common rules}{Joel \ensuremath{\rightarrow} Peter Geoghegan, 23 October 2024; presenters\textquoteright{} recollection}{12 / 27}
-\pdfbookmark[0]{Derived tables need common rules}{slide-12}
-\txt{18}{79}{352}{32}{39.4}{ink}{Which derived tables are accepted\\must not depend on the implementation.}
-\draw[rulecolor,line width=1pt] (18,128) -- (382,128);
-\txt{18}{146}{170}{25}{30.8}{ink}{Our initial plan:\\leave the hard cases\\to implementations.}
-\txt{211}{146}{171}{25}{30.8}{blue}{What changed:\\define the derivation\\rules together.}
+% Presenter note: Recording 26:27–28:04. Tell this as a change of view caused
+% by Peter Geoghegan's feedback. Joel's email of 23 October 2024 begins:
+% "Fun to meet, and thanks for the feedback, that made me change my view on this."
+% Joel then argues for defining the complete semantics for derived tables from
+% the beginning, because otherwise vendors could implement incompatible behavior:
+% a query could work on Vendor A but give an error on Vendor B. The diagram is
+% this anticipated portability risk, not an incompatibility observed in products.
+% Andreas also recalls changing his mind. This is about specifying common
+% acceptance rules; it does not mean accepting every mathematically valid query.
+% Delivery: Credit Peter Geoghegan by his full name. Keep proof terminology out
+% of the spoken explanation here. Explain why derived-table behavior had to be
+% specified from the start, then use the following photographs to show the work.
+% Primary correspondence: /Users/joel/Downloads/Foreign key joins.eml, Joel to
+% Peter Geoghegan, 23 October 2024; quoted excerpt also supplied by Joel.
+\begin{slide}{12}{23 October 2024 \textperiodcentered{} Feedback from Peter Geoghegan}{Derived tables could not wait}{Joel's email to Peter Geoghegan, 23 October 2024}{12 / 27}
+\pdfbookmark[0]{Derived tables could not wait}{slide-12}
+\txt{18}{76}{364}{27}{33.2}{ink}{We thought derived tables could wait.}
+\txt{18}{100}{364}{23}{28.3}{ink}{Peter Geoghegan pointed out the portability risk:}
+\node[anchor=north,inner sep=0pt,text=ink,
+  font=\fontsize{22}{27}\selectfont] at (200,123) {The same query};
+\draw[muted,line width=1.1pt,-{Stealth[length=2.6mm]}]
+  (196,135) -- (145,147);
+\draw[muted,line width=1.1pt,-{Stealth[length=2.6mm]}]
+  (204,135) -- (255,147);
+\node[anchor=north,inner sep=0pt,align=center,text=ink,
+  font=\fontsize{24}{29}\selectfont] at (145,151)
+  {Vendor A\\\textcolor{teal}{Accepted}};
+\node[anchor=north,inner sep=0pt,align=center,text=ink,
+  font=\fontsize{24}{29}\selectfont] at (255,151)
+  {Vendor B\\\textcolor{orange}{Error}};
+\draw[rulecolor,line width=.7pt] (18,180) -- (382,180);
+\txt{18}{187}{364}{18}{22.1}{muted}{We changed direction:}
+\txt{18}{198}{364}{26}{32}{blue}{Define derived-table behavior from the start.}
 \end{slide}
 
 % 13. Trying to get derived tables right
 % Rehearsal: 1:15; elapsed 13:00--14:15.
-% Photograph date confirmed by Joel: 8 February 2025.
-% Presenter note: Recording 28:04–34:18. The two supplied photographs show our work on join trees and a recursive compile-time proof algorithm. Explain how each query operation changes the facts exposed by its result: uniqueness, coverage and nullability. An underlying foreign key is a starting fact, not the proof for a derived operand. The close-up shows us trying to track those facts through a whole join tree.
+% Both photographs: 8 February 2025, Stockholm, Sweden; confirmed by Joel.
+% Left: Anders Granlund working on the recursive proof algorithm for derived tables.
+% Right: a join tree from the same session.
+% Presenter note: Recording 28:04–34:18. The left photograph shows Anders Granlund working on the recursive proof algorithm for derived tables. The right photograph shows a join tree. Both photographs were taken on 8 February 2025 in Stockholm, Sweden. Explain how each query operation changes the facts exposed by its result: uniqueness, coverage and nullability. An underlying foreign key is a starting fact, not the proof for a derived operand. The close-up shows us trying to track those facts through a whole join tree.
 % Early papers already attempted derivations. The challenge here was making the rules precise, complete and implementable. Duplicate identical referenced rows still multiply a SQL bag join, so functional dependency alone is not enough.
 % Delivery: Use the photos as a human moment. A query operation changes what
 % we know about its result; do not teach the full fact-propagation algorithm here.
 % Photographs: user attachments codex-clipboard-af4e4de9-a0e2-4f60-bf08-b3941d526db5.png and codex-clipboard-5a734962-f112-48a6-aa4e-137f1f6bcccf.png. Both photographs are preserved uncropped at their original aspect ratios.
-\begin{slide}{13}{8 February 2025 \textperiodcentered{} Working out the proof rules}{Trying to get derived tables right}{Photographs supplied by the presenters}{13 / 27}
+\begin{slide}{13}{8 February 2025 \textperiodcentered{} Stockholm, Sweden}{Trying to get derived tables right}{Photographs supplied by the presenters}{13 / 27}
 \pdfbookmark[0]{Trying to get derived tables right}{slide-13}
-\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (54.5833,70) {\KeyJoinsPhotoOne};
-\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (172.0833,70) {\KeyJoinsPhotoTwo};
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (62.9167,70) {\KeyJoinsPhotoOne};
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (174.4167,70) {\KeyJoinsPhotoTwo};
+\node[anchor=north,inner sep=0pt,align=center,text=muted,
+  font=\fontsize{16}{19}\selectfont] at (108.6667,196)
+  {\textbf{Anders Granlund}\\Recursive proof algorithm};
+\node[anchor=north,inner sep=0pt,align=center,text=muted,
+  font=\fontsize{16}{19}\selectfont] at (255.75,196)
+  {\textbf{A join tree}\\Reasoning about derived tables};
 \end{slide}
 
 % 14. Restarting work with ISO
 % Rehearsal: 1:15; elapsed 14:15--15:30.
-% Photograph date confirmed by Joel: 17 July 2025; distinct from the December 2024 visit.
-% Presenter note: Recording 34:26–37:51. Joel visits Vik in France around Christmas 2024. Later Jim Melton helps with the proposal in Paris; do not date the Paris meeting to Christmas. This is a deliberate return to a narrow normative scope, despite the earlier work on derived-table algorithms. POS-009R1 and BCN-060 focus on base tables, while the broader design remains in discussion material.
+% Photograph: Joel Jacobson, Vik Fearing, Jim Melton and Fredrik Hjelm.
+% Paris, France, 17 July 2025; people, place and date confirmed by Joel.
+% This photograph is distinct from the December 2024 visit.
+% Presenter note: Recording 34:26–37:51. Joel visits Vik in France around Christmas 2024. The photograph shows Joel Jacobson, Vik Fearing, Jim Melton and Fredrik Hjelm in Paris, France, on 17 July 2025, when Jim helps with the proposal. Do not date the Paris meeting to Christmas. This is a deliberate return to a narrow normative scope, despite the earlier work on derived-table algorithms. POS-009R1 and BCN-060 focus on base tables, while the broader design remains in discussion material.
 % Tell the “now this will surely pass” moment in your own words rather than manufacturing an English verbatim quotation.
 % Transition: The general rules were hard, so we tried a smaller first step.
 % This was a narrower normative proposal, not a decision that derived tables
@@ -600,8 +635,10 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{137}{240}{27}{33.2}{ink}{Explain the harder\\derived-table rules.}
 \draw[rulecolor,line width=1pt] (18,174) -- (258,174);
 \txt{18}{184}{240}{24}{29.5}{ink}{We thought a smaller first step\\would be easier to adopt.}
-\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (277,65) {\KeyJoinsISORestartPhoto};
-\txt{277}{205.5}{105}{10}{12}{muted}{Photograph: 17 July 2025}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (283,65) {\KeyJoinsISORestartPhoto};
+\node[anchor=north,inner sep=0pt,align=center,text=muted,
+  font=\fontsize{12}{14.5}\selectfont] at (329.5,192)
+  {Joel Jacobson, Vik Fearing,\\Jim Melton, Fredrik Hjelm\\Paris, France \textperiodcentered{} 17 July 2025};
 \end{slide}
 
 % 15. KEY is not a keyword!
@@ -725,14 +762,17 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 
 % 19. Stockholm: two proposals, more collaborators
 % Rehearsal: 1:15; elapsed 23:45--25:00.
-% Presenter note: Recording 01:14:40–01:22:19. Joel hosts the meeting; Andreas attends as a guest. The amended JOIN TO ONE proposal requires explicit INNER or LEFT. LEFT can preserve the left row count; INNER may filter unmatched rows. Neither requires that the selected columns follow a declared FK. Its runtime error on multiple matches and our compile-time proof are different mechanisms.
+% Photograph: most participants in the ISO/IEC JTC 1/SC 32 Stockholm meeting,
+% at Joel's house in Stockholm, Sweden, on 17 June 2026; confirmed by Joel.
+% The Stockholm meeting included all SC 32 working groups, not only WG 3.
+% Presenter note: Recording 01:14:40–01:22:19. Joel hosts the SC 32 meeting, which includes all its working groups; Andreas attends WG 3 as a guest. The group photograph was taken at Joel's house on 17 June 2026 and includes most SC 32 participants. The proposal decisions described here are WG 3 decisions. The amended JOIN TO ONE proposal requires explicit INNER or LEFT. LEFT can preserve the left row count; INNER may filter unmatched rows. Neither requires that the selected columns follow a declared FK. Its runtime error on multiple matches and our compile-time proof are different mechanisms.
 % Do not repeat the background claim that any filtering contradicts the original cardinality-preserving-table comment: the quoted comment says “subset.” The BMA minutes record JTO acceptance and request that Key Joins be revised and brought back. Karl volunteers to help. Bengt engages as an implementer; Leonid asks about how restrictive the proof rules should be.
 % Sources: BMA-038R1 pp.2–4; W32-001R1 items 9.4.2 and 9.4.11.
 % Karl's account, supplied by Joel: he asked for consensus on support for the
 % feature and volunteered to see the Change Proposal through. Mention Karl's
 % crucial contribution verbally. Feature support is distinct from accepting
 % the Change Proposal.
-\begin{slide}{19}{15\textendash{}19 June 2026 \textperiodcentered{} BMA}{Stockholm: two proposals, more collaborators}{BMA-038R1; W32-001R1, pp. 11\textendash{}14; presenters\textquoteright{} account}{19 / 27}
+\begin{slide}{19}{15\textendash{}19 June 2026 \textperiodcentered{} All SC 32 working groups \textperiodcentered{} BMA}{Stockholm: two proposals, more collaborators}{BMA-038R1; W32-001R1, pp. 11\textendash{}14; presenters\textquoteright{} account}{19 / 27}
 \pdfbookmark[0]{Stockholm: two proposals, more collaborators}{slide-19}
 \txt{18}{77}{184}{14.5}{17.8}{blue}{\textbf{JOIN TO ONE}}
 \txt{18}{90}{184}{24}{29.5}{ink}{Check at runtime that each left row\\has at most one match.}
@@ -742,12 +782,19 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{174}{184}{22}{27}{ink}{Our Change Proposal needs more work.}
 \draw[rulecolor,line width=1pt] (18,190) -- (202,190);
 \txt{18}{198}{184}{21}{26}{ink}{We meet Bengt Gunne from Mimer.}
-\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (214,74) {\KeyJoinsStockholmPhoto};
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (222,70) {\KeyJoinsStockholmPhoto};
+\node[anchor=north,inner sep=0pt,align=center,text=muted,
+  font=\fontsize{12}{14.5}\selectfont] at (298,188)
+  {ISO/IEC JTC 1/SC 32 participants\\Joel's house, Stockholm, Sweden\\17 June 2026};
 \end{slide}
 
 % 20. Standardese experts
 % Rehearsal: 2:00; elapsed 25:00--27:00.
-% Presenter note: Recording 01:22:20–01:30:04. Karl’s offer at Stockholm matters enormously. Work at the editors’ meeting in Åland, then with Jörn and Fred, improves the feature as well as the words. All six names appear among TAS-028R1’s coauthors alongside the original developers. Do not imply all held the same editorial office or add current employer claims.
+% Photograph: Stefan Plantikow, Jörn Bartels, Jim Melton, Stephen Cannan and
+% Vik Fearing at the editors' meeting in Åland, 23 June 2026.
+% People, place and date confirmed by Joel. The photograph's participants
+% are distinct from the broader contributor list displayed on the slide.
+% Presenter note: Recording 01:22:20–01:30:04. Karl’s offer at Stockholm matters enormously. Work at the editors’ meeting in Åland, then with Jörn and Fred, improves the feature as well as the words. The six contributors listed on the left appear among TAS-028R1’s coauthors alongside the original developers. Do not imply all held the same editorial office or add current employer claims.
 % The displayed sentence quotes the first sentence of TAS-028R1 p.5, proposed 7.10 SR4.1)a)iii). The term “simply contain” denotes a defined syntactic relationship. Likewise immediately, generally and broadly are technical modifiers, not ordinary conversational emphasis. The example illustrates why experienced standard authors matter.
 % W32 in August still did not accept the proposal. That is different from the October TAS outcome. The lesson is to collaborate with the relevant experts earlier, not send them a finished design to rubber-stamp.
 % Delivery: Credit the contributors without reading every name. Use simply
@@ -759,11 +806,17 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \draw[rulecolor,line width=1pt] (18,128) -- (258,128);
 \txt{18}{145}{240}{25}{30.8}{blue}{\textquotedblleft{}Let J be a <joined table> that does not\\simply contain a <partitioned join table>.\textquotedblright{}}
 \txt{18}{185}{240}{22}{27.1}{ink}{Words such as \textquotedblleft{}simply\textquotedblright{} have precisely\\defined meanings.}
-\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (277,65) {\KeyJoinsStandardesePhoto};
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (284,65) {\KeyJoinsStandardesePhoto};
+\node[anchor=north,inner sep=0pt,align=center,text=muted,
+  font=\fontsize{12}{14.5}\selectfont] at (329.5,191)
+  {Stefan Plantikow, Jörn Bartels,\\Jim Melton, Stephen Cannan, Vik Fearing\\Editors' meeting, Åland \textperiodcentered{} 23 June 2026};
 \end{slide}
 
 % 21. Acceptance in Tashkent
 % Rehearsal: 1:15; elapsed 27:00--28:15.
+% Photograph: Keith Hare, Stephen Cannan, Jörn Bartels, Jim Melton and
+% Joel Jacobson at the WG 3 meeting in Tashkent, Uzbekistan, 12 October 2026.
+% People, place and date confirmed by Joel. This is the day TAS-028R1 was accepted.
 % Presenter note: Recording 01:33:17–01:36:48. The presenters explicitly decided this should be a celebration slide. Their account is that the meeting reached consensus to accept the proposal, with wording cleanup still to follow. Keep the distinction between a WG3 decision, incorporation into an IWD, and a published ISO edition. No official TAS minutes are available in the archive snapshot; TAS-001R1 is the previous W32 meeting’s minutes, not this decision.
 % Do not replay the personal arguments from the meeting or claim the feature is already committed to PostgreSQL.
 % Credits verified against the author list on TAS-028R1, page 1, in cover order.
@@ -777,7 +830,10 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \txt{18}{129}{184}{14.5}{17.8}{blue}{\textbf{CO-AUTHORS OF TAS-028R1}}
 \txt{18}{145}{90}{22}{27}{ink}{Joel Jacobson\\Vik Fearing\\Andreas Karlsson\\Arne Roland\\Anders Granlund}
 \txt{112}{145}{90}{22}{27}{ink}{Stephen Cannan\\Karl Schendel\\Jim Melton\\Jörn Bartels\\Fred Zemke}
-\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (218,74) {\KeyJoinsAcceptancePhoto};
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (224,65) {\KeyJoinsAcceptancePhoto};
+\node[anchor=north,inner sep=0pt,align=center,text=muted,
+  font=\fontsize{12}{14.5}\selectfont] at (300,183)
+  {Keith Hare, Stephen Cannan, Jörn Bartels,\\Jim Melton, Joel Jacobson\\WG 3 meeting, Tashkent, Uzbekistan \textperiodcentered{} 12 October 2026};
 \txt{18}{202}{364}{17}{20.9}{ink}{Five years of work, many collaborators. Thank you to our hosts in Uzbekistan.}
 \end{slide}
 
