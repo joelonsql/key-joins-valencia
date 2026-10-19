@@ -244,6 +244,13 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
     {\hyperlink{#4}{\makebox[#3mm][c]{\strut #5}}};
 }
 
+% Every appendix subtitle links back to the topic index.
+\newcommand{\AppendixHome}{\hyperlink{appendix-contents}{Appendix}}
+\newcommand{\AppendixEntry}[5]{%
+  \txt{#1}{#2}{173}{20}{25}{blue}{%
+    \hyperlink{#4}{\makebox[26mm][l]{\textcolor{muted}{\fontsize{14}{18}\selectfont #3}}#5}}%
+}
+
 % Fixed-pitch SQL and diagnostics for the opening and its later payoff.
 % The composability example also uses the base monospace style.
 \lstdefinestyle{fanout-mono}{
@@ -1684,10 +1691,40 @@ room\_number INTEGER\ProofNotNull,\\
 \end{slide}
 \endgroup
 
+% Appendix contents
+% Appendix: only for questions; no time in the prepared 39-minute talk.
+% Presenter note: Choose a topic here. Every appendix heading links back to
+% this page. The guarantees entries include their ON transformations; the
+% root-table entry begins the successive rearrangements. The fanout diagram
+% also has a direct return to slide 5, More joins. More to check.
+\begin{slide}{56}{Appendix}{Contents}{Choose a topic. Click Appendix on any appendix slide to return here.}{Contents}
+\pdfbookmark[0]{Appendix contents}{appendix-index}
+\SlideAnchor{appendix-contents}
+\txt{18}{76}{173}{14}{18}{muted}{\textbf{DESIGN HISTORY}}
+\AppendixEntry{18}{91}{A1}{slide-28.0}{Syntax bikeshedding}
+\AppendixEntry{18}{104}{A2}{slide-30.0}{New arrow syntax}
+\AppendixEntry{18}{117}{A3}{slide-31.0}{FILTER (WHERE \textellipsis{})}
+\AppendixEntry{18}{130}{A4}{slide-32.0}{A puzzling objection}
+\AppendixEntry{18}{143}{A5}{slide-33.0}{The questions predate our proposal}
+\txt{18}{169}{173}{14}{18}{muted}{\textbf{GUARANTEES}}
+\AppendixEntry{18}{184}{A6--A7}{slide-23-inner.0}{[ INNER ] JOIN: FOR KEY and ON}
+\AppendixEntry{18}{197}{A8--A9}{slide-23.0}{LEFT JOIN: FOR KEY and ON}
+\txt{211}{76}{173}{14}{18}{muted}{\textbf{FANOUT AND ITS CORRECTION}}
+\AppendixEntry{211}{91}{A10}{fanout-walkthrough}{How the rows multiply}
+\AppendixEntry{211}{104}{A11}{slide-38.0}{Aggregate before joining}
+\AppendixEntry{211}{117}{A12}{slide-39.0}{The corrected query with FOR KEY}
+\txt{211}{143}{173}{14}{18}{muted}{\textbf{A CANONICAL FORM FOR KEY JOIN TREES}}
+\AppendixEntry{211}{158}{A13}{slide-40.0}{The larger query with ON}
+\AppendixEntry{211}{171}{A14}{slide-42.0}{The larger query with FOR KEY}
+\AppendixEntry{211}{184}{A15--A25}{slide-43.0}{Put the root table first}
+\AppendixEntry{211}{197}{A26}{slide-54.0}{Spot a cardinality-preserved first table}
+\AppendixEntry{211}{210}{A27}{slide-55.0}{The eight FOR KEY forms}
+\end{slide}
+
 % 28. Syntax bikeshedding
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Recording 13:02–14:36. Introduce Anders Granlund as an early coauthor. The keywords on screen are successive ideas, not an exhaustive chronological list and not all from a single paper. The first WITH is Vik's March suggestion; JOIN WITH is Joel's fully spelled-out December 28 proposal; FOREIGN KEY is the January 2022 draft with one referencing-column list; KEY FROM is the later two-list form. Table and constraint names are adapted consistently. Avoid spending the talk arguing which keyword is prettiest.
-\begin{slide}{28}{Appendix \textperiodcentered{} March 2021\textendash{}May 2022 \textperiodcentered{} With Anders Granlund, the mailing list and Hacker News}{Syntax bikeshedding}{Historical forms, with names adapted \textperiodcentered{} March and December 2021 correspondence; January and May 2022 drafts}{A1}
+\begin{slide}{28}{\AppendixHome \textperiodcentered{} March 2021\textendash{}May 2022 \textperiodcentered{} With Anders Granlund, the mailing list and Hacker News}{Syntax bikeshedding}{Historical forms, with names adapted \textperiodcentered{} March and December 2021 correspondence; January and May 2022 drafts}{A1}
 \pdfbookmark[0]{Syntax bikeshedding}{slide-28}
 \txt{18}{74}{364}{13}{16}{muted}{MARCH 2021}
 \codeat{18}{85}{23}{29.9}{\textcolor{blue}{\textbf{JOIN}} departments \textcolor{blue}{\textbf{AS}} d \textcolor{blue}{\textbf{WITH}} employees\_dept\_id\_fkey\strut}
@@ -1703,7 +1740,7 @@ room\_number INTEGER\ProofNotNull,\\
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Recording 24:37–26:27. The old FROM keyword competed visually with the FROM clause. The 6 October 2024 patch changed KEY FROM/TO to arrows. At this stage the unqualified list refers to the newly joined right operand. The left column joins customers to orders, replacing FROM by <-; the right column joins orders to customers, replacing TO by ->. Both retain the right operand's column list first. FOR had not yet been added. Do not silently present this as today’s syntax.
 % Source: 2024-10-06T23-38-32.100_00_0002-Use-arrow-syntax-and-for-Foreign-Key-Joins.patch.
-\begin{slide}{30}{Appendix \textperiodcentered{} 6 October 2024 \textperiodcentered{} Fewer competing meanings for FROM}{New arrow syntax}{Prototype patch, 6 October 2024 \textperiodcentered{} historical syntax}{A2}
+\begin{slide}{30}{\AppendixHome \textperiodcentered{} 6 October 2024 \textperiodcentered{} Fewer competing meanings for FROM}{New arrow syntax}{Prototype patch, 6 October 2024 \textperiodcentered{} historical syntax}{A2}
 \pdfbookmark[0]{New arrow syntax}{slide-30}
 \txt{18}{77}{364}{14.5}{18}{blue}{\textbf{BEFORE}}
 \codeat{18}{94}{25}{32.5}{\textcolor{blue}{\textbf{KEY}} (id) \textcolor{blue}{\textbf{FROM}} o (customer\_id)\strut}
@@ -1729,7 +1766,7 @@ room\_number INTEGER\ProofNotNull,\\
 % syntax and every variant we tried; this was not broad opposition.
 % We omitted the clause for simplicity. Whether enough real production queries
 % need it remains an open question and may motivate revisiting the idea.
-\begin{slide}{31}{Appendix \textperiodcentered{} December 2025 \textperiodcentered{} A requested feature that we later removed}{FILTER (WHERE \textellipsis{})}{W30 request; BMA-015R1 syntax shown; supplemental FILTER removed in TAS}{A3}
+\begin{slide}{31}{\AppendixHome \textperiodcentered{} December 2025 \textperiodcentered{} A requested feature that we later removed}{FILTER (WHERE \textellipsis{})}{W30 request; BMA-015R1 syntax shown; supplemental FILTER removed in TAS}{A3}
 \pdfbookmark[0]{FILTER (WHERE \textellipsis{})}{slide-31}
 \txt{18}{76}{364}{24}{30}{ink}{The idea: key joins with additional filtering conditions.}
 \codeat{18}{99}{22}{28}{\textcolor{blue}{\textbf{SELECT}} *\strut \\
@@ -1750,7 +1787,7 @@ room\_number INTEGER\ProofNotNull,\\
 % Second, section 1.5 (p.3) infers that a compile-time check has a hole because values are only available at run time. Suitable schema constraints can support static proof without inspecting rows. Acknowledge the valid part of the criticism: the contemporary draft needed qualifications for nulls, deferred constraints, and NOT ENFORCED constraints. Merely finding a constraint declaration does not justify an unconditional claim about current data. W30-030 clarified the metadata-check intention, but did not erase that distinction.
 % Third, sections 1.1 (p.2) and 1.10 (p.5) frame the feature as compensation for inadequate testing or user mistakes. Tests and declarative checks address different risks. JOIN TO ONE later made subtle query mistakes a central motivation (BMA-038 and BMA-038R1, section 1.1, p.2). Describe this as a contrast in emphasis, not proof of dishonesty or a reversal on runtime checks: W30-028 already advocated a runtime alternative in sections 1.7 and 1.15.
 % The contemporary proposal also had genuine gaps in its view, derivation and schema-change rules; do not present those criticisms as errors simply because later versions addressed them. Keep names and paper numbers off the visible slide, with the precise sources here for questions. Do not claim a formal rejection or hidden corporate motives.
-\begin{slide}{32}{Appendix \textperiodcentered{} December 2025 \textperiodcentered{} Testing and compile-time proof}{A puzzling objection}{Objection paraphrased \textperiodcentered{} Sources and qualifications in presenter notes}{A4}
+\begin{slide}{32}{\AppendixHome \textperiodcentered{} December 2025 \textperiodcentered{} Testing and compile-time proof}{A puzzling objection}{Objection paraphrased \textperiodcentered{} Sources and qualifications in presenter notes}{A4}
 \pdfbookmark[0]{A puzzling objection}{slide-32}
 \txt{18}{84}{172}{16}{20}{orange}{\textbf{OBJECTION (PARAPHRASED)}}
 \txt{211}{84}{171}{16}{20}{blue}{\textbf{OUR RESPONSE}}
@@ -1762,7 +1799,7 @@ room\_number INTEGER\ProofNotNull,\\
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Source: historical review reproduced in UTC-107 pp.23–31 and CMN-023R3 pp.29–35. REN-025 (Mike Sykes, 1986) proposes links; FIR-078 (Hugh Darwen, 1989) raises views, filtered targets and related issues; SLC-035 (Ken Jacobs, 1990) discusses adding a second FK. These are antecedents, not identical versions of the present design.
 % CMN-023R2/R3 compare SQL Anywhere’s inferred KEY JOIN to explicit column lists. The goal here is stable selection of the relationship plus proof through the actual operands. Avoid claiming to have invented every element of FK-based join notation.
-\begin{slide}{33}{Appendix \textperiodcentered{} 1986\textendash{}1990 \textperiodcentered{} Earlier work}{The questions predate our proposal}{Historical review in UTC-107 / CMN-023R3; SQL Anywhere comparison in CMN-023R2/R3}{A5}
+\begin{slide}{33}{\AppendixHome \textperiodcentered{} 1986\textendash{}1990 \textperiodcentered{} Earlier work}{The questions predate our proposal}{Historical review in UTC-107 / CMN-023R3; SQL Anywhere comparison in CMN-023R2/R3}{A5}
 \pdfbookmark[0]{The questions predate our proposal}{slide-33}
 \txt{18}{78}{350}{14.5}{17.8}{blue}{\textbf{SQL STANDARD WORK}}
 \txt{18}{96}{170}{25}{30.8}{ink}{1986: schema links\\1989: join shorthand objections\\1990: added-FK ambiguity}
@@ -2027,23 +2064,23 @@ room\_number INTEGER\ProofNotNull,\\
   (keyjoin-transform.south west) .. controls (187,132) and (178,132) .. (175,134);
 }
 
-\begin{slide}{23}{Appendix \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: [ INNER ] JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A6}
+\begin{slide}{23}{\AppendixHome \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: [ INNER ] JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A6}
 \pdfbookmark[0]{What FOR KEY guarantees: [ INNER ] JOIN}{slide-23-inner}
 \KeyJoinGuaranteesDiagram{3}{JOIN}{\textcolor{blue}{FOR KEY} re (hotel\_id, room\_number) -> ro (hotel\_id, room\_number)}
 \end{slide}
 
-\begin{slide}{23}{Appendix \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: [ INNER ] JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A7}
+\begin{slide}{23}{\AppendixHome \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: [ INNER ] JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A7}
 \pdfbookmark[0]{What FOR KEY guarantees: [ INNER ] JOIN after transformation}{slide-23-inner-on}
 \KeyJoinGuaranteesDiagram{3}{JOIN}{\textcolor{blue}{ON} re.hotel\_id = ro.hotel\_id \textcolor{blue}{AND} re.room\_number = ro.room\_number}
 \KeyJoinTransformationCallout
 \end{slide}
 
-\begin{slide}{23}{Appendix \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: LEFT JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A8}
+\begin{slide}{23}{\AppendixHome \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: LEFT JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A8}
 \pdfbookmark[0]{What FOR KEY guarantees: LEFT JOIN}{slide-23}
 \KeyJoinGuaranteesDiagram{4}{LEFT JOIN}{\textcolor{blue}{FOR KEY} re (hotel\_id, room\_number) -> ro (hotel\_id, room\_number)}
 \end{slide}
 
-\begin{slide}{23}{Appendix \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: LEFT JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A9}
+\begin{slide}{23}{\AppendixHome \textperiodcentered{} Row preservation and matching}{What FOR KEY guarantees: LEFT JOIN}{TAS-028R1, pp. 3\textendash{}4, 7\textendash{}9}{A9}
 \pdfbookmark[0]{What FOR KEY guarantees: LEFT JOIN after transformation}{slide-23-on}
 \KeyJoinGuaranteesDiagram{4}{LEFT JOIN}{\textcolor{blue}{ON} re.hotel\_id = ro.hotel\_id \textcolor{blue}{AND} re.room\_number = ro.room\_number}
 \KeyJoinTransformationCallout
@@ -2096,9 +2133,10 @@ GROUP BY o.id;
 (2 rows)
 \end{lstlisting}
 \end{minipage}\end{lrbox}
-\begin{slide}{37}{Appendix \textperiodcentered{} Fanout and its correction}{How the rows multiply}{}{A10}
+\begin{slide}{37}{\AppendixHome \textperiodcentered{} Fanout and its correction}{How the rows multiply}{}{A10}
 \pdfbookmark[0]{How the rows multiply}{slide-37}
 \SlideAnchor{fanout-walkthrough}
+\SlideLink{18}{216}{76}{story-continue}{Back to the story}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,82) {\usebox{\fanoutTreeQuery}};
 \txt{18}{151}{136}{16}{20}{muted}{After \sqlkw{GROUP BY}}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,164) {\usebox{\fanoutTreeResult}};
@@ -2299,7 +2337,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % and 200. The sums operate before the two many sides can multiply each other.
 % An order with no matching group has NULL in that total column; no COALESCE
 % is implied. No result ordering is promised without ORDER BY.
-\begin{slide}{38}{Appendix \textperiodcentered{} Fanout and its correction}{Aggregate before joining}{}{A11}
+\begin{slide}{38}{\AppendixHome \textperiodcentered{} Fanout and its correction}{Aggregate before joining}{}{A11}
 \pdfbookmark[0]{Aggregate before joining}{slide-38}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\groupedFanoutOn}};
 \txt{18}{198}{364}{21}{26}{blue}{Each subquery returns at most one row per order.}
@@ -2313,16 +2351,13 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % leaves at most one item group per order, so the first join preserves the
 % uniqueness of o.id for the second key join. Each group retains a non-null
 % order_id and a matching order. LEFT JOIN also retains orders with no group.
-% Navigation: Return to the story resumes at slide 5. The other link
-% jumps ahead to the real PostgreSQL diagnostic on slide 26.
+% Navigation: Click Appendix in the heading to return to the contents.
 % This deliberately fixes the original query; it is not equivalent to its
 % erroneous fanout totals.
-\begin{slide}{39}{Appendix \textperiodcentered{} Fanout and its correction}{The corrected query with FOR KEY}{}{A12}
+\begin{slide}{39}{\AppendixHome \textperiodcentered{} Fanout and its correction}{The corrected query with FOR KEY}{}{A12}
 \pdfbookmark[0]{The corrected query with FOR KEY}{slide-39}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\groupedFanoutKey}};
 \txt{18}{198}{364}{21}{26}{blue}{The DBMS can now prove both key joins.}
-\SlideLink{18}{216}{76}{story-continue}{Return to the story}
-\SlideLink{101}{216}{90}{opening-query-error}{See the PostgreSQL error}
 \end{slide}
 
 % 40. The larger query with ON
@@ -2333,7 +2368,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % non-deferrable foreign keys to unique id columns. Referencing columns used
 % in inner joins are known not null; discount_type_id may be null.
 % The table order and expressions are retained on the next slide.
-\begin{slide}{40}{Appendix \textperiodcentered{} A canonical form for key join trees}{The larger query with ON}{}{A13}
+\begin{slide}{40}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{The larger query with ON}{}{A13}
 \pdfbookmark[0]{The larger query with ON}{slide-40}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexOn}};
 \txt{18}{198}{364}{21}{26}{blue}{Each join needs a check against the schema and the preceding joins.}
@@ -2352,7 +2387,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % no ORDER BY is specified. They do not prescribe an execution plan.
 % The two left arrows and nine right arrows share one column. Keep that
 % alignment through every later state.
-\begin{slide}{42}{Appendix \textperiodcentered{} A canonical form for key join trees}{The larger query with FOR KEY}{All FOR KEY specifications are accepted under the assumed schema.}{A14}
+\begin{slide}{42}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{The larger query with FOR KEY}{All FOR KEY specifications are accepted under the assumed schema.}{A14}
 \pdfbookmark[0]{The larger query with FOR KEY (1 of 12)}{slide-42}
 \node[inner sep=0pt] at (18,28) {\hypertarget{canonical-start}{}};
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageTwo}};
@@ -2369,7 +2404,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Presenter note: Move the orders join one position upward, past customer_types.
 % Both joins refer to customers, which is already in the left operand.
 % The same equality pairs and all SELECT and WHERE expressions remain.
-\begin{slide}{43}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A15}
+\begin{slide}{43}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A15}
 \pdfbookmark[0]{Put the root table first (2 of 12)}{slide-43}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageThree}};
 \end{slide}
@@ -2378,7 +2413,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Move the orders join one more position upward, past countries.
 % It now immediately follows FROM customers. No reference is changed.
-\begin{slide}{44}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A16}
+\begin{slide}{44}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A16}
 \pdfbookmark[0]{Put the root table first (3 of 12)}{slide-44}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageFour}};
 \end{slide}
@@ -2389,7 +2424,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % by JOIN customers AS c. The specification becomes o(customer_id)
 % -> c(id), matching the left-to-right operand order. The underlying
 % reference and the query result are unchanged.
-\begin{slide}{45}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A17}
+\begin{slide}{45}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A17}
 \pdfbookmark[0]{Put the root table first (4 of 12)}{slide-45}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageFive}};
 \end{slide}
@@ -2399,7 +2434,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Presenter note: Move the order_items join upward past payment_methods. Its referenced
 % orders columns are already present; payment_methods does not depend
 % on order_items. Keep the reference o(id) <- oi(order_id).
-\begin{slide}{46}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A18}
+\begin{slide}{46}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A18}
 \pdfbookmark[0]{Put the root table first (5 of 12)}{slide-46}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageSix}};
 \end{slide}
@@ -2408,7 +2443,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Move order_items upward past shipping_methods, retaining the same
 % reference and all other query expressions.
-\begin{slide}{47}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A19}
+\begin{slide}{47}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A19}
 \pdfbookmark[0]{Put the root table first (6 of 12)}{slide-47}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageSeven}};
 \end{slide}
@@ -2419,7 +2454,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % This is valid here because the order_items condition does not use dt.
 % The optional discount lookup still follows each order in the result.
 % This is not a general rule for arbitrary outer-join reordering.
-\begin{slide}{48}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A20}
+\begin{slide}{48}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A20}
 \pdfbookmark[0]{Put the root table first (7 of 12)}{slide-48}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageEight}};
 \end{slide}
@@ -2428,7 +2463,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Move order_items upward past order_statuses. Both joins refer to o,
 % which remains available in their left operands.
-\begin{slide}{49}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A21}
+\begin{slide}{49}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A21}
 \pdfbookmark[0]{Put the root table first (8 of 12)}{slide-49}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageNine}};
 \end{slide}
@@ -2437,7 +2472,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Move order_items upward past customer_types. Its reference is still
 % to orders; the customer_type lookup refers only to c.
-\begin{slide}{50}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A22}
+\begin{slide}{50}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A22}
 \pdfbookmark[0]{Put the root table first (9 of 12)}{slide-50}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageTen}};
 \end{slide}
@@ -2446,7 +2481,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Move order_items upward past countries. Their join conditions remain
 % independent except for the already available orders/customer rows.
-\begin{slide}{51}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A23}
+\begin{slide}{51}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A23}
 \pdfbookmark[0]{Put the root table first (10 of 12)}{slide-51}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageEleven}};
 \end{slide}
@@ -2455,7 +2490,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % Appendix: only for questions; no time in the prepared 39-minute talk.
 % Presenter note: Move order_items upward past customers. It now immediately follows
 % FROM orders, ready for the final exchange of the first two operands.
-\begin{slide}{52}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A24}
+\begin{slide}{52}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A24}
 \pdfbookmark[0]{Put the root table first (11 of 12)}{slide-52}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageTwelve}};
 \end{slide}
@@ -2471,7 +2506,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % after order_statuses: no extra rearrangement is needed for this form.
 % This is a convenient canonical presentation of this relationship tree;
 % other valid topological orders can express the same result.
-\begin{slide}{53}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A25}
+\begin{slide}{53}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All FOR KEY specifications are accepted under the assumed schema.}{A25}
 \pdfbookmark[0]{Put the root table first (12 of 12)}{slide-53}
 \node[inner sep=0pt] at (18,28) {\hypertarget{rooted-final}{}};
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageThirteen}};
@@ -2489,7 +2524,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % The scan summarizes guarantees already proved by the DBMS; syntax alone
 % does not establish that a FOR KEY specification will be accepted.
 % WHERE o.id = 100 is outside these marks and can filter the join result.
-\begin{slide}{54}{Appendix \textperiodcentered{} A canonical form for key join trees}{Is the first FROM item cardinality-preserved?}{All joins use accepted FOR KEY specifications; before WHERE. CPT = Cardinality Preserved Table.}{A26}
+\begin{slide}{54}{\AppendixHome \textperiodcentered{} A canonical form for key join trees}{Is the first FROM item cardinality-preserved?}{All joins use accepted FOR KEY specifications; before WHERE. CPT = Cardinality Preserved Table.}{A26}
 \pdfbookmark[0]{Is the first FROM item cardinality-preserved?}{slide-54}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\canonicalStageThirteen}};
 % 3. The conclusion identifies the initial table, including its alias.
@@ -2541,7 +2576,7 @@ LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
 % next referencing operand. Then each original referencing row appears exactly
 % once at every step, with equal total cardinalities. These claims are about
 % the joined tables before any later WHERE, GROUP BY, DISTINCT or other operation.
-\begin{slide}{55}{Appendix \textperiodcentered{} For accepted FOR KEY joins}{Which key joins preserve the referencing table's cardinality?}{Schematic rows, before subsequent filtering or aggregation}{A27}
+\begin{slide}{55}{\AppendixHome \textperiodcentered{} For accepted FOR KEY joins}{Which key joins preserve the referencing table's cardinality?}{Schematic rows, before subsequent filtering or aggregation}{A27}
 \pdfbookmark[0]{Which key joins preserve the referencing table's cardinality?}{slide-55}
 
 % Match the palette of "What FOR KEY guarantees" exactly.
