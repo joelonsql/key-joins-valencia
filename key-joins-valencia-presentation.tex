@@ -3,7 +3,7 @@
 % All historical SQL is labelled. Contemporary examples use TAS-028R1 syntax.
 % Current presenter notes and provenance are kept beside each slide below.
 % Earlier Markdown presenter guides are preserved in archive/.
-% Main talk: 27 slides, Questions at 38:00; six unplanned appendix slides.
+% Main talk: 27 slides, Questions at 38:00; fifteen unplanned appendix slides.
 % Timing includes brief pauses and speaker handoffs. Rehearse against 40 minutes.
 % Checkpoints: breakthrough at 16:15; acceptance ends 28:15; payoff ends 36:00.
 \documentclass[12pt]{article}
@@ -28,6 +28,16 @@ pdfsubject={PGConf.EU 2026, Valencia},hidelinks]{hyperref}
 \definecolor{orange}{HTML}{A34727}
 \definecolor{rulecolor}{HTML}{CCD5DB}
 \definecolor{pale}{HTML}{F0F5F8}
+% Shared table palette for the guarantees and CPT-form diagrams.
+\definecolor{referencingHeader}{HTML}{D8E8F5}
+\definecolor{referencingFill}{HTML}{EAF3FB}
+\definecolor{referencedHeader}{HTML}{F4DEB6}
+\definecolor{referencedFill}{HTML}{FBEDDA}
+\definecolor{referencedAccent}{HTML}{A56A20}
+\definecolor{nullPaddingFill}{HTML}{EEEEEE}
+\definecolor{nullPaddingText}{HTML}{565656}
+\definecolor{queryFill}{HTML}{F2F2F2}
+
 \newcommand{\txt}[7]{\node[anchor=north west,inner sep=0pt,align=left,
 text width=#3mm,text=#6,font=\fontsize{#4}{#5}\selectfont] at (#1,#2) {#7};}
 \newcommand{\codeat}[5]{\node[anchor=north west,inner sep=0pt,text=ink,
@@ -93,6 +103,15 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
 \TimelineRegister{31}{2}{2025-12-09}{2025-12-11}{W30-020}
 \TimelineRegister{32}{2}{2025-12-08}{2025-12-11}{W30-020}
 \TimelineRegister{33}{0}{}{}{}
+\TimelineRegister{34}{0}{}{}{}
+\TimelineRegister{35}{0}{}{}{}
+\TimelineRegister{36}{0}{}{}{}
+\TimelineRegister{37}{0}{}{}{}
+\TimelineRegister{38}{0}{}{}{}
+\TimelineRegister{39}{0}{}{}{}
+\TimelineRegister{40}{0}{}{}{}
+\TimelineRegister{41}{0}{}{}{}
+\TimelineRegister{42}{0}{}{}{}
 
 \newcommand{\TimelineProposal}[4]{%
   \TimelineDateX{#1}{\TimelineProposalX}%
@@ -215,6 +234,18 @@ font=\ttfamily\fontsize{#3}{#4}\selectfont] at (#1,#2)
   basicstyle=\ttfamily\fontsize{15.5}{21}\selectfont\color{black},
   escapeinside={(*@}{@*)}
 }
+
+% Appendix queries retain the opening slides' fixed-pitch SQL styling.
+\lstdefinestyle{rewrite-sql}{
+  style=fanout-sql,
+  basicstyle=\ttfamily\fontsize{20}{24}\selectfont\color{ink}
+}
+\newsavebox{\groupedFanoutOn}
+\newsavebox{\groupedFanoutKey}
+\newsavebox{\complexKey}
+\newsavebox{\complexRootedUnaligned}
+\newsavebox{\complexRooted}
+
 \newsavebox{\openingFanout}
 \newsavebox{\complexOn}
 \newsavebox{\fanoutTerminal}
@@ -322,6 +353,7 @@ GROUP BY o.id;
 \end{minipage}\end{lrbox}
 
 \begin{lrbox}{\complexOn}\begin{minipage}{344mm}
+\begin{NoHyper}
 \begin{lstlisting}[style=complex-sql]
 SELECT o.id, o.order_date, oi.amount,
        c.name AS customer, co.country_name,
@@ -343,10 +375,12 @@ JOIN order_priorities    AS op  ON op.id  = o.order_priority_id
 JOIN tax_codes           AS tc  ON tc.id  = o.tax_code_id
 WHERE o.id = 100;
 \end{lstlisting}
+\end{NoHyper}
 \end{minipage}\end{lrbox}
 
 \begin{lrbox}{\fanoutTerminal}\begin{minipage}{364mm}
-\begin{lstlisting}[style=terminal-session]
+\begin{lstlisting}[style=terminal-session,
+  moredelim={**[is][\bfseries]{(*!}{!*)}}]
 % psql postgres
 psql (20devel)
 Type "help" for help.
@@ -358,16 +392,133 @@ FROM orders AS o
 LEFT JOIN order_items AS oi FOR KEY o (id) <- oi (order_id)
 LEFT JOIN payments    AS p  FOR KEY o (id) <- p (order_id)
 GROUP BY o.id;
-ERROR:  key join from referencing relation p to referenced relation o cannot be proven
+(*!ERROR:  key join from referencing relation p to referenced relation o cannot be proven
 LINE 6: LEFT JOIN payments    AS p  FOR KEY o (id) <- p (order_id)
                                     ^
-DETAIL:  Referenced columns o (id) are not proven unique. A preceding join may duplicate rows from referenced relation o.
+DETAIL:  Referenced columns o (id) are not proven unique. A preceding join may duplicate rows from referenced relation o.!*)
 postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \end{lstlisting}
 \end{minipage}\end{lrbox}
 \FanoutCheckHeight{\openingFanout}{78mm}{Opening ON query}
 \FanoutCheckHeight{\complexOn}{122mm}{Complex ON query}
 \FanoutCheckHeight{\fanoutTerminal}{125mm}{Fanout psql session}
+
+
+% Query boxes for the optional fanout and cardinality-preservation deep dive.
+\begin{lrbox}{\groupedFanoutOn}\begin{minipage}{344mm}
+\begin{lstlisting}[style=rewrite-sql]
+SELECT o.id,
+       oi.item_total,
+       p.payment_total
+FROM orders AS o
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS item_total
+    FROM order_items
+    GROUP BY order_id
+) AS oi ON o.id = oi.order_id
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS payment_total
+    FROM payments
+    GROUP BY order_id
+) AS p ON o.id = p.order_id;
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\groupedFanoutKey}\begin{minipage}{344mm}
+\begin{lstlisting}[style=rewrite-sql]
+SELECT o.id,
+       oi.item_total,
+       p.payment_total
+FROM orders AS o
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS item_total
+    FROM order_items
+    GROUP BY order_id
+) AS oi FOR KEY o (id) <- oi (order_id)
+LEFT JOIN (
+    SELECT order_id, SUM(amount) AS payment_total
+    FROM payments
+    GROUP BY order_id
+) AS p FOR KEY o (id) <- p (order_id);
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\complexKey}\begin{minipage}{344mm}
+\begin{lstlisting}[style=complex-sql]
+SELECT o.id, o.order_date, oi.amount,
+       c.name AS customer, co.country_name,
+       os.status_name, sm.method_name AS shipping,
+       pm.method_name AS payment, cur.currency_code,
+       op.priority_name, tc.code_name AS tax_code,
+       dt.type_name AS discount
+FROM customers           AS c
+JOIN countries           AS co  FOR KEY c (country_id) -> co (id)
+JOIN customer_types      AS ct  FOR KEY c (customer_type_id) -> ct (id)
+JOIN orders              AS o   FOR KEY c (id) <- o (customer_id)
+JOIN order_statuses      AS os  FOR KEY o (order_status_id) -> os (id)
+LEFT JOIN discount_types AS dt  FOR KEY o (discount_type_id) -> dt (id)
+JOIN shipping_methods    AS sm  FOR KEY o (shipping_method_id) -> sm (id)
+JOIN payment_methods     AS pm  FOR KEY o (payment_method_id) -> pm (id)
+JOIN order_items         AS oi  FOR KEY o (id) <- oi (order_id)
+JOIN currencies          AS cur FOR KEY o (currency_id) -> cur (id)
+JOIN order_priorities    AS op  FOR KEY o (order_priority_id) -> op (id)
+JOIN tax_codes           AS tc  FOR KEY o (tax_code_id) -> tc (id)
+WHERE o.id = 100;
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\complexRootedUnaligned}\begin{minipage}{344mm}
+\begin{NoHyper}
+\begin{lstlisting}[style=complex-sql]
+SELECT o.id, o.order_date, oi.amount,
+       c.name AS customer, co.country_name,
+       os.status_name, sm.method_name AS shipping,
+       pm.method_name AS payment, cur.currency_code,
+       op.priority_name, tc.code_name AS tax_code,
+       dt.type_name AS discount
+FROM order_items         AS oi
+JOIN orders              AS o   FOR KEY oi (order_id) -> o (id)
+JOIN customers           AS c   FOR KEY o (customer_id) -> c (id)
+JOIN countries           AS co  FOR KEY c (country_id) -> co (id)
+JOIN customer_types      AS ct  FOR KEY c (customer_type_id) -> ct (id)
+JOIN order_statuses      AS os  FOR KEY o (order_status_id) -> os (id)
+JOIN shipping_methods    AS sm  FOR KEY o (shipping_method_id) -> sm (id)
+JOIN payment_methods     AS pm  FOR KEY o (payment_method_id) -> pm (id)
+JOIN currencies          AS cur FOR KEY o (currency_id) -> cur (id)
+JOIN order_priorities    AS op  FOR KEY o (order_priority_id) -> op (id)
+JOIN tax_codes           AS tc  FOR KEY o (tax_code_id) -> tc (id)
+LEFT JOIN discount_types AS dt  FOR KEY o (discount_type_id) -> dt (id)
+WHERE o.id = 100;
+\end{lstlisting}
+\end{NoHyper}
+\end{minipage}\end{lrbox}
+\begin{lrbox}{\complexRooted}\begin{minipage}{344mm}
+\begin{NoHyper}
+\begin{lstlisting}[style=complex-sql]
+SELECT o.id, o.order_date, oi.amount,
+       c.name AS customer, co.country_name,
+       os.status_name, sm.method_name AS shipping,
+       pm.method_name AS payment, cur.currency_code,
+       op.priority_name, tc.code_name AS tax_code,
+       dt.type_name AS discount
+FROM order_items         AS oi
+JOIN orders              AS o   FOR KEY oi (order_id)          -> o (id)
+JOIN customers           AS c   FOR KEY o (customer_id)        -> c (id)
+JOIN countries           AS co  FOR KEY c (country_id)         -> co (id)
+JOIN customer_types      AS ct  FOR KEY c (customer_type_id)   -> ct (id)
+JOIN order_statuses      AS os  FOR KEY o (order_status_id)    -> os (id)
+JOIN shipping_methods    AS sm  FOR KEY o (shipping_method_id) -> sm (id)
+JOIN payment_methods     AS pm  FOR KEY o (payment_method_id)  -> pm (id)
+JOIN currencies          AS cur FOR KEY o (currency_id)        -> cur (id)
+JOIN order_priorities    AS op  FOR KEY o (order_priority_id)  -> op (id)
+JOIN tax_codes           AS tc  FOR KEY o (tax_code_id)        -> tc (id)
+LEFT JOIN discount_types AS dt  FOR KEY o (discount_type_id)   -> dt (id)
+WHERE o.id = 100;
+\end{lstlisting}
+\end{NoHyper}
+\end{minipage}\end{lrbox}
+\FanoutCheckHeight{\groupedFanoutOn}{122mm}{Appendix groupedFanoutOn}
+\FanoutCheckHeight{\groupedFanoutKey}{122mm}{Appendix groupedFanoutKey}
+\FanoutCheckHeight{\complexKey}{122mm}{Appendix complexKey}
+\FanoutCheckHeight{\complexRootedUnaligned}{122mm}{Appendix complexRootedUnaligned}
+\FanoutCheckHeight{\complexRooted}{122mm}{Appendix complexRooted}
 
 % 1. Designing a new SQL language feature
 % Rehearsal: 0:15; elapsed 0:00--0:15.
@@ -433,7 +584,7 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \begin{slide}{4}{}{It runs. Is it right?}{}{4 / 27}
 \pdfbookmark[0]{It runs. Is it right?}{slide-4}
 \node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,85) {\usebox{\openingFanout}};
-\txt{18}{188}{364}{26}{32}{blue}{Make join intent explicit. Catch mistakes before execution.}
+\txt{18}{188}{364}{26}{32}{blue}{Does this query return the correct item and payment totals for each order?}
 \end{slide}
 
 % 5. More joins. More to check.
@@ -908,14 +1059,6 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \pdfbookmark[0]{What a key join guarantees}{slide-23}
 
 % Shared input/output colors identify which operand supplies each cell.
-\definecolor{referencingHeader}{HTML}{D8E8F5}
-\definecolor{referencingFill}{HTML}{EAF3FB}
-\definecolor{referencedHeader}{HTML}{F4DEB6}
-\definecolor{referencedFill}{HTML}{FBEDDA}
-\definecolor{referencedAccent}{HTML}{A56A20}
-\definecolor{nullPaddingFill}{HTML}{EEEEEE}
-\definecolor{nullPaddingText}{HTML}{565656}
-\definecolor{queryFill}{HTML}{F2F2F2}
 
 % Result: the referencing columns retain all four rows; room columns hold matches
 % for Alice, Bob and David, and NULL padding for Carol.
@@ -1003,10 +1146,9 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 % Accepted key join specification, positioned as a binary operator.
 \draw[muted,line width=1pt,-{Stealth[length=2mm]}] (167.5,116) -- (167.5,110);
 \path[fill=queryFill,draw=ink!55,line width=.7pt] (52,116) rectangle (286,145);
-\codeat{58}{118}{15.5}{18.5}{\textcolor{blue}{SELECT} re.*, ro.*\strut \\
-\textcolor{blue}{FROM} reservations \textcolor{blue}{AS} re\strut \\
+\codeat{58}{121}{15.5}{18.5}{\textcolor{blue}{FROM} reservations \textcolor{blue}{AS} re\strut \\
 \textcolor{blue}{LEFT JOIN} rooms \textcolor{blue}{AS} ro\strut \\
-\phantom{MMMM}\textcolor{blue}{FOR KEY} re (hotel\_id, room\_number) -> ro (hotel\_id, room\_number);\strut}
+\textcolor{blue}{FOR KEY} re (hotel\_id, room\_number) -> ro (hotel\_id, room\_number)\strut}
 \draw[muted,line width=1pt,-{Stealth[length=2mm]}] (102.5,150) -- (119,146);
 \draw[muted,line width=1pt,-{Stealth[length=2mm]}] (244,150) -- (227.5,146);
 
@@ -1264,4 +1406,735 @@ postgres=# (*@\rule[-.2ex]{.525em}{1.15em}@*)
 \draw[rulecolor,line width=1pt] (18,147) -- (382,147);
 \txt{18}{165}{350}{27}{33.2}{ink}{Views, filters, ambiguity and dependencies\\were hard questions then, too.}
 \end{slide}
+
+% 34. How the rows multiply
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Follow this logical join tree from its leaves upward. It is
+% not a claim about the physical execution plan. The three base tables use the
+% same data as examples/key-joins-fanout.tex. Both order_id columns reference
+% orders.id. The first LEFT JOIN produces two occurrences of o.id = 100, one
+% per item, so the complete left operand of the second join no longer has a
+% unique o.id. Each payment for 100 then matches both of those rows.
+% The root shows all columns of the joined table before GROUP BY, not the
+% output of the full SELECT. Each item and each payment is counted twice for
+% order 100. The query output on the left is 200/200 rather than 100/100.
+% Row order is illustrative; the query has no ORDER BY. All shown rows match,
+% so this dataset needs no NULL padding. Five colors identify three leaves
+% and two join results; the same colors mark their SQL expressions on the left.
+\begingroup
+\definecolor{treeOrders}{HTML}{215E91}
+\definecolor{treeItems}{HTML}{996018}
+\definecolor{treePayments}{HTML}{1B7469}
+\definecolor{treeFirst}{HTML}{73539A}
+\definecolor{treeFinal}{HTML}{AF405D}
+\newcommand{\TreeSpan}[2]{\begingroup\setlength{\fboxsep}{.35mm}%
+  \colorbox{#1!13}{\textcolor{#1}{\strut #2}}\endgroup}
+\newsavebox{\fanoutTreeQuery}
+\begin{lrbox}{\fanoutTreeQuery}\begin{minipage}{140mm}
+\begin{lstlisting}[style=fanout-sql,
+  basicstyle=\ttfamily\fontsize{15.5}{22}\selectfont\color{ink},
+  escapeinside={(*@}{@*)}]
+SELECT o.id,
+       SUM(oi.amount) AS item_total,
+       SUM(p.amount)  AS payment_total
+FROM (*@\TreeSpan{treeOrders}{orders AS o}@*)
+(*@\TreeSpan{treeFirst}{LEFT JOIN}@*) (*@\TreeSpan{treeItems}{order\_items AS oi}@*) (*@\TreeSpan{treeFirst}{ON oi.order\_id = o.id}@*)
+(*@\TreeSpan{treeFinal}{LEFT JOIN}@*) (*@\TreeSpan{treePayments}{payments    AS p}@*)  (*@\TreeSpan{treeFinal}{ON p.order\_id  = o.id}@*)
+GROUP BY o.id;
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\newsavebox{\fanoutTreeResult}
+\begin{lrbox}{\fanoutTreeResult}\begin{minipage}{136mm}
+\begin{lstlisting}[style=fanout-mono,
+  basicstyle=\ttfamily\fontsize{15.5}{20.5}\selectfont\color{ink}]
+ id  | item_total | payment_total
+-----+------------+---------------
+ 100 |     200.00 |        200.00
+ 101 |      30.00 |         30.00
+(2 rows)
+\end{lstlisting}
+\end{minipage}\end{lrbox}
+\begin{slide}{34}{Appendix}{How the rows multiply}{}{A7}
+\pdfbookmark[0]{How the rows multiply}{slide-34}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,82) {\usebox{\fanoutTreeQuery}};
+\txt{18}{151}{136}{16}{20}{muted}{After \texttt{GROUP BY}}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (18,164) {\usebox{\fanoutTreeResult}};
+
+% Two join operators. Their colors identify the tables each one produces.
+\path[fill=treeFinal!8,draw=treeFinal,line width=.75pt]
+  (176,103) rectangle (382,114);
+\node[anchor=center,inner sep=0pt,text=treeFinal,
+  font=\ttfamily\fontsize{14}{18}\selectfont] at (279,108.5)
+  {LEFT JOIN payments AS p ON p.order\_id = o.id};
+\path[fill=treeFirst!8,draw=treeFirst,line width=.75pt]
+  (171,157) rectangle (294,172);
+\codeat{175}{159}{12}{16}{FROM orders AS o\strut \\
+LEFT JOIN order\_items AS oi ON oi.order\_id = o.id\strut}
+
+% Data flows upward. Route the payments branch around the intermediate note.
+\begin{scope}[draw=muted,line width=.85pt,-{Stealth[length=1.8mm,width=1.2mm]}]
+\draw (279,103) -- (279,98.2);
+\draw (232.5,123) -- (247,114);
+\draw (232.5,157) -- (232.5,148.8);
+\draw (189.5,180) -- (207,172);
+\draw (255.5,180) -- (259,172);
+\draw (343,180) -- (377,174) -- (377,122) -- (355,114);
+\end{scope}
+
+\node[anchor=south,inner sep=0pt,text=treeFinal,
+  font=\bfseries\fontsize{15.5}{19}\selectfont] at (276.5,65)
+  {Join result, before \texttt{GROUP BY}};
+% : complete row contents.
+\path[fill=treeFinal!6] (171,68) rectangle (382,97.4);
+\path[fill=treeFinal!13] (171,68) rectangle (382,72.9);
+\draw[treeFinal,line width=.7pt] (171,68) rectangle (382,97.4);
+\draw[treeFinal!45,line width=.35pt] (171,68.0) -- (382,68.0);
+\draw[treeFinal!45,line width=.35pt] (171,72.9) -- (382,72.9);
+\draw[treeFinal!45,line width=.35pt] (171,77.8) -- (382,77.8);
+\draw[treeFinal!45,line width=.35pt] (171,82.7) -- (382,82.7);
+\draw[treeFinal!45,line width=.35pt] (171,87.6) -- (382,87.6);
+\draw[treeFinal!45,line width=.35pt] (171,92.5) -- (382,92.5);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (181.5,70.45) {o.id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (190,75.35) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (190,80.25) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (190,85.15) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (190,90.05) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (190,94.95) {101};
+\draw[treeFinal!45,line width=.35pt] (192,68) -- (192,97.4);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (204.0,70.45) {oi.id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (214,75.35) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (214,80.25) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (214,85.15) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (214,90.05) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (214,94.95) {3};
+\draw[treeFinal!45,line width=.35pt] (216,68) -- (216,97.4);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (233.0,70.45) {oi.order\_id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (248,75.35) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (248,80.25) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (248,85.15) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (248,90.05) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (248,94.95) {101};
+\draw[treeFinal!45,line width=.35pt] (250,68) -- (250,97.4);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (267.5,70.45) {oi.amount};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (283,75.35) {25.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (283,80.25) {25.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (283,85.15) {75.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (283,90.05) {75.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (283,94.95) {30.00};
+\draw[treeFinal!45,line width=.35pt] (285,68) -- (285,97.4);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (296.0,70.45) {p.id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (305,75.35) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (305,80.25) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (305,85.15) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (305,90.05) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (305,94.95) {3};
+\draw[treeFinal!45,line width=.35pt] (307,68) -- (307,97.4);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (324.5,70.45) {p.order\_id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (340,75.35) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (340,80.25) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (340,85.15) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (340,90.05) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (340,94.95) {101};
+\draw[treeFinal!45,line width=.35pt] (342,68) -- (342,97.4);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (362.0,70.45) {p.amount};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,75.35) {40.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,80.25) {60.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,85.15) {40.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,90.05) {60.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,94.95) {30.00};
+
+
+% First join result: complete row contents.
+\path[fill=treeFirst!6] (171,123) rectangle (294,148);
+\path[fill=treeFirst!21] (171,123) rectangle (294,128);
+\path[fill=treeFirst!13] (171,128) rectangle (294,133);
+\node[inner sep=0pt,text=treeFirst,font=\bfseries\fontsize{14}{17}\selectfont] at (232.5,125.5) {First join result};
+\draw[treeFirst,line width=.7pt] (171,123) rectangle (294,148);
+\draw[treeFirst!45,line width=.35pt] (171,128) -- (294,128);
+\draw[treeFirst!45,line width=.35pt] (171,133) -- (294,133);
+\draw[treeFirst!45,line width=.35pt] (171,138) -- (294,138);
+\draw[treeFirst!45,line width=.35pt] (171,143) -- (294,143);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (183.0,130.5) {o.id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (193,135.5) {\textcolor{treeFirst}{\textbf{100}}};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (193,140.5) {\textcolor{treeFirst}{\textbf{100}}};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (193,145.5) {101};
+\draw[treeFirst!45,line width=.35pt] (195,128) -- (195,148);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (206.0,130.5) {oi.id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (215,135.5) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (215,140.5) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (215,145.5) {3};
+\draw[treeFirst!45,line width=.35pt] (217,128) -- (217,148);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (236.5,130.5) {oi.order\_id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (254,135.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (254,140.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (254,145.5) {101};
+\draw[treeFirst!45,line width=.35pt] (256,128) -- (256,148);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (275.0,130.5) {oi.amount};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (292,135.5) {25.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (292,140.5) {75.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (292,145.5) {30.00};
+
+% The repeated 100s show where the uniqueness required by the next join is lost.
+\draw[treeFirst,line width=1.2pt] (171.5,133.3) rectangle (194.5,142.7);
+\txt{307}{131}{62}{16}{20}{treeFirst}{\texttt{o.id} is no\\longer unique}
+\draw[treeFirst,line width=.8pt,-{Stealth[length=1.7mm,width=1.1mm]}]
+  (307,146) -- (300,152) -- (166,152) -- (166,138) -- (170.7,138);
+
+% orders: complete row contents.
+\path[fill=treeOrders!6] (171,180) rectangle (208,200);
+\path[fill=treeOrders!21] (171,180) rectangle (208,185);
+\path[fill=treeOrders!13] (171,185) rectangle (208,190);
+\node[inner sep=0pt,text=treeOrders,font=\bfseries\fontsize{14}{17}\selectfont] at (189.5,182.5) {orders};
+\draw[treeOrders,line width=.7pt] (171,180) rectangle (208,200);
+\draw[treeOrders!45,line width=.35pt] (171,185) -- (208,185);
+\draw[treeOrders!45,line width=.35pt] (171,190) -- (208,190);
+\draw[treeOrders!45,line width=.35pt] (171,195) -- (208,195);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (189.5,187.5) {id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (206,192.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (206,197.5) {101};
+
+% order\_items: complete row contents.
+\path[fill=treeItems!6] (217,180) rectangle (294,205);
+\path[fill=treeItems!21] (217,180) rectangle (294,185);
+\path[fill=treeItems!13] (217,185) rectangle (294,190);
+\node[inner sep=0pt,text=treeItems,font=\bfseries\fontsize{14}{17}\selectfont] at (255.5,182.5) {order\_items};
+\draw[treeItems,line width=.7pt] (217,180) rectangle (294,205);
+\draw[treeItems!45,line width=.35pt] (217,185) -- (294,185);
+\draw[treeItems!45,line width=.35pt] (217,190) -- (294,190);
+\draw[treeItems!45,line width=.35pt] (217,195) -- (294,195);
+\draw[treeItems!45,line width=.35pt] (217,200) -- (294,200);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (224.0,187.5) {id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (229,192.5) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (229,197.5) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (229,202.5) {3};
+\draw[treeItems!45,line width=.35pt] (231,185) -- (231,205);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (246.5,187.5) {order\_id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (260,192.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (260,197.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (260,202.5) {101};
+\draw[treeItems!45,line width=.35pt] (262,185) -- (262,205);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (278.0,187.5) {amount};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (292,192.5) {25.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (292,197.5) {75.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (292,202.5) {30.00};
+
+% payments: complete row contents.
+\path[fill=treePayments!6] (304,180) rectangle (382,205);
+\path[fill=treePayments!21] (304,180) rectangle (382,185);
+\path[fill=treePayments!13] (304,185) rectangle (382,190);
+\node[inner sep=0pt,text=treePayments,font=\bfseries\fontsize{14}{17}\selectfont] at (343.0,182.5) {payments};
+\draw[treePayments,line width=.7pt] (304,180) rectangle (382,205);
+\draw[treePayments!45,line width=.35pt] (304,185) -- (382,185);
+\draw[treePayments!45,line width=.35pt] (304,190) -- (382,190);
+\draw[treePayments!45,line width=.35pt] (304,195) -- (382,195);
+\draw[treePayments!45,line width=.35pt] (304,200) -- (382,200);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (311.0,187.5) {id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (316,192.5) {1};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (316,197.5) {2};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (316,202.5) {3};
+\draw[treePayments!45,line width=.35pt] (318,185) -- (318,205);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (333.5,187.5) {order\_id};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (347,192.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (347,197.5) {100};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (347,202.5) {101};
+\draw[treePayments!45,line width=.35pt] (349,185) -- (349,205);
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12}{15}\selectfont] at (365.5,187.5) {amount};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,192.5) {40.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,197.5) {60.00};
+\node[anchor=east,inner sep=0pt,text=ink,font=\ttfamily\fontsize{13}{16}\selectfont] at (380,202.5) {30.00};
+
+\end{slide}
+\endgroup
+
+% 35. Aggregate before joining
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Return to the fanout example from slides 4 and 24. Aggregate
+% items and payments independently, then join the totals. Two items (25, 75)
+% and two payments (40, 60) now give 100 and 100 for order 100, rather than 200
+% and 200. The sums operate before the two many sides can multiply each other.
+% An order with no matching group has NULL in that total column; no COALESCE
+% is implied. No result ordering is promised without ORDER BY.
+\begin{slide}{35}{Appendix}{Aggregate before joining}{}{A8}
+\pdfbookmark[0]{Aggregate before joining}{slide-35}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\groupedFanoutOn}};
+\txt{18}{198}{364}{21}{26}{blue}{Each subquery returns at most one row per order.}
+\end{slide}
+
+% 36. The corrected query with FOR KEY
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Same intended totals as the previous ON query. The schema
+% has orders.id PRIMARY KEY and both order_id columns NOT NULL REFERENCES
+% orders(id), with enforced, non-deferrable constraints. GROUP BY order_id
+% leaves at most one item group per order, so the first join preserves the
+% uniqueness of o.id for the second key join. Each group retains a non-null
+% order_id and a matching order. LEFT JOIN also retains orders with no group.
+% This deliberately fixes the original query; it is not equivalent to its
+% erroneous fanout totals.
+\begin{slide}{36}{Appendix}{The corrected query with FOR KEY}{}{A9}
+\pdfbookmark[0]{The corrected query with FOR KEY}{slide-36}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\groupedFanoutKey}};
+\txt{18}{198}{364}{21}{26}{blue}{The DBMS can now prove both key joins.}
+\end{slide}
+
+% 37. The larger query with ON
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Repeat the query from slide 5 before changing its syntax.
+% There is no claim that this ON query contains a bug. For the following
+% FOR KEY examples, assume the named relationships have suitable enforced,
+% non-deferrable foreign keys to unique id columns. Referencing columns used
+% in inner joins are known not null; discount_type_id may be null.
+% The table order and expressions are retained on the next slide.
+\begin{slide}{37}{Appendix \textperiodcentered{} A canonical form for key join trees}{The larger query with ON}{}{A10}
+\pdfbookmark[0]{The larger query with ON}{slide-37}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexOn}};
+\txt{18}{198}{364}{21}{26}{blue}{Each join needs a check against the schema and the preceding joins.}
+\end{slide}
+
+% 38. The larger query with FOR KEY
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: Replace the equality conditions with the corresponding
+% FOR KEY specifications. Two arrows point left: orders references customers,
+% and order_items references orders. The other references point right.
+% Each proof concerns the complete operands at that join. The joins after
+% order_items reference unique dimension tables; duplication of orders in
+% the left operand does not prevent those proofs.
+% Assume all specifications have been accepted under the schema described
+% in the preceding slide's notes.
+\begin{slide}{38}{Appendix \textperiodcentered{} A canonical form for key join trees}{The larger query with FOR KEY}{}{A11}
+\pdfbookmark[0]{The larger query with FOR KEY}{slide-38}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexKey}};
+\txt{18}{198}{364}{21}{26}{blue}{The arrows identify the referencing side of each join.}
+\end{slide}
+
+% 39. Put the root table first
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: For this relationship tree, start with order_items and
+% follow each reference. All arrows now point right. This is a convenient
+% canonical presentation of this example, not a unique SQL ordering or a
+% promise of a different execution plan. Multiple topological orders work.
+% Moving the discount_types LEFT JOIN last preserves the result here because
+% no other join depends on dt. All other joins are inner joins over the same
+% relationships. Selected expressions and WHERE remain the same.
+% For an accepted FOR KEY query, every JOIN or LEFT JOIN with a right arrow
+% preserves every row of its complete left operand exactly once. Applying
+% that fact at each join preserves every initial order_items row. WHERE can
+% subsequently remove rows; the guarantee is about the join tree's result.
+% The next slide changes only whitespace to align the arrows.
+\begin{slide}{39}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All joins use accepted FOR KEY specifications; before WHERE.}{A12}
+\pdfbookmark[0]{Put the root table first}{slide-39}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexRootedUnaligned}};
+\txt{18}{198}{364}{21}{26}{blue}{Every \texttt{order\_items} row appears exactly once before \texttt{WHERE}.}
+\end{slide}
+
+% 40. Put the root table first (aligned)
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: This is exactly the preceding query with spaces added before
+% the arrows. Its semantics do not change. Keeping every other element fixed
+% makes the right-arrow pattern easier to see. The next slide adds the three
+% marks for identifying the cardinality-preserved first FROM item.
+\begin{slide}{40}{Appendix \textperiodcentered{} A canonical form for key join trees}{Put the root table first}{All joins use accepted FOR KEY specifications; before WHERE.}{A13}
+\pdfbookmark[0]{Put the root table first (aligned)}{slide-40}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexRooted}};
+\txt{18}{198}{364}{21}{26}{blue}{Every \texttt{order\_items} row appears exactly once before \texttt{WHERE}.}
+\end{slide}
+
+% 41. Is the first FROM item cardinality-preserved?
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: First scan the key join arrows: they must all point right.
+% AND check the join types: each must be LEFT JOIN or [INNER] JOIN. For an
+% accepted query, those two checks imply that every join preserves its left
+% operand. The conclusion is that the first FROM item, order_items here, is
+% a Cardinality Preserved Table (CPT) in the complete join tree. The first
+% FROM item is the conclusion, not a third condition to check.
+% The scan summarizes guarantees already proved by the DBMS; syntax alone
+% does not establish that a FOR KEY specification will be accepted.
+% WHERE o.id = 100 is outside these marks and can filter the join result.
+\begin{slide}{41}{Appendix \textperiodcentered{} A canonical form for key join trees}{Is the first FROM item cardinality-preserved?}{All joins use accepted FOR KEY specifications; before WHERE. CPT = Cardinality Preserved Table.}{A14}
+\pdfbookmark[0]{Is the first FROM item cardinality-preserved?}{slide-41}
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at (38,71) {\usebox{\complexRooted}};
+% 3. The conclusion identifies the initial table, including its alias.
+\draw[orange,line width=.9pt,rounded corners=.7mm] (53,108.2) rectangle (135.7,115.2);
+\node[anchor=center,inner sep=0pt,text=orange,font=\bfseries\fontsize{14}{17}\selectfont] at (138,111.7) {3};
+% 2. Mark only the join-type tokens, without enclosing table names.
+\draw[teal,line width=.9pt,rounded corners=.5mm]
+  (37.4,114.55) -- (51.6,114.55) -- (51.6,177.95) --
+  (67.7,177.95) -- (67.7,184.81) -- (37.4,184.81) -- cycle;
+\node[anchor=center,inner sep=0pt,text=teal,font=\bfseries\fontsize{14}{17}\selectfont] at (32,118.05) {2};
+% 1. All key join arrows must point right.
+\draw[blue,line width=.9pt,rounded corners=.7mm]
+  (240.7,114.55) rectangle (248.6,184.81);
+\node[anchor=center,inner sep=0pt,text=blue,font=\bfseries\fontsize{14}{17}\selectfont] at (244.65,110) {1};
+% Two checks, joined by AND, imply the conclusion below them.
+\txt{306}{88}{8}{18}{23}{blue}{\textbf{1.}}
+\txt{316}{88}{66}{18}{23}{blue}{Do all key join arrows\\point right?}
+\node[inner sep=0pt,text=muted,font=\bfseries\fontsize{14}{18}\selectfont]
+  at (344,115) {AND};
+\txt{306}{125}{8}{18}{23}{teal}{\textbf{2.}}
+\txt{316}{125}{66}{18}{23}{teal}{Are all joins\\\texttt{LEFT JOIN} or\\\texttt{[INNER] JOIN}?}
+\node[inner sep=0pt,text=muted,font=\fontsize{27}{30}\selectfont]
+  at (344,159) {$\Downarrow$};
+\txt{306}{173}{8}{18}{23}{orange}{\textbf{3.}}
+\txt{316}{173}{66}{18}{23}{orange}{The first \texttt{FROM} item\\is cardinality-preserved\\in the join tree.}
+\end{slide}
+
+% 42. Which key joins preserve the referencing table's cardinality?
+% Appendix: only for questions; no time in the prepared 38-minute talk.
+% Presenter note: All eight diagrams describe accepted FOR KEY specifications.
+% A key join always emits every incoming referencing row exactly once. Only
+% INNER in either direction, LEFT -> and RIGHT <- additionally guarantee no
+% referenced-only rows, hence equality of total cardinalities. The other four
+% forms may also preserve cardinality on particular data; they do not promise it.
+% The input tables and rows are schematic, with no values or declared columns.
+% Blue is always referencing, amber always referenced, irrespective of position.
+% INNER joins have no join-generated NULL padding. In LEFT -> and RIGHT <-,
+% a referencing row with NULLs may survive with its referenced half NULL-padded.
+% In LEFT <- and RIGHT ->, acceptance requires referencing columns known not
+% null; all incoming referencing rows match, but unmatched referenced rows may
+% be added with their referencing half NULL-padded. FULL can show both kinds.
+% The dashed final row represents a possible added referenced-only row.
+% Diagrams use different illustrative matching/nullability cases; these are not
+% eight executions over one shared dataset. Do not infer coverage from the empty
+% cells or compare blank rows as values. An individual referenced row can supply
+% multiple result rows; empty cells deliberately do not assert a row mapping.
+% Composition: use a CPT form at every step and each preceding result as the
+% next referencing operand. Then each original referencing row appears exactly
+% once at every step, with equal total cardinalities. These claims are about
+% the joined tables before any later WHERE, GROUP BY, DISTINCT or other operation.
+\begin{slide}{42}{Appendix \textperiodcentered{} For accepted FOR KEY joins}{Which key joins preserve the referencing table's cardinality?}{CPT = Cardinality Preserved Table \textperiodcentered{} Schematic rows, before subsequent filtering or aggregation}{A15}
+\pdfbookmark[0]{Which key joins preserve the referencing table's cardinality?}{slide-42}
+
+% Match the palette of "What a key join guarantees" exactly.
+\path[fill=referencingFill,draw=blue,line width=.5pt] (18,61) rectangle (26,65);
+\txt{29}{60.5}{56}{13}{16}{ink}{Referencing}
+\path[fill=referencedFill,draw=referencedAccent,line width=.5pt] (91,61) rectangle (99,65);
+\txt{102}{60.5}{54}{13}{16}{ink}{Referenced}
+\path[fill=nullPaddingFill,draw=ink!40,line width=.5pt] (165,61) rectangle (173,65);
+\txt{176}{60.5}{67}{13}{16}{nullPaddingText}{\textit{NULL} padding}
+\txt{247}{60.5}{135}{12.5}{16}{muted}{Padding and extra rows are possible, not required.}
+
+% Each operator box supplies its own join type and FOR KEY arrow.
+% The red CPT stamps sit inside the referencing input and result portion.
+\definecolor{cptStampRed}{HTML}{B52732}
+\newcommand{\CPTStamp}[2]{%
+  \begin{scope}[shift={(#1,#2)},rotate=45]
+  \draw[cptStampRed,opacity=.88,line width=.65pt,
+    dash pattern=on .6mm off .35mm] (-5.8,-2.9) rectangle (5.8,2.9);
+  \draw[cptStampRed,opacity=.88,line width=.65pt] (-5.2,-2.3) rectangle (5.2,2.3);
+  \node[inner sep=0pt,rotate=45,text=cptStampRed,
+    font=\ttfamily\bfseries\fontsize{14.5}{17}\selectfont] at (0,0) {CPT};
+  \end{scope}%
+}
+\draw[rulecolor,line width=.5pt] (18,131) -- (382,131);
+% INNER JOIN ->: CPT.
+\begin{scope}[shift={(20,70)}]
+\path[fill=referencingHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencingFill] (8,9.5) rectangle (42,18.5);
+\path[fill=referencedHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencedFill] (42,9.5) rectangle (76,18.5);
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,18.5);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,18.5);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,18.5);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {INNER JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... -> ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,19.0);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencingFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\path[fill=referencedHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencedFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\draw[blue!75,line width=.65pt,-{Stealth[length=1.3mm,width=.9mm]}] (6.5,54) .. controls (1,54) and (1,14) .. (7.5,14);
+\CPTStamp{25}{11.75}
+\CPTStamp{21}{51.75}
+\end{scope}
+
+% LEFT JOIN ->: CPT.
+\begin{scope}[shift={(112,70)}]
+\path[fill=referencingHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencingFill] (8,9.5) rectangle (42,18.5);
+\path[fill=referencedHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencedFill] (42,9.5) rectangle (76,18.5);
+\path[fill=nullPaddingFill] (42,14) rectangle (76,18.5);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (50.5,16.25) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (67.5,16.25) {NULL};
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,18.5);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,18.5);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,18.5);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {LEFT JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... -> ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,19.0);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencingFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\path[fill=referencedHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencedFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\draw[blue!75,line width=.65pt,-{Stealth[length=1.3mm,width=.9mm]}] (6.5,54) .. controls (1,54) and (1,14) .. (7.5,14);
+\CPTStamp{25}{11.75}
+\CPTStamp{21}{51.75}
+\end{scope}
+
+% RIGHT JOIN ->: May add referenced-only rows.
+\begin{scope}[shift={(204,70)}]
+\node[inner sep=0pt,text=muted,font=\fontsize{12.5}{15}\selectfont] at (42,1.4) {May add rows};
+\path[fill=referencingHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencingFill] (8,9.5) rectangle (42,18.5);
+\path[fill=referencedHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencedFill] (42,9.5) rectangle (76,18.5);
+\path[fill=nullPaddingFill] (8,18.5) rectangle (42,23);
+\path[fill=referencedFill] (42,18.5) rectangle (76,23);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (16.5,20.75) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (33.5,20.75) {NULL};
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[muted,dash pattern=on 1.2mm off .7mm,line width=.65pt] (8,18.5) -- (8,23) -- (76,23) -- (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,23);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,23);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,23);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {RIGHT JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... -> ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,23.5);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencingFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\path[fill=referencedHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencedFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\end{scope}
+
+% FULL JOIN ->: May add referenced-only rows.
+\begin{scope}[shift={(296,70)}]
+\node[inner sep=0pt,text=muted,font=\fontsize{12.5}{15}\selectfont] at (42,1.4) {May add rows};
+\path[fill=referencingHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencingFill] (8,9.5) rectangle (42,18.5);
+\path[fill=referencedHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencedFill] (42,9.5) rectangle (76,18.5);
+\path[fill=nullPaddingFill] (42,14) rectangle (76,18.5);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (50.5,16.25) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (67.5,16.25) {NULL};
+\path[fill=nullPaddingFill] (8,18.5) rectangle (42,23);
+\path[fill=referencedFill] (42,18.5) rectangle (76,23);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (16.5,20.75) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (33.5,20.75) {NULL};
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[muted,dash pattern=on 1.2mm off .7mm,line width=.65pt] (8,18.5) -- (8,23) -- (76,23) -- (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,23);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,23);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,23);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {FULL JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... -> ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,23.5);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencingFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\path[fill=referencedHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencedFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\end{scope}
+
+% INNER JOIN <-: CPT.
+\begin{scope}[shift={(20,132)}]
+\path[fill=referencingHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencingFill] (42,9.5) rectangle (76,18.5);
+\path[fill=referencedHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencedFill] (8,9.5) rectangle (42,18.5);
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,18.5);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,18.5);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,18.5);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {INNER JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... <- ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,19.0);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencingFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\path[fill=referencedHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencedFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\draw[blue!75,line width=.65pt,-{Stealth[length=1.3mm,width=.9mm]}] (77.5,54) .. controls (83,54) and (83,14) .. (76.5,14);
+\CPTStamp{59}{11.75}
+\CPTStamp{63}{51.75}
+\end{scope}
+
+% LEFT JOIN <-: May add referenced-only rows.
+\begin{scope}[shift={(112,132)}]
+\node[inner sep=0pt,text=muted,font=\fontsize{12.5}{15}\selectfont] at (42,1.4) {May add rows};
+\path[fill=referencingHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencingFill] (42,9.5) rectangle (76,18.5);
+\path[fill=referencedHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencedFill] (8,9.5) rectangle (42,18.5);
+\path[fill=nullPaddingFill] (42,18.5) rectangle (76,23);
+\path[fill=referencedFill] (8,18.5) rectangle (42,23);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (50.5,20.75) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (67.5,20.75) {NULL};
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[muted,dash pattern=on 1.2mm off .7mm,line width=.65pt] (8,18.5) -- (8,23) -- (76,23) -- (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,23);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,23);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,23);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {LEFT JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... <- ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,23.5);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencingFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\path[fill=referencedHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencedFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\end{scope}
+
+% RIGHT JOIN <-: CPT.
+\begin{scope}[shift={(204,132)}]
+\path[fill=referencingHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencingFill] (42,9.5) rectangle (76,18.5);
+\path[fill=referencedHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencedFill] (8,9.5) rectangle (42,18.5);
+\path[fill=nullPaddingFill] (8,14) rectangle (42,18.5);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (16.5,16.25) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (33.5,16.25) {NULL};
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,18.5);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,18.5);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,18.5);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {RIGHT JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... <- ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,19.0);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencingFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\path[fill=referencedHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencedFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\draw[blue!75,line width=.65pt,-{Stealth[length=1.3mm,width=.9mm]}] (77.5,54) .. controls (83,54) and (83,14) .. (76.5,14);
+\CPTStamp{59}{11.75}
+\CPTStamp{63}{51.75}
+\end{scope}
+
+% FULL JOIN <-: May add referenced-only rows.
+\begin{scope}[shift={(296,132)}]
+\node[inner sep=0pt,text=muted,font=\fontsize{12.5}{15}\selectfont] at (42,1.4) {May add rows};
+\path[fill=referencingHeader] (42,5) rectangle (76,9.5);
+\path[fill=referencingFill] (42,9.5) rectangle (76,18.5);
+\path[fill=referencedHeader] (8,5) rectangle (42,9.5);
+\path[fill=referencedFill] (8,9.5) rectangle (42,18.5);
+\path[fill=nullPaddingFill] (8,14) rectangle (42,18.5);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (16.5,16.25) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (33.5,16.25) {NULL};
+\path[fill=nullPaddingFill] (42,18.5) rectangle (76,23);
+\path[fill=referencedFill] (8,18.5) rectangle (42,23);
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (50.5,20.75) {NULL};
+\node[inner sep=0pt,text=nullPaddingText,font=\ttfamily\itshape\fontsize{10.5}{12}\selectfont] at (67.5,20.75) {NULL};
+\draw[ink!50,line width=.55pt] (8,5) rectangle (76,18.5);
+\draw[muted,dash pattern=on 1.2mm off .7mm,line width=.65pt] (8,18.5) -- (8,23) -- (76,23) -- (76,18.5);
+\draw[ink!35,line width=.3pt] (25,5) -- (25,23);
+\draw[ink!35,line width=.3pt] (42,5) -- (42,23);
+\draw[ink!35,line width=.3pt] (59,5) -- (59,23);
+\draw[ink!35,line width=.3pt] (8,9.5) -- (76,9.5);
+\draw[ink!35,line width=.3pt] (8,14) -- (76,14);
+\path[fill=queryFill,draw=ink!45,line width=.5pt] (14,27) rectangle (70,39);
+\node[inner sep=0pt,text=ink,font=\ttfamily\bfseries\fontsize{14}{17}\selectfont] at (42,30.5) {FULL JOIN};
+\node[inner sep=0pt,text=ink,font=\ttfamily\fontsize{12.5}{15}\selectfont] at (42,35.7) {FOR KEY ... <- ...};
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (42,27) -- (42,23.5);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (35,45) -- (36,39);
+\draw[muted,line width=.6pt,-{Stealth[length=1.3mm,width=.9mm]}] (49,45) -- (48,39);
+\path[fill=referencingHeader] (49,45) rectangle (77,49.5);
+\path[fill=referencingFill] (49,49.5) rectangle (77,58.5);
+\draw[ink!50,line width=.55pt] (49,45) rectangle (77,58.5);
+\draw[ink!35,line width=.3pt] (63,45) -- (63,58.5);
+\draw[ink!35,line width=.3pt] (49,49.5) -- (77,49.5);
+\draw[ink!35,line width=.3pt] (49,54) -- (77,54);
+\path[fill=referencedHeader] (7,45) rectangle (35,49.5);
+\path[fill=referencedFill] (7,49.5) rectangle (35,58.5);
+\draw[ink!50,line width=.55pt] (7,45) rectangle (35,58.5);
+\draw[ink!35,line width=.3pt] (21,45) -- (21,58.5);
+\draw[ink!35,line width=.3pt] (7,49.5) -- (35,49.5);
+\draw[ink!35,line width=.3pt] (7,54) -- (35,54);
+\end{scope}
+
+% Only the four CPT forms compose in this way. A whole intermediate result
+% becomes the next referencing operand; this is not just base-column lineage.
+\node[inner sep=0pt,text=blue,font=\fontsize{16.5}{21}\selectfont] at (200,198)
+  {CPT input $\longrightarrow$ CPT result / next referencing input $\longrightarrow$ CPT result};
+\node[inner sep=0pt,text=ink,font=\fontsize{14.5}{18}\selectfont] at (200,205.5)
+  {With CPT forms at every step, every original referencing row survives exactly once.};
+\end{slide}
+
 \end{document}
