@@ -13,7 +13,8 @@ ASSETS := assets/key-joins-valencia/derived-tables-workshop.jpg \
           assets/key-joins-valencia/standardese-experts.jpg \
           assets/key-joins-valencia/restarting-iso.jpg \
           assets/key-joins-valencia/tashkent-acceptance.jpg \
-          assets/key-joins-valencia/mimer-logo.pdf
+          assets/key-joins-valencia/mimer-logo.pdf \
+          assets/key-joins-valencia/postgresql-logo.pdf
 EXAMPLE_PDFS := examples/key-joins-fanout.pdf examples/key-joins-guarantees.pdf
 
 .PHONY: all pdf examples clean

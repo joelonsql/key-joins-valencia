@@ -13,6 +13,10 @@ are unchanged. The LaTeX source specifies display sizes.
 | `standardese-experts.jpg` | Stefan Plantikow, Jörn Bartels, Jim Melton, Stephen Cannan and Vik Fearing at the editors' meeting | 23 June 2026, Åland; people, date and location confirmed by Joel |
 | `tashkent-acceptance.jpg` | Keith Hare, Stephen Cannan, Jörn Bartels, Jim Melton and Joel Jacobson at the WG 3 meeting on the day TAS-028R1 was accepted | 12 October 2026, Tashkent, Uzbekistan; people, date and location confirmed by Joel; supplied as IMG_7395.HEIC |
 | `mimer-logo.pdf` | Mimer logo, vector artwork | Official logo; Joel confirmed permission to use it |
+| `postgresql-logo.svg`, `postgresql-logo.pdf` | PostgreSQL elephant, vector artwork | [Official three-color logo](https://wiki.postgresql.org/wiki/File:PostgreSQL_logo.3colors.svg) |
 
-The logo was converted from the [official SVG](https://www.mimer.com/wp-content/uploads/logo-mimer-black.svg).
+The Mimer logo was converted from the [official SVG](https://www.mimer.com/wp-content/uploads/logo-mimer-black.svg).
 Its paths, colors and proportions are unchanged.
+
+The PostgreSQL PDF was converted from the accompanying official SVG with
+`rsvg-convert`. Its paths, colors and proportions are unchanged.
