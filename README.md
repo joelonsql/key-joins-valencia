@@ -34,8 +34,11 @@ The compiler can be selected with `make TECTONIC=/path/to/tectonic`.
 
 ## Files
 
-- `key-joins-valencia-presentation.tex`: current deck, including presenter notes
-  and source references in comments beside each slide.
+- `key-joins-valencia-presentation.tex`: current deck. Each slide has a concise
+  `Presenter notes` block, starting with its slide number and cumulative timing
+  target. The 40 minutes are divided equally across the 29 main slides, including
+  Questions; appendix slides are unscheduled. Longer `Background` comments keep
+  research and source references separate.
 - `assets/key-joins-valencia/`: photographs and the vector Mimer logo. All paths
   in the presentation are relative to the repository root.
 - `examples/`: the interactive guarantees HTML and the standalone fanout and
@@ -44,8 +47,8 @@ The compiler can be selected with `make TECTONIC=/path/to/tectonic`.
 - `notes/key-joins-valencia-transkription-rensad.txt`: the cleaned planning
   transcript, organized under the earlier presentation headings.
 - `archive/`: earlier balanced and self-contained decks and Markdown presenter
-  guides. These guides use older slide titles and numbering; the comments in
-  the current `.tex` are the current presenter notes.
+  guides. These guides use older slide titles and numbering; the
+  `Presenter notes` blocks in the current `.tex` are the current notes.
 
 Generated PDFs and build intermediates are ignored by Git. The vector logo PDF
 is a source asset and is not ignored. Earlier reference PDFs remain in `archive/`
